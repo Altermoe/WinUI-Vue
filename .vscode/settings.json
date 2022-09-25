@@ -1,0 +1,10 @@
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
+  "eslint.format.enable": true,
+  "files.associations": {
+    ".env*": "dotenv"
+  },
+  "files.eol": "\n"
+}

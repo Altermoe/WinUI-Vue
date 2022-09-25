@@ -1,0 +1,42 @@
+{
+  "name": "winui-vue",
+  "version": "0.0.1",
+  "description": "Windows 11 设计规范的 Vue3 实现",
+  "homepage": "https://github.com/Altermoe/WinUI-Vue",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Altermoe/WinUI-Vue"
+  },
+  "scripts": {
+    "dev": "pnpm -C docs run dev"
+  },
+  "exports": {
+    ".": {}
+  },
+  "keywords": [
+    "winui",
+    "component library",
+    "ui framework",
+    "ui",
+    "vue",
+    "vue3"
+  ],
+  "author": "夕云葛冲",
+  "license": "MIT",
+  "devDependencies": {
+    "@antfu/eslint-config": "^0.27.0",
+    "@types/node": "^16.11.7",
+    "@typescript-eslint/parser": "^5.38.0",
+    "@vitejs/plugin-vue": "^3.1.0",
+    "@vitejs/plugin-vue-jsx": "^2.0.1",
+    "eslint": "^8.24.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-vue": "^9.5.1",
+    "prettier": "^2.7.1",
+    "sass": "^1.55.0",
+    "typescript": "^4.8.3",
+    "vite": "^3.1.3",
+    "vue": "^3.2.39",
+    "vue-eslint-parser": "^9.1.0"
+  }
+}

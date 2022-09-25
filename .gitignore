@@ -1,0 +1,13 @@
+# 缓存
+node_modules
+dist
+.DS_Store
+
+# 环境变量
+.env.local
+.env.*.local
+
+# 依赖锁定
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
