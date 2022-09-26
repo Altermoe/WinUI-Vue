@@ -2,6 +2,7 @@ import { resolve } from 'path'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import VueJsx from '@vitejs/plugin-vue-jsx'
+import AutoImport from 'unplugin-auto-import/vite'
 
 export default defineConfig((/** context */) => {
   return {
@@ -39,6 +40,13 @@ export default defineConfig((/** context */) => {
       jsxFragment: 'Fragment',
     },
 
-    plugins: [Vue(), VueJsx()],
+    plugins: [
+      Vue(),
+      VueJsx(),
+      AutoImport({
+        imports: ['vue', '@vueuse/core'],
+        dts: resolve(__dirname, './auto-import.d.ts'),
+      }),
+    ],
   }
 })
