@@ -154,6 +154,8 @@ export interface ThemeColor {
     solidSecondary: string
     /** 用于放置层、卡片或控件的纯色背景。 */
     solidTertiary: string
+    /** 用于放置层、卡片或控件的纯色背景。 */
+    solidQuarternary: string
     /** 用于放置图层、卡片或控件的云母背景色。 */
     micaBase: string
     /** 亚克力背景色，用于放置层、卡片或控件。 */
