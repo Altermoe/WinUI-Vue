@@ -68,7 +68,7 @@ export const getDefaultLightTheme = (): ThemeColor => ({
     focusOuter: '#000000e2',
     focusInner: '#ffffff',
   },
-  background: {
+  bg: {
     cardDefault: '#ffffffb2',
     cardSecondary: '#f6f6f67f',
     smokeDefault: '#0000004c',
