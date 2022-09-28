@@ -5,6 +5,6 @@
   },
   "extends": ["@antfu"],
   "rules": {
-    "eslint-disable-next-line no-console": "off"
+    "no-console": "off"
   }
 }

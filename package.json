@@ -21,10 +21,11 @@
     "vue",
     "vue3"
   ],
-  "author": "夕云葛冲",
+  "author": "夕云葛城",
   "license": "MIT",
   "devDependencies": {
     "@antfu/eslint-config": "^0.27.0",
+    "@types/lodash": "^4.14.185",
     "@types/node": "^16.11.7",
     "@typescript-eslint/parser": "^5.38.0",
     "@vitejs/plugin-vue": "^3.1.0",
@@ -41,6 +42,7 @@
     "vue-eslint-parser": "^9.1.0"
   },
   "dependencies": {
-    "@vueuse/core": "^9.3.0"
+    "@vueuse/core": "^9.3.0",
+    "lodash": "^4.17.21"
   }
 }

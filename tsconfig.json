@@ -9,13 +9,16 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "lib": ["ESNext", "DOM"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable", "ScriptHost"],
     "types": ["vite/client"],
-    "rootDir": ".",
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": [
-    "src/**/*.{ts,tsx,vue}",
+    "src/**/*",
+    "auto-import.d.ts",
     "env.d.ts"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]

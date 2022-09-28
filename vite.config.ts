@@ -13,8 +13,8 @@ export default defineConfig((/** context */) => {
     resolve: {
       alias: [
         {
-          find: 'winui-vue',
-          replacement: resolve(__dirname, './src'),
+          find: /^@\//,
+          replacement: `${resolve(__dirname, './src')}/`,
         },
       ],
     },

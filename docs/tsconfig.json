@@ -1,7 +1,17 @@
 {
   "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "../",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["../src/*"]
+    }
+  },
   "include": [
-    "src/**/*.{ts,tsx,vue}"
+    "../src/**/*",
+    "src/**/*",
+    "../auto-import.d.ts",
+    "../env.d.ts"
   ],
   "references": [{ "path": "../tsconfig.node.json" }]
 }

@@ -5,6 +5,15 @@ import AutoImport from 'unplugin-auto-import/vite'
 
 export default defineConfig(() => {
   return {
+    resolve: {
+      alias: [
+        {
+          find: /^@\//,
+          replacement: `${resolve(__dirname, '../src')}/`,
+        },
+      ],
+    },
+
     plugins: [
       Vue(),
       AutoImport({
