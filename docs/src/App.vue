@@ -1,17 +1,17 @@
 <script lang="ts" setup>
-import { Base, Button, Layer, ThemeProvider } from '@/components'
+import { Base, Link, ThemeProvider } from '@/components'
+const test = () => {
+  console.log('点击')
+}
 </script>
 
 <template>
   <ThemeProvider>
-    <Base style="display: grid; place-items: center; width: 80%; height: 80%">
-      <div style="display: flex; gap: 1em">
-        <Button type="accent">
-          Hello world
-        </Button>
-        <Button type="standard">
-          Hello world
-        </Button>
+    <Base style="display: grid; place-items: center; width: 90%; height: 90%">
+      <div style="display: flex; flex-direction: column; gap: 1em">
+        <Link href="https://www.baidu.com/" target="_blank" disabled @click="test">
+          Link
+        </Link>
       </div>
     </Base>
   </ThemeProvider>
