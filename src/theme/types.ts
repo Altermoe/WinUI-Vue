@@ -31,9 +31,7 @@ export interface ThemeColor {
     /** 强调文字，突出文本颜色 */
     onAccentSelected: string
   }
-  /**
-   * 用于标准控件的填充，例如：按钮下拉搜索
-   */
+  /** 用于标准控件的填充，例如：按钮下拉搜索 */
   fill: {
     /** 用于标准控件的填充，示例：按钮下拉搜索 */
     ctrlDefault: string
@@ -134,6 +132,15 @@ export interface ThemeColor {
     focusOuter: string
     /** 用于分隔线和图形线。主题反转；光明中的黑暗主题和黑暗中的光明主题。 */
     focusInner: string
+  }
+  shadow: {
+    0: string
+    2: string
+    8: string
+    16: string
+    32: string
+    64: string
+    128: string
   }
   bg: {
     /** 用于创建“卡片”-位于页面和层背景上的内容块。 */

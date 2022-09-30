@@ -68,6 +68,15 @@ export const getDefaultLightTheme = (): ThemeColor => ({
     focusOuter: '#000000e2',
     focusInner: '#ffffff',
   },
+  shadow: {
+    0: 'none',
+    2: 'none',
+    8: '0px 2px 4px rgba(0, 0, 0, 0.04)',
+    16: '0px 4px 8px rgba(0, 0, 0, 0.14)',
+    32: '0px 8px 16px rgba(0, 0, 0, 0.14)',
+    64: '0px 16px 32px rgba(0, 0, 0, 0.1876), 0px 2px 10.67px rgba(0, 0, 0, 0.1474)',
+    128: '0px 32px 64px rgba(0, 0, 0, 0.1876), 0px 2px 21px rgba(0, 0, 0, 0.1474)',
+  },
   bg: {
     cardDefault: '#ffffffb2',
     cardSecondary: '#f6f6f67f',
