@@ -1,6 +1,7 @@
 <script lang="ts" setup>
-withDefaults(defineProps<{
-  type?: 'accent' | 'standard'
+import { useConditionalltHandler } from '@/hooks'
+const props = withDefaults(defineProps<{
+  type?: 'accent' | 'standard' | 'text'
   disabled?: boolean
   nofocus?: boolean
 }>(), {
@@ -13,9 +14,9 @@ const emits = defineEmits<{
   (e: 'click', ev: MouseEvent): void
 }>()
 
-const handleClick = (ev: MouseEvent) => {
-
-}
+const { handler } = useConditionalltHandler(emits, {
+  disabled: toRef(props, 'disabled'),
+})
 </script>
 
 <template>
@@ -28,9 +29,11 @@ const handleClick = (ev: MouseEvent) => {
     :class="{
       accent: type === 'accent',
       standard: type === 'standard',
+      text: type === 'text',
       disabled,
       nofocus,
     }"
+    @click="handler('click', $event)"
   >
     <slot />
   </button>
@@ -40,17 +43,17 @@ const handleClick = (ev: MouseEvent) => {
 .win-button {
   cursor: pointer;
   display: flex;
-  border: 1px solid;
+  border: 1px solid transparent;
   justify-content: center;
   align-items: center;
   padding: 5px 12px 7px;
   border-radius: 4px;
   height: 32px;
-  outline: none;
   font-size: 14px;
   line-height: 20px;
   text-align: center;
   font-weight: 400;
+  background: transparent;
 
   &:focus {
     outline: 2px solid #000;
@@ -63,14 +66,16 @@ const handleClick = (ev: MouseEvent) => {
     border-color: rgba(255, 255, 255, 0.08);
     border-bottom-color: rgba(0, 0, 0, 0.4);
 
-    &:hover {
-      background: rgba(0, 95, 184, 0.9);
-    }
+    &:not(.disabled) {
+      &:hover {
+        background: rgba(0, 95, 184, 0.9);
+      }
 
-    &:active {
-      color: rgba(255, 255, 255, 0.7);
-      background: rgba(0, 95, 184, 0.8);
-      border-bottom-color: rgba(255, 255, 255, 0.08);
+      &:active {
+        color: rgba(255, 255, 255, 0.7);
+        background: rgba(0, 95, 184, 0.8);
+        border-bottom-color: rgba(255, 255, 255, 0.08);
+      }
     }
 
     &.disabled {
@@ -85,20 +90,43 @@ const handleClick = (ev: MouseEvent) => {
     border-color: rgba(0, 0, 0, 0.06);
     border-bottom-color: rgba(0, 0, 0, 0.16);
 
-    &:hover {
-      background: rgba(249, 249, 249, 0.5);
-    }
+    &:not(.disabled) {
+      &:hover {
+        background: rgba(249, 249, 249, 0.5);
+      }
 
-    &:active {
-      color: rgba(0, 0, 0, 0.5);
-      background: rgba(249, 249, 249, 0.3);
-      border-bottom-color: rgba(0, 0, 0, 0.06);
+      &:active {
+        color: rgba(0, 0, 0, 0.5);
+        background: rgba(249, 249, 249, 0.3);
+        border-bottom-color: rgba(0, 0, 0, 0.06);
+      }
     }
 
     &.disabled {
       color: rgba(0, 0, 0, 0.3614);
       background: rgba(249, 249, 249, 0.3);
       border-bottom-color: rgba(0, 0, 0, 0.06);
+    }
+  }
+
+  &.text {
+    color: #003E92;
+
+    &:not(.disabled) {
+      &:hover {
+        color: #001A68;
+        background: rgba(0, 0, 0, 0.0373);
+      }
+
+      &:active {
+        color: #005FB8;
+        background: rgba(0, 0, 0, 0.0241);
+      }
+    }
+
+    &.disabled {
+      color: rgba(0, 0, 0, 0.3614);
+      background: transparent;
     }
   }
 
