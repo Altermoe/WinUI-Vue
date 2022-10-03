@@ -1,14 +1,14 @@
 .slide-y-enter-active,
 .slide-y-leave-active {
-  clip-path: inset(0 0 0 0 round 8px);
+  opacity: 1;
   transform: translateY(0);
-  transition-property: clip-path, transform;
-  transition-duration: 200ms;
+  transition-property: opacity, transform;
+  transition-duration: 150ms;
   transition-timing-function: ease;
 }
 
 .slide-y-enter-from,
 .slide-y-leave-to {
-  clip-path: inset(100% 0 0 0 round 8px);
-  transform: translateY(-100%);
+  opacity: 0;
+  transform: translateY(-9px);
 }

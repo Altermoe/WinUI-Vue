@@ -34,7 +34,11 @@
 }
 
 .win-contextmenu-group {
+  &:not(:first-of-type) {
+    padding-top: 2px;
+  }
   &:not(:last-of-type) {
+    padding-bottom: 2px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.0803);
   }
 }
