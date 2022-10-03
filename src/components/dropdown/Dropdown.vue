@@ -32,6 +32,7 @@ const { handler } = useConditionalltHandler(emits, {
 
 <template>
   <div
+    tabindex="0"
     class="win-dropdown"
     :class="{
       disabled,
@@ -92,6 +93,11 @@ const { handler } = useConditionalltHandler(emits, {
       color: rgba(0, 0, 0, 0.6063);
       border-bottom-color: rgba(0, 0, 0, 0.06);
       background: rgba(249, 249, 249, 0.3);
+    }
+
+    &:focus {
+      outline: 2px solid #000;
+      outline-offset: 1px;
     }
   }
 
