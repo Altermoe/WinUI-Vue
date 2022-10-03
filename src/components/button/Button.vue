@@ -55,9 +55,11 @@ const { handler } = useConditionalltHandler(emits, {
   font-weight: 400;
   background: transparent;
 
-  &:focus {
-    outline: 2px solid #000;
-    outline-offset: 1px;
+  :not(.disabled) {
+    &:focus {
+      outline: 2px solid #000;
+      outline-offset: 1px;
+    }
   }
 
   &.accent {
