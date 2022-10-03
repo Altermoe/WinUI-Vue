@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { DropdownItem } from './types'
+import { ContextMenu } from '@/components'
 import { useConditionalltHandler } from '@/hooks'
 
 const props = withDefaults(defineProps<{
@@ -23,52 +24,45 @@ const inputContent = computed(() => {
   return selectedItem.value.title ?? selectedItem.value.value
 })
 
-const dropdownVisible = ref(false)
-const { handler } = useConditionalltHandler(emits, {
+const visible = ref(false)
+const { handler } = useConditionalltHandler<MouseEvent>(emits, {
   disabled: toRef(props, 'disabled'),
   preventDefault: true,
+  onClick: () => (visible.value = !visible.value),
 })
 </script>
 
 <template>
-  <div
-    tabindex="0"
-    class="win-dropdown"
-    :class="{
-      disabled,
-    }"
-    @click="handler('click', $event)"
-  >
-    <div class="win-dropdown-input">
-      {{ inputContent }}
-    </div>
-
-    <div class="win-dropdown-arrow">
-      
-    </div>
-
+  <div class="win-dropdown">
     <div
-      v-show="dropdownVisible"
-      class="win-dropdown-overlay"
+      tabindex="0"
+      class="win-dropdown-wrapper"
+      :class="{
+        disabled,
+      }"
+      @click="handler('click', $event)"
     >
-      <div
-        v-for="item in items"
-        :key="item.key"
-        class="win-dropdown-item"
-        :class="{
-          disabled,
-        }"
-      >
-        <slot name="default">
-          {{ item.title ?? item.value }}
-        </slot>
+      <div class="win-dropdown-input">
+        {{ inputContent }}
+      </div>
+
+      <div class="win-dropdown-arrow">
+        
       </div>
     </div>
+
+    <transition name="slide-y">
+      <ContextMenu v-show="visible" class="win-dropdown-contextmenu" />
+    </transition>
   </div>
 </template>
 
 <style lang="scss" scoped>
 .win-dropdown {
+  position: relative;
+}
+
+.win-dropdown-wrapper {
   border: 1px solid transparent;
   border-radius: 4px;
   height: 30px;
@@ -76,8 +70,8 @@ const { handler } = useConditionalltHandler(emits, {
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
-  position: relative;
   display: flex;
+  user-select: none;
 
   &:not(.disabled) {
     cursor: pointer;
@@ -106,21 +100,25 @@ const { handler } = useConditionalltHandler(emits, {
     color: rgba(0, 0, 0, 0.3614);
     border-color: rgba(0, 0, 0, 0.0578);
   }
+}
 
-  .win-dropdown-input {
-    width: 76px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    gap: 8px;
-  }
+.win-dropdown-input {
+  width: 76px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  gap: 8px;
+}
 
-  .win-dropdown-arrow {
-    font-family: 'Segoe-UI';
-  }
+.win-dropdown-arrow {
+  font-family: 'Segoe-UI';
+}
 
-  .win-dropdown-overlay {
-    position: absolute;
-  }
+.win-dropdown-contextmenu {
+  position: absolute;
+  left: -50%;
+  top: calc(100% + 9px);
+  width: 200%;
+  height: auto;
 }
 </style>

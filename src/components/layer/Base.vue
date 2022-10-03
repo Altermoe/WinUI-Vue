@@ -2,9 +2,11 @@
 withDefaults(defineProps<{
   border?: boolean
   active?: boolean
+  shadow?: boolean
 }>(), {
   active: false,
   border: true,
+  shadow: true,
 })
 </script>
 
@@ -25,7 +27,6 @@ withDefaults(defineProps<{
 .base {
   background: linear-gradient(0deg, rgba(243, 243, 243, 0.5), rgba(243, 243, 243, 0.5)), #F3F3F3;
   background-blend-mode: color, luminosity;
-  box-shadow: 0px 16px 32px rgba(0, 0, 0, 0.1876), 0px 2px 10.67px rgba(0, 0, 0, 0.1474);
   mix-blend-mode: multiply;
   transition-property: background, border, box-shadow;
   transition-duration: 187ms;
@@ -39,6 +40,10 @@ withDefaults(defineProps<{
   &.border {
     border: 1px solid rgba(117, 117, 117, 0.4);
     border-radius: 7px;
+  }
+
+  &.shadow {
+    box-shadow: 0px 16px 32px rgba(0, 0, 0, 0.1876), 0px 2px 10.67px rgba(0, 0, 0, 0.1474);
   }
 }
 </style>

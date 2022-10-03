@@ -12,10 +12,10 @@ const items: DropdownItem[] = [
 
 <template>
   <ThemeProvider>
-    <Base style="display: grid; place-items: center; width: 90%; height: 90%">
+    <div style="display: flex; flex-direction: column; align-items: center; padding-top: 1em ; width: 100%; height: 100%">
       <div style="display: flex; flex-direction: column; gap: 1em">
-        <Dropdown v-model="value" :items="items" disabled />
+        <Dropdown v-model="value" :items="items" />
       </div>
-    </Base>
+    </div>
   </ThemeProvider>
 </template>

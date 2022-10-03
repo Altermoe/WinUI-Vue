@@ -1,18 +1,20 @@
 import type { Ref } from 'vue'
 
-export interface EventHandlerHookOptions {
+export interface EventHandlerHookOptions<T extends Event = Event> {
   disabled?: Ref<boolean> | boolean
   preventDefault?: boolean
+  onClick?: (ev: T) => void
 }
 
-export const useConditionalltHandler = (emits: (...args: any[]) => any, options: EventHandlerHookOptions = {}) => {
-  const { disabled = false, preventDefault = false } = options
+export const useConditionalltHandler = <T extends Event>(emits: (...args: any[]) => any, options: EventHandlerHookOptions<T> = {}) => {
+  const { disabled = false, preventDefault = false, onClick } = options
 
   const handler = (e: string, ev: Event) => {
     if (unref(disabled)) {
       preventDefault && ev.preventDefault()
       return
     }
+    onClick?.(ev as T)
     emits(e, ev)
   }
 
