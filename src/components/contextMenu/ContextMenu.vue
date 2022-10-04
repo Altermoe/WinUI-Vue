@@ -1,9 +1,20 @@
 <script lang="ts" setup>
+const props = defineProps<{
+  visible: boolean
+}>()
 
+const emits = defineEmits<{
+  (e: 'update:visible', v: boolean): void
+}>()
+
+const internalVisible = computed({
+  get: () => props.visible,
+  set: v => emits('update:visible', v),
+})
 </script>
 
 <template>
-  <div class="win-contextmenu" v-bind="$attrs">
+  <div v-if="internalVisible" class="win-contextmenu" v-bind="$attrs">
     <div class="win-contextmenu-group">
       <div v-for="i in 2" :key="i" class="win-contextmenu-item">
         <div class="win-contextmenu-item-wrapper">
@@ -47,6 +58,8 @@
   padding: 3px;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 14px;
+  line-height: 20px;
 
   &:hover {
     .win-contextmenu-item-wrapper {

@@ -52,7 +52,7 @@ const { handler } = useConditionalltHandler<MouseEvent>(emits, {
     </div>
 
     <transition name="slide-y">
-      <ContextMenu v-show="visible" class="win-dropdown-contextmenu" />
+      <ContextMenu v-model:visible="visible" class="win-dropdown-contextmenu" />
     </transition>
   </div>
 </template>
