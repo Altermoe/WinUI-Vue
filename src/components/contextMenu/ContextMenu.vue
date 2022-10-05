@@ -1,31 +1,54 @@
 <script lang="ts" setup>
-const props = defineProps<{
+import { set } from 'lodash'
+import type { ContextMenuItem } from '.'
+
+const props = withDefaults(defineProps<{
+  items?: ContextMenuItem[]
   visible: boolean
-}>()
+}>(), {
+  items: () => [],
+})
 
 const emits = defineEmits<{
   (e: 'update:visible', v: boolean): void
+  (e: 'itemClick', v: any, ev: MouseEvent): void
 }>()
 
 const internalVisible = computed({
   get: () => props.visible,
   set: v => emits('update:visible', v),
 })
+
+const initItemMap = (items: ContextMenuItem[], itemMap: Record<ContextMenuItem['key'], any> = {}, parents: ContextMenuItem['key'][] = []) => {
+  items.forEach((item) => {
+    set(itemMap, [...parents, item.key], item)
+  })
+  return itemMap
+}
+
+const itemMap = computed(() => initItemMap(props.items))
+
+const test = (ev: MouseEvent) => {
+  const path = ev.composedPath()
+  const item = path.find((ele) => {
+    return (ele as HTMLElement).dataset?.contextkey
+  })
+  if (!item)
+    return
+  const key = (item as HTMLElement).dataset?.contextkey
+  if (!key)
+    return
+  internalVisible.value = false
+  emits('itemClick', itemMap.value[key], ev)
+}
 </script>
 
 <template>
-  <div v-if="internalVisible" class="win-contextmenu" v-bind="$attrs">
+  <div v-if="internalVisible" class="win-contextmenu" v-bind="$attrs" @click="test">
     <div class="win-contextmenu-group">
-      <div v-for="i in 2" :key="i" class="win-contextmenu-item">
+      <div v-for="item in items" :key="item.key" :data-contextkey="item.key" class="win-contextmenu-item">
         <div class="win-contextmenu-item-wrapper">
-          分组 1:{{ i }}
-        </div>
-      </div>
-    </div>
-    <div class="win-contextmenu-group">
-      <div v-for="i in 3" :key="i" class="win-contextmenu-item">
-        <div class="win-contextmenu-item-wrapper">
-          分组 2:{{ i }}
+          {{ item.title }}
         </div>
       </div>
     </div>

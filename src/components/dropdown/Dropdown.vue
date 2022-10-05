@@ -15,6 +15,7 @@ const props = withDefaults(defineProps<{
 
 const emits = defineEmits<{
   (e: 'click', ev: MouseEvent): void
+  (e: 'update:modelValue', v: any): void
 }>()
 
 const selectedItem = computed(() => props.items.find(item => item.value === props.modelValue))
@@ -30,6 +31,16 @@ const { handler } = useConditionalltHandler<MouseEvent>(emits, {
   preventDefault: true,
   onClick: () => (visible.value = !visible.value),
 })
+
+const internalItems = computed(() => props.items.map(({ title = '', key, value }) => ({
+  title,
+  key,
+  value,
+})))
+
+const handleItemClick = (item: DropdownItem) => {
+  emits('update:modelValue', item.value)
+}
 </script>
 
 <template>
@@ -52,7 +63,12 @@ const { handler } = useConditionalltHandler<MouseEvent>(emits, {
     </div>
 
     <transition name="slide-y">
-      <ContextMenu v-model:visible="visible" class="win-dropdown-contextmenu" />
+      <ContextMenu
+        v-model:visible="visible"
+        class="win-dropdown-contextmenu"
+        :items="internalItems"
+        @item-click="handleItemClick"
+      />
     </transition>
   </div>
 </template>
