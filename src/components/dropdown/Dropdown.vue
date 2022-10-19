@@ -71,7 +71,9 @@ const handleItemClick = (item: DropdownItem) => {
       >
         <template #default="{ item }">
           <slot :item="item">
-            {{ item.title }}
+            <div class="win-dropdown-item" :class="{ active: item.value === props.modelValue }">
+              {{ item.title }}
+            </div>
           </slot>
         </template>
       </ContextMenu>
@@ -142,5 +144,11 @@ const handleItemClick = (item: DropdownItem) => {
   top: calc(100% + 9px);
   width: 200%;
   height: auto;
+}
+
+.win-dropdown-item {
+  &.active {
+    color: var(--win-text-accent-primary);
+  }
 }
 </style>
