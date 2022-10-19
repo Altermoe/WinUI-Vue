@@ -68,7 +68,13 @@ const handleItemClick = (item: DropdownItem) => {
         class="win-dropdown-contextmenu"
         :items="internalItems"
         @item-click="handleItemClick"
-      />
+      >
+        <template #default="{ item }">
+          <slot :item="item">
+            {{ item.title }}
+          </slot>
+        </template>
+      </ContextMenu>
     </transition>
   </div>
 </template>

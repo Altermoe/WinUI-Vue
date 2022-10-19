@@ -48,7 +48,9 @@ const test = (ev: MouseEvent) => {
     <div class="win-contextmenu-group">
       <div v-for="item in items" :key="item.key" :data-contextkey="item.key" class="win-contextmenu-item">
         <div class="win-contextmenu-item-wrapper">
-          {{ item.title }}
+          <slot :item="item">
+            {{ item.title }}
+          </slot>
         </div>
       </div>
     </div>
