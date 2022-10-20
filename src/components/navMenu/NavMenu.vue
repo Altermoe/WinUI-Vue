@@ -5,7 +5,7 @@ const activeIndex = ref(-1)
 <template>
   <div class="win-navmenu" v-bind="$attrs">
     <div
-      v-for="i in 5" :key="i"
+      v-for="i in 2" :key="i"
       class="win-navmenu-item"
       :class="{
         active: activeIndex === i,
@@ -85,8 +85,8 @@ const activeIndex = ref(-1)
     pointer-events: none;
     position: absolute;
     left: -1px;
-    top: 25%;
-    height: 16px;
+    top: 9px;
+    bottom: 9px;
     width: 3px;
     border-radius: 3px;
     background: var(--item-marker);
