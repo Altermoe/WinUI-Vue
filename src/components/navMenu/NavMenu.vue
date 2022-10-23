@@ -1,24 +1,44 @@
 <script lang="ts" setup>
-const activeIndex = ref(-1)
+interface NavmenuItem {
+  title: string
+  value: string | number | symbol
+  disabled?: boolean
+}
+
+const props = defineProps<{
+  modelValue: NavmenuItem['value']
+  items: NavmenuItem[]
+}>()
+
+const emits = defineEmits<{
+  (e: 'update:modelValue', v: NavmenuItem['value']): void
+}>()
+
+const activeValue = computed({
+  get: () => props.modelValue,
+  set: (v) => {
+    emits('update:modelValue', v)
+  },
+})
 </script>
 
 <template>
   <div class="win-navmenu" v-bind="$attrs">
     <div
-      v-for="i in 2" :key="i"
+      v-for="item in items" :key="item.value"
       class="win-navmenu-item"
       :class="{
-        active: activeIndex === i,
-        disabled: i === 2,
+        active: item.value === activeValue,
+        disabled: item.disabled,
       }"
-      @click="activeIndex = i"
+      @click="activeValue = item.value"
     >
       <div class="win-navmenu-item-wrapper">
         <div class="icon">
           
         </div>
         <div class="content">
-          {{ i }}
+          {{ item.title }}
         </div>
       </div>
     </div>
