@@ -13,14 +13,22 @@ const props = defineProps<{
 
 const emits = defineEmits<{
   (e: 'update:modelValue', v: NavmenuItem['value']): void
+  (e: 'change', v: NavmenuItem['value']): void
+  (e: 'itemClick', v: NavmenuItem['value'], ev: MouseEvent): void
 }>()
 
 const activeValue = computed({
   get: () => props.modelValue,
   set: (v) => {
     emits('update:modelValue', v)
+    emits('change', v)
   },
 })
+
+const selectItem = (value: NavmenuItem['value'], ev: MouseEvent) => {
+  activeValue.value = value
+  emits('itemClick', value, ev)
+}
 </script>
 
 <template>
@@ -32,7 +40,7 @@ const activeValue = computed({
         active: item.value === activeValue,
         disabled: item.disabled,
       }"
-      @click="activeValue = item.value"
+      @click="(ev) => !item.disabled && selectItem(item.value, ev)"
     >
       <div class="win-navmenu-item-wrapper">
         <div v-if="icon" class="icon">
@@ -102,7 +110,7 @@ const activeValue = computed({
   border: 1px solid var(--item-border-color);
   background: var(--item-bg);
   box-sizing: border-box;
-  font-size: 16px;
+  font-size: 14px;
 
   &::before {
     content: '';
