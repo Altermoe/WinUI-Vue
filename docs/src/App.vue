@@ -13,9 +13,17 @@ const item = ref('shanghai')
 
 <template>
   <ThemeProvider>
-    <div style="display: flex; flex-direction: column; align-items: center; padding-top: 1em ; width: 100%; height: 100%">
-      <div style="display: flex; flex-direction: column; gap: 1em">
-        <NavMenu v-model="item" :items="items" />
+    <div class="h-full flex flex-col">
+      <div class="flex">
+        Header
+      </div>
+      <div class="flex-1 flex">
+        <div class="flex">
+          <NavMenu v-model="item" :items="items" />
+        </div>
+        <div class="flex-1">
+          content
+        </div>
       </div>
     </div>
   </ThemeProvider>

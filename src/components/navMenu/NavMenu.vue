@@ -8,6 +8,7 @@ interface NavmenuItem {
 const props = defineProps<{
   modelValue: NavmenuItem['value']
   items: NavmenuItem[]
+  icon?: boolean
 }>()
 
 const emits = defineEmits<{
@@ -34,7 +35,7 @@ const activeValue = computed({
       @click="activeValue = item.value"
     >
       <div class="win-navmenu-item-wrapper">
-        <div class="icon">
+        <div v-if="icon" class="icon">
           
         </div>
         <div class="content">
@@ -53,8 +54,10 @@ const activeValue = computed({
   --item-cursor: pointer;
   --item-marker: transparent;
 
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  background: #EFF4F9;
 }
 
 .win-navmenu-item {
@@ -92,6 +95,7 @@ const activeValue = computed({
   height: 36px;
   line-height: 16px;
   display: flex;
+  gap: 1em;
   align-items: center;
   padding: 9px 11px;
   border-radius: 4px;
@@ -118,7 +122,6 @@ const activeValue = computed({
     font-weight: bold;
   }
   .content {
-    padding-left: 1em;
     height: 20px;
     line-height: 20px;
   }
