@@ -1,14 +1,15 @@
 <script lang="ts" setup>
 import { NavMenu } from '@/components'
 
-const items = [
-  { title: '北京', value: 'beijing' },
-  { title: '上海', value: 'shanghai' },
-  { title: '广州', value: 'guangzhou' },
-  { title: '深圳', value: 'shenzhen' },
-]
+const router = useRouter()
+const routes = computed(() => router.getRoutes().find(route => route.path === '/')?.children ?? [])
 
-const item = ref('shanghai')
+const items = computed(() => routes.value.map(route => ({
+  title: route.meta?.title ?? '',
+  value: route.path,
+})))
+
+const item = ref(items.value[0].value)
 </script>
 
 <template>

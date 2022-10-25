@@ -9,6 +9,9 @@ export const routes: RouteRecordRaw[] = [
       {
         path: '/button',
         name: 'Button',
+        meta: {
+          title: '按钮',
+        },
         component: () => import('../pages/PageButton.vue'),
       },
     ],
