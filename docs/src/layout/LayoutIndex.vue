@@ -9,7 +9,10 @@ const items = computed(() => routes.value.map(route => ({
   value: route.path,
 })))
 
-const item = ref(items.value[0].value)
+const item = computed({
+  get: () => items.value[0].value,
+  set: path => router.push(path),
+})
 </script>
 
 <template>
