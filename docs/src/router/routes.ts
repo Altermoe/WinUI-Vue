@@ -4,6 +4,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'Home',
+    redirect: '/button',
     component: () => import('../layout/LayoutIndex.vue'),
     children: [
       {
