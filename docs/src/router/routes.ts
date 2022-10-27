@@ -15,6 +15,14 @@ export const routes: RouteRecordRaw[] = [
         },
         component: () => import('../pages/PageButton.vue'),
       },
+      {
+        path: '/dropdown',
+        name: 'Dropdown',
+        meta: {
+          title: '下拉菜单',
+        },
+        component: () => import('../pages/PageDropdown.vue'),
+      },
     ],
   },
 ]

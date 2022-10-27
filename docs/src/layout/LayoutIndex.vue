@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { NavMenu } from '@/components'
 
+const route = useRoute()
 const router = useRouter()
 const routes = computed(() => router.getRoutes().find(route => route.path === '/')?.children ?? [])
 
@@ -10,7 +11,7 @@ const items = computed(() => routes.value.map(route => ({
 })))
 
 const item = computed({
-  get: () => items.value[0].value,
+  get: () => route.path,
   set: path => router.push(path),
 })
 </script>
@@ -22,7 +23,7 @@ const item = computed({
     </div>
     <div class="flex-1 flex">
       <div class="flex">
-        <NavMenu v-model="item" class="w-20" :items="items" />
+        <NavMenu v-model="item" class="" :items="items" />
       </div>
       <div class="flex-1">
         <router-view />
