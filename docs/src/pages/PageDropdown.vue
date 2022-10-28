@@ -18,5 +18,9 @@ const modelValue = ref('shanghai')
       <div>普通</div>
       <Dropdown v-model="modelValue" :items="items" />
     </div>
+    <div class="flex gap-4 p-4">
+      <div>禁用</div>
+      <Dropdown v-model="modelValue" :items="items" disabled />
+    </div>
   </div>
 </template>
