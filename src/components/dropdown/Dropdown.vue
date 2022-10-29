@@ -144,6 +144,7 @@ const handleItemClick = (item: DropdownItem) => {
   top: calc(100% + 9px);
   width: 200%;
   height: auto;
+  z-index: 1;
 }
 
 .win-dropdown-item {
