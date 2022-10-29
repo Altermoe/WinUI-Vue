@@ -14,6 +14,7 @@ withDefaults(defineProps<{
   <div
     class="base"
     :class="{
+      shadow,
       border,
       active,
     }"

@@ -56,6 +56,7 @@ const selectItem = (value: NavmenuItem['value'], ev: MouseEvent) => {
 
 <style lang="scss" scoped>
 .win-navmenu {
+  --menu-bg: transparent;
   --item-border-color: transparent;
   --item-bg: transparent;
   --item-color: rgba(0, 0, 0, 0.9);
@@ -65,7 +66,7 @@ const selectItem = (value: NavmenuItem['value'], ev: MouseEvent) => {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  background: #EFF4F9;
+  background: var(--menu-bg);
 }
 
 .win-navmenu-item {

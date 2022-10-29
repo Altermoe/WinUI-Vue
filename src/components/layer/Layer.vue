@@ -1,13 +1,32 @@
 <script lang="ts" setup>
-withDefaults(defineProps<{
-  rounded?: boolean
-}>(), {
-  rounded: true,
-})
+defineProps<{
+  rtl?: boolean
+  rtr?: boolean
+  rbl?: boolean
+  rbr?: boolean
+  bt?: boolean
+  br?: boolean
+  bb?: boolean
+  bl?: boolean
+  border?: boolean
+}>()
 </script>
 
 <template>
-  <div class="layer" :class="{ rounded }" v-bind="$attrs">
+  <div
+    v-bind="$attrs"
+    class="layer"
+    :class="{
+      'r-tl': rtl,
+      'r-tr': rtr,
+      'r-bl': rbl,
+      'r-br': rbr,
+      'bt': bt,
+      'br': br,
+      'bb': bb,
+      'bl': bl,
+    }"
+  >
     <slot />
   </div>
 </template>
@@ -15,11 +34,37 @@ withDefaults(defineProps<{
 <style lang="scss" scoped>
 // TODO: 这个组件与 Base 似乎有点定位重复
 .layer {
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(0, 0, 0, 0.0578);
+  --border-radius: 8px;
+  --border-color: rgba(0, 0, 0, 0.0578);
+  --border-width: 1px;
 
-  &.rounded {
-    border-radius: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  border-style: solid;
+
+  &.bt {
+    border-top-width: var(--border-width);
+  }
+  &.br {
+    border-right-width: var(--border-width);
+  }
+  &.bb {
+    border-bottom-width: var(--border-width);
+  }
+  &.bl {
+    border-left-width: var(--border-width);
+  }
+
+  &.r-tl {
+    border-top-left-radius: var(--border-radius);
+  }
+  &.r-tr {
+    border-top-right-radius: var(--border-radius);
+  }
+  &.r-bl {
+    border-bottom-left-radius: var(--border-radius);
+  }
+  &.r-br {
+    border-bottom-right-radius: var(--border-radius);
   }
 }
 </style>
