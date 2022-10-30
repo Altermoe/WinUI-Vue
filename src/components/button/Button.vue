@@ -192,7 +192,7 @@ const { handler } = useConditionalltHandler(emits, {
     }
   }
 
-  &.caution {
+  &.caution:not(.disabled) {
     &:not(.plain) {
       background-color: rgba(157, 93, 0, 1);
     }
