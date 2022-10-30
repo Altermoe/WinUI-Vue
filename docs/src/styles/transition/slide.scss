@@ -1,0 +1,17 @@
+.slide-y {
+  &-enter-active, &-leave-active {
+    transition-duration: 100ms;
+    transition-property: transform, opacity;
+    transition-timing-function: ease-out;
+  }
+
+  &-enter-from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  &-leave-to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
