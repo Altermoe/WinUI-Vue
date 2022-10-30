@@ -3,17 +3,20 @@ withDefaults(defineProps<{
   border?: boolean
   active?: boolean
   shadow?: boolean
+  type?: string
 }>(), {
   active: false,
   border: true,
   shadow: true,
+  type: '',
 })
 </script>
 
 <template>
   <div
-    class="base"
+    class="win-layer"
     :class="{
+      [type]: true,
       shadow,
       border,
       active,
@@ -25,11 +28,12 @@ withDefaults(defineProps<{
 </template>
 
 <style lang="scss" scoped>
-.base {
-  background: linear-gradient(0deg, rgba(243, 243, 243, 0.5), rgba(243, 243, 243, 0.5)), #F3F3F3;
-  background-blend-mode: color, luminosity;
-  mix-blend-mode: multiply;
-  transition-property: background, border, box-shadow;
+.win-layer {
+  background: var(--win-bg-solid-base);
+  // backdrop-filter: blur(10px);
+  // background-blend-mode: color;
+  // mix-blend-mode: multiply;
+  transition-property: border, box-shadow;
   transition-duration: 187ms;
   transition-timing-function: cubic-bezier(0, 0, 0, 1);
 
