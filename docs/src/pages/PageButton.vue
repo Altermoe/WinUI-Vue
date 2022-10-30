@@ -1,38 +1,58 @@
 <script lang="ts" setup>
-import { Button } from '@/components'
+import { Button, Card } from '@/components'
 </script>
 
 <template>
-  <div class="h-full overflow-auto flex flex-col">
-    <div class="flex gap-4 p-4">
-      <div>普通</div>
-      <Button type="standard">
-        按钮
-      </Button>
-      <Button type="accent">
-        按钮
-      </Button>
-      <Button type="text">
-        按钮
-      </Button>
-    </div>
-    <div class="flex gap-4 p-4">
-      <div>文字</div>
-      <Button type="text">
-        按钮
-      </Button>
-    </div>
-    <div class="flex gap-4 p-4">
-      <div>禁用</div>
-      <Button type="standard" disabled>
-        按钮
-      </Button>
-      <Button type="accent" disabled>
-        按钮
-      </Button>
-      <Button type="text" disabled>
-        按钮
-      </Button>
-    </div>
+  <div class="h-full overflow-auto flex flex-col gap-2 p-4">
+    <Card title="基础">
+      <div class="flex flex-wrap gap-2">
+        <Button type="standard">
+          Standard
+        </Button>
+        <Button type="accent">
+          Accent
+        </Button>
+        <Button type="critical">
+          Critical
+        </Button>
+        <Button type="success">
+          Success
+        </Button>
+        <Button type="caution">
+          Caution
+        </Button>
+      </div>
+    </Card>
+
+    <Card title="禁用">
+      <div class="flex flex-wrap gap-2">
+        <Button type="standard" disabled>
+          Standard
+        </Button>
+        <Button type="accent" disabled>
+          Accent
+        </Button>
+        <Button type="critical" disabled>
+          Critical
+        </Button>
+        <Button type="success" disabled>
+          Success
+        </Button>
+        <Button type="caution" disabled>
+          Caution
+        </Button>
+      </div>
+    </Card>
+
+    <Card title="文字按钮">
+      <div class="flex flex-wrap gap-2">
+        <Button type="text">
+          Text
+        </Button>
+        <Button type="text" disabled>
+          Text
+        </Button>
+      </div>
+    </Card>
   </div>
 </template>
