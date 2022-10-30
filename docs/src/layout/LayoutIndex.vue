@@ -40,11 +40,11 @@ const visible = refAutoReset(true, 1000)
 
             <div class="flex-1 flex overflow-hidden">
               <div class="h-full p-3 overflow-hidden">
-                <NavMenu v-model="item" :items="items">
+                <NavMenu v-model="item" class="h-full" :items="items">
                   <template #title="{ item: navItem }">
                     <div class="flex items-center gap-2">
                       <span class="align-middle">{{ navItem.title }}</span>
-                      <span class="align-middle text-gray-500 text-xs">{{ navItem.name }}</span>
+                      <span class="align-middle text-gray-500 text-xs hidden sm:inline-block">{{ navItem.name }}</span>
                     </div>
                   </template>
                 </NavMenu>
