@@ -8,7 +8,9 @@
     "url": "https://github.com/Altermoe/WinUI-Vue"
   },
   "scripts": {
-    "dev": "pnpm -C docs run dev"
+    "dev": "pnpm -C docs run dev",
+    "build:doc": "pnpm -C docs run build",
+    "preview": "pnpm -C docs run preview"
   },
   "exports": {
     ".": {}
