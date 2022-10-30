@@ -1,0 +1,19 @@
+.app-fade {
+  &-enter-active, &-leave-active {
+    transition-duration: 187ms;
+    transition-property: transform, opacity;
+  }
+
+  &-leave-active {
+    transition-timing-function: cubic-bezier(1, 0, 1, 1);
+  }
+
+  &-enter-active {
+    transition-timing-function: cubic-bezier(0, 0, 0, 1);
+  }
+
+  &-enter-from, &-leave-to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
