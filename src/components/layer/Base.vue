@@ -33,9 +33,9 @@ withDefaults(defineProps<{
   // backdrop-filter: blur(10px);
   // background-blend-mode: color;
   // mix-blend-mode: multiply;
-  transition-property: border, box-shadow;
-  transition-duration: 187ms;
-  transition-timing-function: cubic-bezier(0, 0, 0, 1);
+  // transition-property: border, box-shadow;
+  // transition-duration: 187ms;
+  // transition-timing-function: cubic-bezier(0, 0, 0, 1);
 
   &.active {
     box-shadow: 0px 32px 64px rgba(0, 0, 0, 0.28), 0px 2px 21px rgba(0, 0, 0, 0.22);

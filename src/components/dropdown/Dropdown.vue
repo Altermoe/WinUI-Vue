@@ -6,10 +6,12 @@ import { useConditionalltHandler } from '@/hooks'
 const props = withDefaults(defineProps<{
   items?: DropdownItem[]
   disabled?: boolean
+  outline?: boolean
   modelValue?: any
 }>(), {
   items: () => [],
   disabled: false,
+  outline: false,
   modelValue: '',
 })
 
@@ -84,6 +86,7 @@ const handleItemClick = (item: DropdownItem) => {
 <style lang="scss" scoped>
 .win-dropdown {
   position: relative;
+  width: fit-content;
 }
 
 .win-dropdown-wrapper {
@@ -113,7 +116,7 @@ const handleItemClick = (item: DropdownItem) => {
       background: rgba(249, 249, 249, 0.3);
     }
 
-    &:focus {
+    &.outline:focus {
       outline: 2px solid #000;
       outline-offset: 1px;
     }
@@ -140,9 +143,9 @@ const handleItemClick = (item: DropdownItem) => {
 
 .win-dropdown-contextmenu {
   position: absolute;
-  left: -50%;
+  left: 0%;
   top: calc(100% + 9px);
-  width: 200%;
+  width: 100%;
   height: auto;
   z-index: 1;
 }

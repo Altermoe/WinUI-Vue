@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-interface NavmenuItem {
+interface NavmenuItem extends Record<string, any> {
   title: string
   value: string | number | symbol
   disabled?: boolean
@@ -34,12 +34,13 @@ const selectItem = (value: NavmenuItem['value'], ev: MouseEvent) => {
 <template>
   <div class="win-navmenu" v-bind="$attrs">
     <div
-      v-for="item in items" :key="item.value"
-      class="win-navmenu-item"
+      v-for="item in items"
+      :key="item.value"
       :class="{
         active: item.value === activeValue,
         disabled: item.disabled,
       }"
+      class="win-navmenu-item"
       @click="(ev) => !item.disabled && selectItem(item.value, ev)"
     >
       <div class="win-navmenu-item-wrapper">
@@ -47,7 +48,9 @@ const selectItem = (value: NavmenuItem['value'], ev: MouseEvent) => {
           
         </div>
         <div class="content">
-          {{ item.title }}
+          <slot name="title" :item="item">
+            {{ item.title }}
+          </slot>
         </div>
       </div>
     </div>
@@ -67,6 +70,7 @@ const selectItem = (value: NavmenuItem['value'], ev: MouseEvent) => {
   display: flex;
   flex-direction: column;
   background: var(--menu-bg);
+  overflow: auto;
 }
 
 .win-navmenu-item {
