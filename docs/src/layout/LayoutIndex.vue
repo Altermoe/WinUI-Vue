@@ -7,6 +7,7 @@ const routes = computed(() => router.getRoutes().find(route => route.path === '/
 
 const items = computed(() => routes.value.map(route => ({
   title: route.meta?.title ?? '',
+  name: route.name,
   value: route.path,
 })))
 
@@ -17,20 +18,45 @@ const item = computed({
 </script>
 
 <template>
-  <Base class="absolute top-6 bottom-6 left-6 right-6 overflow-hidden" shadow>
+  <Base class="absolute top-6 bottom-6 left-6 right-6" shadow>
     <div class="h-full flex flex-col">
-      <div class="flex h-12">
-        <div class="title h-12 py-2 px-4">
-          WinUI
+      <div class="h-12">
+        <div class="flex justify-between h-8 leading-8">
+          <div class="px-2">
+            WinUI
+          </div>
+          <div>关闭</div>
         </div>
       </div>
-      <div class="flex-1 flex">
-        <div class="flex">
-          <NavMenu v-model="item" class="" :items="items" />
+
+      <div class="flex-1 flex overflow-hidden">
+        <div class="h-full p-3 overflow-hidden">
+          <NavMenu v-model="item" :items="items">
+            <template #title="{ item: navItem }">
+              <div class="flex items-center gap-2">
+                <span class="align-middle">{{ navItem.title }}</span>
+                <span class="align-middle text-gray-500 text-xs">{{ navItem.name }}</span>
+              </div>
+            </template>
+          </NavMenu>
         </div>
-        <Layer class="flex-1" rtl bt bl>
-          <router-view />
-        </Layer>
+
+        <div class="flex-1 flex flex-col">
+          <div class="text-2xl p-4">
+            {{ route.meta.title }} {{ route.name }}
+          </div>
+          <div class="flex-1 overflow-hidden">
+            <router-view>
+              <template #default="{ Component, route: componentRoute }">
+                <transition name="app-slide-y" mode="out-in" appear>
+                  <keep-alive>
+                    <component :is="Component" :key="componentRoute.fullPath" />
+                  </keep-alive>
+                </transition>
+              </template>
+            </router-view>
+          </div>
+        </div>
       </div>
     </div>
   </Base>

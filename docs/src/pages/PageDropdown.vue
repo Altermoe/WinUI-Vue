@@ -1,6 +1,7 @@
 <script lang="ts" setup>
+import { AppPage } from '../components'
 import type { DropdownItem } from '@/components'
-import { Dropdown } from '@/components'
+import { Card, Dropdown } from '@/components'
 
 const items: DropdownItem[] = [
   { title: '北京', value: 'beijing', key: 'beijing' },
@@ -13,14 +14,13 @@ const modelValue = ref('shanghai')
 </script>
 
 <template>
-  <div class="h-full overflow-auto flex flex-col">
-    <div class="flex gap-4 p-4">
-      <div>普通</div>
+  <AppPage>
+    <Card title="基础用法">
       <Dropdown v-model="modelValue" :items="items" />
-    </div>
-    <div class="flex gap-4 p-4">
-      <div>禁用</div>
+    </Card>
+
+    <Card title="禁用">
       <Dropdown v-model="modelValue" :items="items" disabled />
-    </div>
-  </div>
+    </Card>
+  </AppPage>
 </template>

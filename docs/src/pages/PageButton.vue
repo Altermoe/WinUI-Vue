@@ -1,9 +1,10 @@
 <script lang="ts" setup>
+import { AppPage } from '../components'
 import { Button, Card } from '@/components'
 </script>
 
 <template>
-  <div class="h-full overflow-auto flex flex-col gap-2 p-4">
+  <AppPage>
     <Card title="基础">
       <div class="flex flex-wrap gap-2">
         <Button type="standard">
@@ -54,5 +55,5 @@ import { Button, Card } from '@/components'
         </Button>
       </div>
     </Card>
-  </div>
+  </AppPage>
 </template>
