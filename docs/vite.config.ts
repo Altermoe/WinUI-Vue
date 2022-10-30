@@ -1,9 +1,20 @@
 import { resolve } from 'path'
+import type { CommonServerOptions } from 'vite'
 import { defineConfig } from 'vite'
 import Vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 
 export default defineConfig(() => {
+  const commonServerOptions: CommonServerOptions = {
+    host: '0.0.0.0',
+    port: 60755,
+    cors: true,
+    headers: {
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
+  }
+
   return {
     resolve: {
       alias: [
@@ -15,13 +26,11 @@ export default defineConfig(() => {
     },
 
     server: {
-      host: '0.0.0.0',
-      port: 60755,
+      ...commonServerOptions,
     },
 
     preview: {
-      host: '0.0.0.0',
-      port: 60755,
+      ...commonServerOptions,
     },
 
     plugins: [
