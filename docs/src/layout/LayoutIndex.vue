@@ -23,7 +23,7 @@ const visible = refAutoReset(true, 1000)
   <div class="w-full h-full p-6 bg-transparent">
     <Transition name="app-fade" mode="out-in" appear>
       <KeepAlive>
-        <Base v-if="visible" class="h-full" shadow>
+        <Base v-if="visible" class="h-full overflow-hidden" shadow>
           <div class="h-full flex flex-col">
             <div class="h-12">
               <div class="flex justify-between h-8 leading-8">
@@ -31,15 +31,9 @@ const visible = refAutoReset(true, 1000)
                   WinUI
                 </div>
                 <div class="flex">
-                  <Button type="text" disabled>
-                    最小化
-                  </Button>
-                  <Button type="text" disabled>
-                    最大化
-                  </Button>
-                  <Button type="text" @click="visible = false">
-                    关闭
-                  </Button>
+                  <Button icon="" :rounded="false" plain type="text" />
+                  <Button icon="" :rounded="false" plain type="text" />
+                  <Button icon="" :rounded="false" plain type="critical" @click="visible = false" />
                 </div>
               </div>
             </div>
