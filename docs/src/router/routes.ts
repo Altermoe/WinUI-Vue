@@ -16,6 +16,14 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('../pages/PageButton.vue'),
       },
       {
+        path: '/text-box',
+        name: 'TextBox',
+        meta: {
+          title: '文本输入',
+        },
+        component: () => import('../pages/PageTextBox.vue'),
+      },
+      {
         path: '/dropdown',
         name: 'Dropdown',
         meta: {
