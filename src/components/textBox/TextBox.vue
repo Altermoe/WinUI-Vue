@@ -34,7 +34,7 @@ const { focused } = useFocus(inputRef)
   font-size: 14px;
   position: relative;
   transition-property: background-color;
-  transition-duration: 177ms;
+  transition-duration: 187ms;
   transition-timing-function: ease;
 
   &:not(.disabled) {
@@ -60,14 +60,13 @@ const { focused } = useFocus(inputRef)
         border-bottom-left-radius: 4px;
         border-bottom-right-radius: 4px;
         animation: expand-center forwards;
-        animation-duration: 177ms;
+        animation-duration: 187ms;
       }
     }
   }
 
   .win-textbox__input {
     background-color: transparent;
-    border-radius: 4px;
     outline: none;
   }
 }
