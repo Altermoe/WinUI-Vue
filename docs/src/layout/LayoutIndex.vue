@@ -17,13 +17,15 @@ const item = computed({
 })
 
 const visible = refAutoReset(true, 1000)
+
+const isFullScreen = ref(false)
 </script>
 
 <template>
-  <div class="w-full h-full p-6 bg-transparent">
+  <div class="window w-full h-full bg-transparent transition-all" :class="{ 'p-6': !isFullScreen }">
     <Transition name="app-fade" mode="out-in" appear>
       <KeepAlive>
-        <Base v-if="visible" class="h-full overflow-hidden" shadow>
+        <Base v-if="visible" class="h-full overflow-hidden" :shadow="!isFullScreen" :bordered="!isFullScreen" :rounded="!isFullScreen">
           <div class="h-full flex flex-col">
             <div class="h-12">
               <div class="flex justify-between h-8 leading-8">
@@ -32,7 +34,7 @@ const visible = refAutoReset(true, 1000)
                 </div>
                 <div class="flex">
                   <Button icon="" :rounded="false" plain type="text" />
-                  <Button icon="" :rounded="false" plain type="text" />
+                  <Button :icon="isFullScreen ? '' : ''" :rounded="false" plain type="text" @click="isFullScreen = !isFullScreen" />
                   <Button icon="" :rounded="false" plain type="critical" @click="visible = false" />
                 </div>
               </div>
@@ -73,3 +75,9 @@ const visible = refAutoReset(true, 1000)
     </Transition>
   </div>
 </template>
+
+<style lang="scss" scoped>
+.window {
+  transition: all 187ms ease;
+}
+</style>

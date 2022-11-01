@@ -1,14 +1,16 @@
 <script lang="ts" setup>
 withDefaults(defineProps<{
-  border?: boolean
+  bordered?: boolean
   active?: boolean
   shadow?: boolean
   type?: string
+  rounded?: boolean
 }>(), {
   active: false,
   border: true,
   shadow: true,
   type: '',
+  rounded: true,
 })
 </script>
 
@@ -18,8 +20,9 @@ withDefaults(defineProps<{
     :class="{
       [type]: true,
       shadow,
-      border,
+      bordered,
       active,
+      rounded,
     }"
     v-bind="$attrs"
   >
@@ -42,13 +45,16 @@ withDefaults(defineProps<{
     filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
   }
 
-  &.border {
+  &.bordered {
     border: 1px solid rgba(117, 117, 117, 0.4);
-    border-radius: 7px;
   }
 
   &.shadow {
     box-shadow: 0px 16px 32px rgba(0, 0, 0, 0.1876), 0px 2px 10.67px rgba(0, 0, 0, 0.1474);
+  }
+
+  &.rounded {
+    border-radius: 7px;
   }
 }
 </style>
