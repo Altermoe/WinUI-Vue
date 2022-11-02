@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 defineProps<{
   modelValue?: string
+  disabled?: boolean
 }>()
 
 defineEmits<{
@@ -12,7 +13,14 @@ const { focused } = useFocus(inputRef)
 </script>
 
 <template>
-  <div class="win-textbox" :class="{ focused }" tabindex="0">
+  <div
+    class="win-textbox"
+    tabindex="0"
+    :class="{
+      focused,
+      disabled,
+    }"
+  >
     <input ref="inputRef" class="win-textbox__input">
   </div>
 </template>
