@@ -65,6 +65,7 @@ const selectItem = (value: NavmenuItem['value'], ev: MouseEvent) => {
   --item-color: rgba(0, 0, 0, 0.9);
   --item-cursor: pointer;
   --item-marker: transparent;
+  --item-margin: 13px;
 
   box-sizing: border-box;
   display: flex;
@@ -94,10 +95,12 @@ const selectItem = (value: NavmenuItem['value'], ev: MouseEvent) => {
     &:active {
       --item-bg: rgba(0, 0, 0, 0.0241);
       --item-color: rgba(0, 0, 0, 0.61);
+      --item-marker: rgba(0, 95, 184, 1);
     }
     &.active {
       --item-bg: rgba(0, 0, 0, 0.0373);
       --item-marker: rgba(0, 95, 184, 1);
+      --item-margin: 9px;
     }
   }
 }
@@ -122,10 +125,11 @@ const selectItem = (value: NavmenuItem['value'], ev: MouseEvent) => {
     pointer-events: none;
     position: absolute;
     left: -1px;
-    top: 9px;
-    bottom: 9px;
+    top: var(--item-margin);
+    bottom: var(--item-margin);
     width: 3px;
     border-radius: 3px;
+    transition: all 176ms ease;
     background: var(--item-marker);
   }
 
