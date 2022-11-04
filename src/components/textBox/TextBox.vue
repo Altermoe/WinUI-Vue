@@ -1,15 +1,38 @@
 <script lang="ts" setup>
-defineProps<{
+const props = withDefaults(defineProps<{
   modelValue?: string
   disabled?: boolean
+}>(), {
+  modelValue: undefined,
+  disabled: false,
+})
+
+const emits = defineEmits<{
+  (e: 'update:modelValue', v: string): void
+  (e: 'change', v: string): void
 }>()
 
-defineEmits<{
-  (e: 'update:modelValue', v: string): void
-}>()
+/** 当外部没有传入绑定值时使用内部状态管理 */
+const internalValue = ref('')
+
+const inputValue = computed({
+  get: () => props.modelValue === undefined ? internalValue.value : props.modelValue,
+  set: (v) => {
+    if (props.modelValue === undefined) {
+      internalValue.value = v
+      emits('change', v)
+      return
+    }
+    emits('update:modelValue', v)
+  },
+})
 
 const inputRef = ref<HTMLElement | null>(null)
 const { focused } = useFocus(inputRef)
+
+const handleInput = (ev: Event) => {
+  inputValue.value = (ev.target as HTMLInputElement).value
+}
 </script>
 
 <template>
@@ -20,8 +43,9 @@ const { focused } = useFocus(inputRef)
       focused,
       disabled,
     }"
+    @click="focused = true"
   >
-    <input ref="inputRef" class="win-textbox__input">
+    <input ref="inputRef" class="win-textbox__input" @input="handleInput">
   </div>
 </template>
 
@@ -47,7 +71,8 @@ const { focused } = useFocus(inputRef)
 
   &:not(.disabled) {
     border-color: rgba(0, 0, 0, 0.06);
-    border-bottom-color: rgba(0, 0, 0, 0.45);
+    border-bottom-color: rgba(0, 0, 0, 0.16);
+    cursor: text;
 
     &:hover {
       background-color: #F9F9F9;
@@ -55,7 +80,7 @@ const { focused } = useFocus(inputRef)
 
     &.focused {
       background-color: initial;
-    border-color: rgba(0, 0, 0, 0.2);
+      border-color: rgba(0, 0, 0, 0.2);
 
       &::after {
         content: '';
@@ -73,9 +98,14 @@ const { focused } = useFocus(inputRef)
     }
   }
 
-  .win-textbox__input {
-    background-color: transparent;
-    outline: none;
+  .disabled {
+    cursor: not-allowed;
   }
+}
+
+.win-textbox__input {
+  width: 100%;
+  background-color: transparent;
+  outline: none;
 }
 </style>

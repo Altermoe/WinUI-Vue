@@ -141,6 +141,9 @@ const selectItem = (value: NavmenuItem['value'], ev: MouseEvent) => {
   .content {
     height: 20px;
     line-height: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 </style>

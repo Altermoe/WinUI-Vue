@@ -41,7 +41,7 @@ const isFullScreen = ref(false)
             </div>
 
             <div class="flex-1 flex overflow-hidden">
-              <div class="h-full p-3 overflow-hidden">
+              <div class="h-full p-2 overflow-hidden">
                 <NavMenu v-model="item" class="h-full" :items="items">
                   <template #title="{ item: navItem }">
                     <div class="flex items-center gap-2">
@@ -52,7 +52,7 @@ const isFullScreen = ref(false)
                 </NavMenu>
               </div>
 
-              <div class="flex-1 flex flex-col">
+              <div class="flex-1 flex flex-col overflow-hidden">
                 <div class="text-2xl p-4">
                   {{ route.meta.title }} {{ route.name }}
                 </div>

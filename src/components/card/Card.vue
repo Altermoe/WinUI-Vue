@@ -12,7 +12,7 @@ const ctx = getCurrentInstance()
 </script>
 
 <template>
-  <div class="win-card" :class="{ bordered }">
+  <div class="win-card" v-bind="$attrs" :class="{ bordered }">
     <div v-if="title" class="win-card-title">
       <slot name="title">
         {{ title }}
