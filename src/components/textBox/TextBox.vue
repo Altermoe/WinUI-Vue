@@ -27,7 +27,7 @@ const inputValue = computed({
   },
 })
 
-const inputRef = ref<HTMLElement | null>(null)
+const inputRef = ref<HTMLInputElement | null>(null)
 const { focused } = useFocus(inputRef)
 
 const handleInput = (ev: Event) => {
@@ -38,14 +38,13 @@ const handleInput = (ev: Event) => {
 <template>
   <div
     class="win-textbox"
-    tabindex="0"
     :class="{
       focused,
       disabled,
     }"
     @click="focused = true"
   >
-    <input ref="inputRef" class="win-textbox__input" @input="handleInput">
+    <input ref="inputRef" class="win-textbox__input" :value="inputValue" :disabled="disabled" @input="handleInput">
   </div>
 </template>
 
@@ -60,27 +59,36 @@ const handleInput = (ev: Event) => {
 }
 
 .win-textbox {
+  --border-color: rgba(0, 0, 0, 0.06) rgba(0, 0, 0, 0.06) rgba(0, 0, 0, 0.16);
+  --bg-color: initial;
+  --text-color: #000;
+  --input-points: all;
+  --cursor: normal;
+
   padding: 4px 11px;
-  border: 1px solid transparent;
+  border: 1px solid;
+  border-color: var(--border-color);
   border-radius: 4px;
   font-size: 14px;
   position: relative;
   transition-property: background-color;
   transition-duration: 187ms;
   transition-timing-function: ease;
+  background-color: var(--bg-color);
+  cursor: var(--cursor);
+  color: var(--text-color);
+  font-size: 14px;
 
   &:not(.disabled) {
-    border-color: rgba(0, 0, 0, 0.06);
-    border-bottom-color: rgba(0, 0, 0, 0.16);
-    cursor: text;
+    --cursor: text;
 
     &:hover {
-      background-color: #F9F9F9;
+      --bg-color: #F9F9F9;
     }
 
     &.focused {
-      background-color: initial;
-      border-color: rgba(0, 0, 0, 0.2);
+      --bg-color: initial;
+      --border-color: rgba(0, 0, 0, 0.2);
 
       &::after {
         content: '';
@@ -98,8 +106,12 @@ const handleInput = (ev: Event) => {
     }
   }
 
-  .disabled {
-    cursor: not-allowed;
+  &.disabled {
+    --cursor: not-allowed;
+    --border-color: rgba(0, 0, 0, 0.06);
+    --bg-color: rgba(249, 249, 249, 0.3);
+    --input-points: none;
+    --text-color: rgba(0, 0, 0, 0.3614);
   }
 }
 
@@ -107,5 +119,6 @@ const handleInput = (ev: Event) => {
   width: 100%;
   background-color: transparent;
   outline: none;
+  pointer-events: var(--input-points);
 }
 </style>
