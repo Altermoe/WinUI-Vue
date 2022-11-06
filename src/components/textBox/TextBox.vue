@@ -2,6 +2,7 @@
 const props = withDefaults(defineProps<{
   modelValue?: string
   disabled?: boolean
+  type?: 'password' | 'textarea' | 'number'
 }>(), {
   modelValue: undefined,
   disabled: false,
@@ -45,6 +46,10 @@ const handleInput = (ev: Event) => {
     @click="focused = true"
   >
     <input ref="inputRef" class="win-textbox__input" :value="inputValue" :disabled="disabled" @input="handleInput">
+
+    <div v-if="type === 'password' && inputValue" class="win-icon win-textbox__append-icon">
+      
+    </div>
   </div>
 </template>
 
@@ -120,5 +125,12 @@ const handleInput = (ev: Event) => {
   background-color: transparent;
   outline: none;
   pointer-events: var(--input-points);
+}
+
+.win-textbox__append-icon {
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding: 4px 0;
 }
 </style>
