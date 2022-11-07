@@ -2,10 +2,12 @@
 const props = withDefaults(defineProps<{
   modelValue?: string
   disabled?: boolean
+  clearable?: boolean
   type?: 'password' | 'textarea' | 'number'
 }>(), {
   modelValue: undefined,
   disabled: false,
+  clearable: false,
 })
 
 const emits = defineEmits<{
@@ -27,6 +29,8 @@ const inputValue = computed({
     emits('update:modelValue', v)
   },
 })
+
+const ctrlVisible = computed(() => !props.disabled && inputValue.value.length)
 
 const inputRef = ref<HTMLInputElement | null>(null)
 const { focused } = useFocus(inputRef)
@@ -51,7 +55,11 @@ const handleInput = (ev: Event) => {
       class="win-textbox__input" :value="inputValue" :disabled="disabled" @input="handleInput"
     >
 
-    <div v-if="!disabled && type === 'password'" class="win-textbox__pwd-show-toggle">
+    <div v-if="ctrlVisible && clearable" class="win-textbox__ctrl_icon clear" @click="inputValue = ''">
+      
+    </div>
+
+    <div v-if="ctrlVisible && type === 'password'" class="win-textbox__ctrl_icon">
       
     </div>
   </div>
@@ -73,7 +81,7 @@ const handleInput = (ev: Event) => {
   --text-width: 180px;
   --text-height: 30px;
   --text-padding: 4px 11px;
-  --text-color: #000;
+  --text-color: rgba(0, 0, 0, 0.61);
   --cursor: normal;
 
   position: relative;
@@ -135,18 +143,25 @@ const handleInput = (ev: Event) => {
   }
 }
 
-.win-textbox__pwd-show-toggle {
+.win-textbox__ctrl_icon {
   position: absolute;
   cursor: pointer;
   height: 100%;
-  border-radius: 4px;
   right: 3px;
   top: 0;
   font-family: 'Segoe-UI', sans-serif;
-  font-size: 16px;
+  font-size: 12px;
   clip-path: inset(3px 0 round 4px);
   padding: 3px 5px;
   user-select: none;
+  color: rgba(0, 0, 0, 0.61);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.clear {
+    padding: 4px 5px 3px 6px;
+  }
 
   &:hover {
     background: rgba(0, 0, 0, 0.0373);
@@ -154,6 +169,7 @@ const handleInput = (ev: Event) => {
 
   &:active {
     background: rgba(0, 0, 0, 0.06);
+    color: rgba(0, 0, 0, 0.45);
   }
 }
 </style>
