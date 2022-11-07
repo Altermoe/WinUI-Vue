@@ -38,16 +38,20 @@ const handleInput = (ev: Event) => {
 
 <template>
   <div
+    v-bind="$attrs"
     class="win-textbox"
     :class="{
       focused,
-      disabled,
+      password: type === 'password',
     }"
-    @click="focused = true"
   >
-    <input ref="inputRef" class="win-textbox__input" :value="inputValue" :disabled="disabled" @input="handleInput">
+    <input
+      ref="inputRef"
+      :class="{ disabled }"
+      class="win-textbox__input" :value="inputValue" :disabled="disabled" @input="handleInput"
+    >
 
-    <div v-if="type === 'password' && inputValue" class="win-icon win-textbox__append-icon">
+    <div v-if="!disabled && type === 'password'" class="win-textbox__pwd-show-toggle">
       
     </div>
   </div>
@@ -66,48 +70,60 @@ const handleInput = (ev: Event) => {
 .win-textbox {
   --border-color: rgba(0, 0, 0, 0.06) rgba(0, 0, 0, 0.06) rgba(0, 0, 0, 0.16);
   --bg-color: initial;
+  --text-width: 180px;
+  --text-height: 30px;
+  --text-padding: 4px 11px;
   --text-color: #000;
-  --input-points: all;
   --cursor: normal;
 
-  padding: 4px 11px;
+  position: relative;
+  overflow: hidden;
+
+  &.focused::before {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    bottom: 0;
+    left: 0;
+    border-bottom: 2px solid #005FB8;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    animation: expand-center forwards;
+    animation-duration: 187ms;
+  }
+
+  &.password {
+    --text-padding: 4px 31px 4px 11px;
+  }
+}
+
+.win-textbox__input {
+  width: var(--text-width);
+  height: var(--text-height);
+  padding: var(--text-padding);
   border: 1px solid;
   border-color: var(--border-color);
   border-radius: 4px;
   font-size: 14px;
-  position: relative;
   transition-property: background-color;
   transition-duration: 187ms;
   transition-timing-function: ease;
   background-color: var(--bg-color);
-  cursor: var(--cursor);
+  cursor: var(--cursor, text);
   color: var(--text-color);
   font-size: 14px;
+  outline: none;
 
   &:not(.disabled) {
-    --cursor: text;
-
     &:hover {
       --bg-color: #F9F9F9;
     }
 
-    &.focused {
+    &:focus {
       --bg-color: initial;
       --border-color: rgba(0, 0, 0, 0.2);
-
-      &::after {
-        content: '';
-        position: absolute;
-        width: calc(100% + 2px);
-        height: 4px;
-        bottom: -1px;
-        left: -1px;
-        border-bottom: 2px solid #005FB8;
-        border-bottom-left-radius: 4px;
-        border-bottom-right-radius: 4px;
-        animation: expand-center forwards;
-        animation-duration: 187ms;
-      }
     }
   }
 
@@ -115,22 +131,29 @@ const handleInput = (ev: Event) => {
     --cursor: not-allowed;
     --border-color: rgba(0, 0, 0, 0.06);
     --bg-color: rgba(249, 249, 249, 0.3);
-    --input-points: none;
     --text-color: rgba(0, 0, 0, 0.3614);
   }
 }
 
-.win-textbox__input {
-  width: 100%;
-  background-color: transparent;
-  outline: none;
-  pointer-events: var(--input-points);
-}
-
-.win-textbox__append-icon {
+.win-textbox__pwd-show-toggle {
   position: absolute;
-  right: 0;
+  cursor: pointer;
+  height: 100%;
+  border-radius: 4px;
+  right: 3px;
   top: 0;
-  padding: 4px 0;
+  font-family: 'Segoe-UI', sans-serif;
+  font-size: 16px;
+  clip-path: inset(3px 0 round 4px);
+  padding: 3px 5px;
+  user-select: none;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.0373);
+  }
+
+  &:active {
+    background: rgba(0, 0, 0, 0.06);
+  }
 }
 </style>
