@@ -3,7 +3,7 @@ import type { FunctionalComponent } from 'vue'
 import { AppPage } from '../components'
 import { Card, TextBox } from '@/components'
 
-const text = ref('')
+const text = ref('越过长城，走向世界')
 
 const box: FunctionalComponent = (props, ctx) => h(
   'div',
@@ -16,7 +16,7 @@ const box: FunctionalComponent = (props, ctx) => h(
   <AppPage>
     <Card title="基础">
       <component :is="box">
-        <TextBox v-model="text" />
+        <TextBox v-model="text" clearable placeholder="请输入内容" />
       </component>
     </Card>
 
@@ -26,15 +26,9 @@ const box: FunctionalComponent = (props, ctx) => h(
       </component>
     </Card>
 
-    <Card title="可清除">
+    <Card title="只读">
       <component :is="box">
-        <TextBox v-model="text" clearable />
-      </component>
-    </Card>
-
-    <Card title="密码">
-      <component :is="box">
-        <TextBox v-model="text" type="password" />
+        <TextBox v-model="text" readonly />
       </component>
     </Card>
   </AppPage>

@@ -4,6 +4,8 @@ const props = withDefaults(defineProps<{
   disabled?: boolean
   clearable?: boolean
   type?: 'password' | 'textarea' | 'number'
+  readonly?: boolean
+  placeholder?: string
 }>(), {
   modelValue: undefined,
   disabled: false,
@@ -30,7 +32,7 @@ const inputValue = computed({
   },
 })
 
-const ctrlVisible = computed(() => !props.disabled && inputValue.value.length)
+const ctrlVisible = computed(() => !props.readonly && !props.disabled && inputValue.value.length)
 
 const inputRef = ref<HTMLInputElement | null>(null)
 const { focused } = useFocus(inputRef)
@@ -45,14 +47,20 @@ const handleInput = (ev: Event) => {
     v-bind="$attrs"
     class="win-textbox"
     :class="{
-      focused,
+      focused: focused && !readonly,
       password: type === 'password',
     }"
   >
     <input
       ref="inputRef"
+      type="text"
+      class="win-textbox__input"
       :class="{ disabled }"
-      class="win-textbox__input" :value="inputValue" :disabled="disabled" @input="handleInput"
+      :disabled="disabled"
+      :readOnly="readonly"
+      :placeholder="placeholder"
+      :value="inputValue"
+      @input="handleInput"
     >
 
     <div v-if="ctrlVisible && clearable" class="win-textbox__ctrl_icon clear" @click="inputValue = ''">
