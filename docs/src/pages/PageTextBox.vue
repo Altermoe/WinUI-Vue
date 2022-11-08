@@ -1,28 +1,35 @@
 <script lang="ts" setup>
+import type { FunctionalComponent } from 'vue'
 import { AppPage } from '../components'
 import { Card, TextBox } from '@/components'
 
-const text = ref('')
+const text = ref('越过长城，走向世界')
+
+const box: FunctionalComponent = (props, ctx) => h(
+  'div',
+  { class: 'flex flex-col flex-wrap items-start gap-2' },
+  { default: ctx.slots.default },
+)
 </script>
 
 <template>
   <AppPage>
     <Card title="基础">
-      <div class="flex flex-col flex-wrap items-start gap-2">
-        <TextBox v-model="text" />
-      </div>
+      <component :is="box">
+        <TextBox v-model="text" clearable placeholder="请输入内容" />
+      </component>
     </Card>
 
     <Card title="禁用">
-      <div class="flex flex-col flex-wrap items-start gap-2">
-        <TextBox model-value="disabled" disabled />
-      </div>
+      <component :is="box">
+        <TextBox v-model="text" disabled />
+      </component>
     </Card>
 
-    <Card title="密码">
-      <div class="flex flex-col flex-wrap items-start gap-2">
-        <TextBox v-model="text" type="password" />
-      </div>
+    <Card title="只读">
+      <component :is="box">
+        <TextBox v-model="text" readonly />
+      </component>
     </Card>
   </AppPage>
 </template>
