@@ -36,7 +36,7 @@ const toggleSwitch = () => {
   --ctrl-bg-color: rgba(0, 0, 0, 0.0241);
   --ctrl-thumb-color: rgba(0, 0, 0, 0.6063);
   --ctrl-thumb-cut: inset(4px 6px 4px 4px round var(--ctrl-height));
-  --ctrl-thumb-pos: translateX(0);
+  --ctrl-thumb-pos: 0;
   --transition-duration: 176ms;
 
   display: flex;
@@ -54,9 +54,9 @@ const toggleSwitch = () => {
   }
 
   &.positive {
-    --ctrl-thumb-pos: translateX(20px);
+    --ctrl-thumb-pos: var(--ctrl-height);
     &:active {
-      --ctrl-thumb-pos: translateX(18px);
+      --ctrl-thumb-pos: calc(var(--ctrl-height) - 2px);
     }
   }
 }
@@ -80,7 +80,7 @@ const toggleSwitch = () => {
   position: absolute;
   top: -1px;
   left: -1px;
-  transform: var(--ctrl-thumb-pos);
+  transform: translateX(var(--ctrl-thumb-pos));
   clip-path: var(--ctrl-thumb-cut);
 }
 </style>
