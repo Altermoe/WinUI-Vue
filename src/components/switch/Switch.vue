@@ -39,7 +39,7 @@ const toggleSwitch = () => {
 .win-switch {
   --ctrl-width: 40px;
   --ctrl-height: 20px;
-  --ctrl-color: rgba(0, 0, 0, 0.4458);
+  --ctrl-border-color: rgba(0, 0, 0, 0.4458);
   --ctrl-bg-color: rgba(0, 0, 0, 0.0241);
   --ctrl-thumb-color: rgba(0, 0, 0, 0.6063);
   --ctrl-thumb-cut: inset(4px 6px 4px 4px round var(--ctrl-height));
@@ -51,21 +51,46 @@ const toggleSwitch = () => {
   align-items: center;
   justify-content: center;
 
-  &:hover{
-    --ctrl-bg-color: rgba(0, 0, 0, 0.0578);
-    --ctrl-thumb-cut: inset(3px 5px 3px 3px round var(--ctrl-height));
-  }
+  &:not(.disabled) {
+    cursor: pointer;
 
-  &:active {
-    --ctrl-thumb-cut: inset(3px round var(--ctrl-height));
+    &:hover {
+      --ctrl-bg-color: rgba(0, 0, 0, 0.0578);
+      --ctrl-thumb-cut: inset(3px 5px 3px 3px round var(--ctrl-height));
+    }
+
+    &:active {
+      --ctrl-thumb-cut: inset(3px round var(--ctrl-height));
+    }
+
+    &.positive {
+      --ctrl-bg-color: rgba(0, 95, 184, 1);
+      --ctrl-border-color: rgba(0, 95, 184, 1);
+      --ctrl-thumb-color: #fff;
+      &:hover{
+        --ctrl-bg-color: rgba(0, 95, 184, 0.9);
+        --ctrl-border-color: rgba(0, 95, 184, 0.9);
+      }
+      &:active {
+        --ctrl-thumb-pos: calc(var(--ctrl-height) - 2px);
+      }
+    }
   }
 
   &.positive {
     --ctrl-thumb-pos: var(--ctrl-height);
-    --ctrl-bg-color: rgba(0, 95, 184, 1);
-    --ctrl-thumb-color: #fff;
-    &:active {
-      --ctrl-thumb-pos: calc(var(--ctrl-height) - 2px);
+  }
+
+  &.disabled {
+    cursor: not-allowed;
+    --ctrl-thumb-color: rgba(0, 0, 0, 0.3614);
+    --ctrl-border-color: rgba(0, 0, 0, 0.2169);
+    --ctrl-bg-color: initial;
+
+    &.positive {
+      --ctrl-thumb-color: #fff;
+      --ctrl-border-color: transparent;
+      --ctrl-bg-color: rgba(0, 0, 0, 0.2169);
     }
   }
 }
@@ -73,7 +98,7 @@ const toggleSwitch = () => {
 .win-switch__control {
   width: var(--ctrl-width);
   height: var(--ctrl-height);
-  border: 1px solid var(--ctrl-color);
+  border: 1px solid var(--ctrl-border-color);
   background-color: var(--ctrl-bg-color);
   border-radius: var(--ctrl-height);
   transition: all ease var(--transition-duration);
