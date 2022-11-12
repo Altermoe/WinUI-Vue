@@ -25,7 +25,7 @@ export const routes: RouteRecordRaw[] = [
       },
       {
         path: '/switch',
-        name: 'Swutch',
+        name: 'Switch',
         meta: {
           title: '开关',
         },

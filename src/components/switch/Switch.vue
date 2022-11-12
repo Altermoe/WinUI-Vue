@@ -21,7 +21,14 @@ const toggleSwitch = () => {
 </script>
 
 <template>
-  <div class="win-switch" :class="{ positive }" @click="toggleSwitch">
+  <div
+    class="win-switch"
+    :class="{
+      disabled,
+      positive,
+    }"
+    @click="toggleSwitch"
+  >
     <div class="win-switch__control">
       <div class="win-switch__thumb" />
     </div>
@@ -55,6 +62,8 @@ const toggleSwitch = () => {
 
   &.positive {
     --ctrl-thumb-pos: var(--ctrl-height);
+    --ctrl-bg-color: rgba(0, 95, 184, 1);
+    --ctrl-thumb-color: #fff;
     &:active {
       --ctrl-thumb-pos: calc(var(--ctrl-height) - 2px);
     }

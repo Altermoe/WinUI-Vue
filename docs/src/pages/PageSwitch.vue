@@ -16,7 +16,7 @@ const box: FunctionalComponent = (props, ctx) => h(
   <AppPage>
     <Card title="基础用法">
       <component :is="box">
-        <Switch v-model="example" clearable placeholder="请输入内容" />
+        <Switch v-model="example" clearable />
       </component>
     </Card>
   </AppPage>
