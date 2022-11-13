@@ -33,6 +33,8 @@ const inputValue = computed({
 })
 
 const ctrlVisible = computed(() => !props.readonly && !props.disabled && inputValue.value.length)
+const clearVisible = computed(() => ctrlVisible.value && props.clearable)
+const isPassword = computed(() => props.type === 'password')
 
 const inputRef = ref<HTMLInputElement | null>(null)
 const { focused } = useFocus(inputRef)
@@ -48,14 +50,17 @@ const handleInput = (ev: Event) => {
     class="win-textbox"
     :class="{
       focused: focused && !readonly,
-      password: type === 'password',
+      password: isPassword,
+      clear: clearVisible,
     }"
   >
     <input
       ref="inputRef"
       type="text"
       class="win-textbox__input"
-      :class="{ disabled }"
+      :class="{
+        disabled,
+      }"
       :disabled="disabled"
       :readOnly="readonly"
       :placeholder="placeholder"
@@ -63,11 +68,11 @@ const handleInput = (ev: Event) => {
       @input="handleInput"
     >
 
-    <div v-if="ctrlVisible && clearable" class="win-textbox__ctrl_icon clear" @click="inputValue = ''">
+    <div v-if="clearVisible" class="win-textbox__ctrl_icon clear" @click="inputValue = ''">
       
     </div>
 
-    <div v-if="ctrlVisible && type === 'password'" class="win-textbox__ctrl_icon">
+    <div v-if="ctrlVisible && isPassword" class="win-textbox__ctrl_icon">
       
     </div>
   </div>
@@ -111,6 +116,10 @@ const handleInput = (ev: Event) => {
   }
 
   &.password {
+    --text-padding: 4px 31px 4px 11px;
+  }
+
+  &.clear {
     --text-padding: 4px 31px 4px 11px;
   }
 }
