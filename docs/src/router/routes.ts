@@ -24,6 +24,14 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('../pages/PageTextBox.vue'),
       },
       {
+        path: '/radio',
+        name: 'Radio',
+        meta: {
+          title: '单选',
+        },
+        component: () => import('../pages/PageRadio.vue'),
+      },
+      {
         path: '/switch',
         name: 'Switch',
         meta: {
