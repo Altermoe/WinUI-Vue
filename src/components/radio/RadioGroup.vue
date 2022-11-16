@@ -7,22 +7,17 @@ const props = defineProps<{
 }>()
 
 const emits = defineEmits<{
-  (e: 'update:modelValue', v: string | number): void
+  (e: 'update:modelValue', v?: string | number): void
 }>()
 
 const bindValue = computed({
   get: () => props.modelValue,
-  set: (v) => {
-    if (v === undefined || v === null)
-      return
-    emits('update:modelValue', v)
-  },
+  set: v => emits('update:modelValue', v),
 })
 
-const onChange = (ev: Event) => {
-  console.log(ev)
-  bindValue.value = (ev.target as HTMLInputElement).value
-}
+provide('emitValue', (v?: string | number) => {
+  bindValue.value = v
+})
 </script>
 
 <template>
@@ -31,7 +26,6 @@ const onChange = (ev: Event) => {
     :class="{
       disabled,
     }"
-    @change="onChange"
   >
     <Radio
       v-for="option in options"
