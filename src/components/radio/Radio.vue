@@ -1,23 +1,22 @@
 <script lang="ts" setup>
 const props = defineProps<{
-  modelValue?: boolean
-  options?: RadioOption[]
+  label?: string
+  value: string | number
   disabled?: boolean
+  checked?: boolean
 }>()
-
-const emits = defineEmits<{
-  (e: 'update:modelValue', v: boolean): void
-}>()
-
-interface RadioOption {
-  title?: string
-  value: string | number | boolean
-}
 </script>
 
 <template>
-  <div>
-    <!-- 暂时不确定是要否通过原生元素来做 -->
-    <input type="radio">
-  </div>
+  <label :for="label" class="win-radio">
+    <input :id="label" type="radio" :value="value" :checked="checked" name="win-radio">
+    {{ label }}
+  </label>
 </template>
+
+<style lang="scss" scoped>
+.win-radio {
+  display: flex;
+  gap: 0.5em;
+}
+</style>
