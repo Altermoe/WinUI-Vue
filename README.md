@@ -15,5 +15,6 @@
   </a>
 </p>
 
+![WinUI-Vue](/static/preview.png)
 
 ![Windows 11 设计原则](https://learn.microsoft.com/zh-cn/windows/apps/design/signature-experiences/images/principles_hero_1880.png)
