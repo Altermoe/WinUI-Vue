@@ -40,6 +40,14 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('../pages/PageSwitch.vue'),
       },
       {
+        path: '/slider',
+        name: 'Slider',
+        meta: {
+          title: '滑块',
+        },
+        component: () => import('../pages/PageSlider.vue'),
+      },
+      {
         path: '/dropdown',
         name: 'Dropdown',
         meta: {
