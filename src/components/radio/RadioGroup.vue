@@ -41,6 +41,7 @@ provide('emitValue', (v?: string | number) => {
 <style lang="scss" scoped>
 .win-radio-group {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 </style>
