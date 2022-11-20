@@ -15,6 +15,7 @@ const box: FunctionalComponent = (props, ctx) => h(
 <template>
   <AppPage>
     <Card title="基础用法">
+      <div>{{ example }}</div>
       <component :is="box">
         <Slider v-model="example" />
       </component>
