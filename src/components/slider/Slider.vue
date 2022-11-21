@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 interface SliderProps {
   modelValue?: number
+  disabled?: boolean
   min?: number
   max?: number
 }
@@ -33,7 +34,7 @@ const ratio = computed(() => (bindValue.value - props.min) / range.value)
 
 const thumbRef = ref<HTMLElement | null>(null)
 useEventListener(thumbRef, 'pointerdown', (ev) => {
-  if ((ev as PointerEvent).button !== 0)
+  if (props.disabled || (ev as PointerEvent).button !== 0)
     return
 
   const container = (ev.target as HTMLElement).parentElement as HTMLElement
@@ -62,16 +63,19 @@ useEventListener(thumbRef, 'pointerdown', (ev) => {
 </script>
 
 <template>
-  <div class="win-slider">
+  <div class="win-slider" :class="{ disabled }">
     <div ref="thumbRef" class="win-slider__thumb" />
   </div>
 </template>
 
 <style lang="scss" scoped>
 .win-slider {
+  --slider-cursor: pointer;
   --slider-height: 22px;
   --slider-width: 120px;
+  --slider-track-color: #005FB8;
   --slider-thumb-bg-ratio: 0%;
+  --slider-thumb-color: #005FB8;
   --slider-thumb-radius: 6px;
   --slider-thumb-ratio: v-bind(ratio);
 
@@ -82,7 +86,7 @@ useEventListener(thumbRef, 'pointerdown', (ev) => {
 
   &::before {
     content: '';
-    background: #005FB8;
+    background: var(--slider-thumb-color);
     width: 100%;
     height: 100%;
     position: absolute;
@@ -91,7 +95,7 @@ useEventListener(thumbRef, 'pointerdown', (ev) => {
     clip-path: inset(calc(var(--slider-height) / 2 - 2px) calc(var(--slider-height) / 2 - 2px) round 2px);
   }
 
-  :not(.disabled) {
+  &:not(.disabled) {
     &:hover {
       --slider-thumb-radius: 7px;
     }
@@ -101,10 +105,16 @@ useEventListener(thumbRef, 'pointerdown', (ev) => {
       --slider-thumb-bg-ratio: 100%;
     }
   }
+
+  &.disabled {
+    --slider-cursor: not-allowed;
+    --slider-thumb-color: rgba(0, 0, 0, 0.2169);
+    --slider-track-color: rgba(0, 0, 0, 0.2169);
+  }
 }
 
 .win-slider__thumb {
-  cursor: pointer;
+  cursor: var(--slider-cursor);
   width: var(--slider-height);
   height: var(--slider-height);
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.06) var(--slider-thumb-bg-ratio), rgba(0, 0, 0, 0.16));
@@ -132,7 +142,7 @@ useEventListener(thumbRef, 'pointerdown', (ev) => {
     height: 100%;
     left: 0;
     top: 0;
-    background: #005FB8;
+    background: var(--slider-thumb-color);
     clip-path: circle(var(--slider-thumb-radius));
     transition: all ease 176ms;
   }

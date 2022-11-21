@@ -20,5 +20,12 @@ const box: FunctionalComponent = (props, ctx) => h(
         <Slider v-model="example" />
       </component>
     </Card>
+
+    <Card title="禁用">
+      <div>{{ example }}</div>
+      <component :is="box">
+        <Slider v-model="example" disabled />
+      </component>
+    </Card>
   </AppPage>
 </template>
