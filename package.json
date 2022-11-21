@@ -2,7 +2,7 @@
   "name": "winui-vue",
   "version": "0.0.1",
   "description": "Windows 11 设计规范的 Vue3 实现",
-  "homepage": "https://github.com/Altermoe/WinUI-Vue",
+  "homepage": "https://winui-vue.nahida.website",
   "repository": {
     "type": "git",
     "url": "https://github.com/Altermoe/WinUI-Vue"
