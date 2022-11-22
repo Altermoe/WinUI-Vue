@@ -32,6 +32,14 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('../pages/PageRadio.vue'),
       },
       {
+        path: '/rating',
+        name: 'Rating',
+        meta: {
+          title: '评分',
+        },
+        component: () => import('../pages/PageRating.vue'),
+      },
+      {
         path: '/switch',
         name: 'Switch',
         meta: {
