@@ -26,7 +26,7 @@ const isHover = useElementHover(containerRef)
 const hoverRating = ref(0)
 const switchStar = (ratio: number) => {
   if (!isHover.value)
-    return ''
+    return ''
   return ratio > 0.75
     ? ''
     : ratio > 0.5
@@ -35,16 +35,20 @@ const switchStar = (ratio: number) => {
         ? ''
         : ratio > 0
           ? ''
-          : ''
+          : ''
 }
 
 const hoverRate = (ev: MouseEvent, index: number) => {
   hoverRating.value = index + ev.offsetX / (ev.target as HTMLElement).clientWidth
 }
+
+const confirmScore = () => {
+  console.log(hoverRating.value - 1)
+}
 </script>
 
 <template>
-  <div ref="containerRef" class="win-rating">
+  <div ref="containerRef" class="win-rating" @click="confirmScore">
     <div
       v-for="i in 5"
       :key="i"
@@ -84,6 +88,7 @@ const hoverRate = (ev: MouseEvent, index: number) => {
     top: 0;
     display: grid;
     place-items: center;
+    color: #005FB8;
   }
 }
 </style>
