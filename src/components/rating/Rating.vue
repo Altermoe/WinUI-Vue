@@ -43,7 +43,7 @@ const hoverRate = (ev: MouseEvent, index: number) => {
 }
 
 const confirmScore = () => {
-  console.log(hoverRating.value - 1)
+  internalBind.value = hoverRating.value - 1
 }
 </script>
 
