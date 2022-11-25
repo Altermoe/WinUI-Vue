@@ -1,6 +1,7 @@
 export * from './button'
 export * from './card'
 export * from './checkbox'
+export * from './colorpicker'
 export * from './contextMenu'
 export * from './dropdown'
 export * from './layer'
