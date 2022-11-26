@@ -23,6 +23,7 @@ const internalBind = computed({
 
 const containerRef = ref<HTMLElement | null>(null)
 const isHover = useElementHover(containerRef)
+const isHoverable = computed(() => !props.disabled && isHover.value)
 
 const hoverRating = ref(0)
 
@@ -39,10 +40,14 @@ const switchStar = (ratio: number) => {
 }
 
 const hoverRate = (ev: MouseEvent, index: number) => {
+  if (props.disabled)
+    return
   hoverRating.value = index + ev.offsetX / (ev.target as HTMLElement).clientWidth
 }
 
 const confirmScore = () => {
+  if (props.disabled)
+    return
   const rate = hoverRating.value - 1
   const intPart = Math.floor(rate)
   const floatPart = rate - intPart
@@ -68,7 +73,7 @@ const confirmScore = () => {
         class="win-rating__item"
       >
         <div
-          :data-mask="isHover ? switchStar(hoverRating - i) : switchStar(internalBind + 1 - i)"
+          :data-mask="isHoverable ? switchStar(hoverRating - i) : switchStar(internalBind + 1 - i)"
           class="win-rating__item-wrapper win-icon"
           @mousemove="(ev) => hoverRate(ev, i)"
         >
@@ -84,12 +89,21 @@ const confirmScore = () => {
 
 <style lang="scss" scoped>
 .win-rating {
-  --rating-item-size:  16px;
+  --rating-cursor: pointer;
+  --rating-item-size: 16px;
+  --rating-item-color: #005FB8;
+  --rating-item-text-color: rgba(0, 0, 0, 0.6063);
   --rating-wrapper-size: calc(var(--rating-item-size) + 8px);
 
   display: flex;
   gap: 4px;
   color: rgba(0, 0, 0, 0.6063);
+
+  &.disabled {
+    --rating-cursor: not-allowed;
+    --rating-item-color: #C8C8C8;
+    --rating-item-text-color: rgba(0, 0, 0, 0.3614);
+  }
 }
 
 .win-rating__selector {
@@ -121,7 +135,8 @@ const confirmScore = () => {
   line-height: var(--rating-item-size);
   position: relative;
   user-select: none;
-  cursor: pointer;
+  color: var(--rating-item-text-color);
+  cursor: var(--rating-cursor);
 
   &::before {
     content: attr(data-mask);
@@ -132,10 +147,11 @@ const confirmScore = () => {
     top: 0;
     display: grid;
     place-items: center;
-    color: #005FB8;
+    color: var(--rating-item-color);
   }
 
   // &[data-mask=""] {
+  //   color: transparent;
   //   filter: drop-shadow(0 0 2px #005FB8);
   // }
 }
