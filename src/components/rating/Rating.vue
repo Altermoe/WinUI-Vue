@@ -24,9 +24,8 @@ const containerRef = ref<HTMLElement | null>(null)
 const isHover = useElementHover(containerRef)
 
 const hoverRating = ref(0)
+
 const switchStar = (ratio: number) => {
-  if (!isHover.value)
-    return ''
   return ratio > 0.75
     ? ''
     : ratio > 0.5
@@ -43,7 +42,19 @@ const hoverRate = (ev: MouseEvent, index: number) => {
 }
 
 const confirmScore = () => {
-  internalBind.value = hoverRating.value - 1
+  const rate = hoverRating.value - 1
+  const intPart = Math.floor(rate)
+  const floatPart = rate - intPart
+  internalBind.value = intPart
+    + (floatPart > 0.75
+      ? 1
+      : floatPart > 0.5
+        ? 0.75
+        : floatPart > 0.25
+          ? 0.5
+          : floatPart > 0
+            ? 0.25
+            : 0)
 }
 </script>
 
@@ -52,32 +63,44 @@ const confirmScore = () => {
     <div
       v-for="i in 5"
       :key="i"
-      :data-mask="switchStar(hoverRating - i)"
-      class="win-rating__item win-icon w-full h-full"
-      @mousemove="(ev) => hoverRate(ev, i)"
+      class="win-rating__item"
     >
-      
+      <div
+        :data-mask="isHover ? switchStar(hoverRating - i) : switchStar(internalBind + 1 - i)"
+        class="win-rating__item-wrapper win-icon"
+        @mousemove="(ev) => hoverRate(ev, i)"
+      >
+        
+      </div>
     </div>
-    {{ hoverRating }}
   </div>
 </template>
 
 <style lang="scss" scoped>
 .win-rating {
-  --rating-item-size:  24px;
+  --rating-item-size:  16px;
 
-  display: flex;
+  width: 120px;
+  height: 24px;
+  display: grid;
+  grid-template-columns: repeat(5, 24px);
 }
 
 .win-rating__item {
-  width: var(--rating-item-size);
-  height: var(--rating-item-size);
+  height: 100%;
+  width: 100%;
   display: grid;
   place-items: center;
-  user-select: none;
+}
+
+.win-rating__item-wrapper {
+  width: 16px;
+  height: 16px;
   font-size: 16px;
-  cursor: pointer;
+  line-height: 16px;
   position: relative;
+  user-select: none;
+  cursor: pointer;
 
   &::before {
     content: attr(data-mask);

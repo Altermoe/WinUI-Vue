@@ -17,6 +17,7 @@ const box: FunctionalComponent = (props, ctx) => h(
     <Card title="基础用法">
       <component :is="box">
         <Rating v-model="example" />
+        {{ example }}
       </component>
     </Card>
 
