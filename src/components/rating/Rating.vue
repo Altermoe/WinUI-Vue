@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 const props = defineProps<{
   modelValue?: number
+  disabled?: boolean
 }>()
 
 const emits = defineEmits<{
@@ -59,19 +60,24 @@ const confirmScore = () => {
 </script>
 
 <template>
-  <div ref="containerRef" class="win-rating" @click="confirmScore">
-    <div
-      v-for="i in 5"
-      :key="i"
-      class="win-rating__item"
-    >
+  <div ref="containerRef" class="win-rating" :class="{ disabled }" @click="confirmScore">
+    <div class="win-rating__selector">
       <div
-        :data-mask="isHover ? switchStar(hoverRating - i) : switchStar(internalBind + 1 - i)"
-        class="win-rating__item-wrapper win-icon"
-        @mousemove="(ev) => hoverRate(ev, i)"
+        v-for="i in 5"
+        :key="i"
+        class="win-rating__item"
       >
-        
+        <div
+          :data-mask="isHover ? switchStar(hoverRating - i) : switchStar(internalBind + 1 - i)"
+          class="win-rating__item-wrapper win-icon"
+          @mousemove="(ev) => hoverRate(ev, i)"
+        >
+          
+        </div>
       </div>
+    </div>
+    <div class="win-rating__text">
+      {{ internalBind }}
     </div>
   </div>
 </template>
@@ -79,11 +85,26 @@ const confirmScore = () => {
 <style lang="scss" scoped>
 .win-rating {
   --rating-item-size:  16px;
+  --rating-wrapper-size: calc(var(--rating-item-size) + 8px);
 
-  width: 120px;
-  height: 24px;
+  display: flex;
+  gap: 4px;
+  color: rgba(0, 0, 0, 0.6063);
+}
+
+.win-rating__selector {
+  height: var(--rating-wrapper-size);
+  width: calc(5 * var(--rating-wrapper-size));
   display: grid;
-  grid-template-columns: repeat(5, 24px);
+  grid-template-columns: repeat(5, var(--rating-wrapper-size));
+}
+
+.win-rating__text {
+  height: var(var(--rating-wrapper-size));
+  line-height: var(--rating-item-size);
+  font-size: 12px;
+  display: grid;
+  place-items: center;
 }
 
 .win-rating__item {
@@ -94,10 +115,10 @@ const confirmScore = () => {
 }
 
 .win-rating__item-wrapper {
-  width: 16px;
-  height: 16px;
-  font-size: 16px;
-  line-height: 16px;
+  width: var(--rating-item-size);
+  height: var(--rating-item-size);
+  font-size: var(--rating-item-size);
+  line-height: var(--rating-item-size);
   position: relative;
   user-select: none;
   cursor: pointer;
@@ -113,5 +134,9 @@ const confirmScore = () => {
     place-items: center;
     color: #005FB8;
   }
+
+  // &[data-mask=""] {
+  //   filter: drop-shadow(0 0 2px #005FB8);
+  // }
 }
 </style>
