@@ -32,6 +32,14 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('../pages/PageRadio.vue'),
       },
       {
+        path: '/checkbox',
+        name: 'Checkbox',
+        meta: {
+          title: '多选',
+        },
+        component: () => import('../pages/PageCheckbox.vue'),
+      },
+      {
         path: '/rating',
         name: 'Rating',
         meta: {
