@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import type { FunctionalComponent } from 'vue'
 import { AppPage } from '../components'
-import { Card } from '@/components'
+import { Card, Checkbox } from '@/components'
 
-const example = ref('shanghai')
+const example = ref(['shanghai'])
 
 const box: FunctionalComponent = (props, ctx) => h(
   'div',
@@ -35,7 +35,7 @@ const options = [
   <AppPage>
     <Card title="基础用法">
       <component :is="box">
-        <div>多选</div>
+        <Checkbox v-model="example" :options="options" />
       </component>
     </Card>
   </AppPage>
