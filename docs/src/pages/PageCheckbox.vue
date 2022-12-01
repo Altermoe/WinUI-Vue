@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { FunctionalComponent } from 'vue'
 import { AppPage } from '../components'
-import { Card, Checkbox } from '@/components'
+import { Card, CheckboxGroup } from '@/components'
 
 const example = ref(['shanghai'])
 
@@ -35,7 +35,7 @@ const options = [
   <AppPage>
     <Card title="基础用法">
       <component :is="box">
-        <Checkbox v-model="example" :options="options" />
+        <CheckboxGroup v-model="example" :options="options" />
       </component>
     </Card>
   </AppPage>

@@ -7,39 +7,29 @@ interface CheckboxOption {
 }
 
 const props = defineProps<{
-  modelValue?: CheckboxValue[]
-  options?: CheckboxOption[]
+  checked?: boolean
+  disabled?: boolean
+  option: CheckboxOption
 }>()
-
-const emits = defineEmits<{
-  (e: 'update:modelValue', v: CheckboxValue[]): void
-}>()
-
-const cache = ref<CheckboxValue[]>([])
-
-const internalBind = computed({
-  get: () => props.modelValue === undefined ? cache.value : props.modelValue,
-  set: (v) => {
-    if (props.modelValue === undefined) {
-      cache.value = v
-      return
-    }
-    emits('update:modelValue', v)
-  },
-})
 </script>
 
 <template>
-  <div class="win-checkbox checked">
+  <div class="win-checkbox__option" :class="{ checked, disabled }">
     <div class="win-checkbox__marker" />
+    <div>{{ option.label }}</div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-.win-checkbox {
+.win-checkbox__option {
   --cursor: pointer;
   --marker-bg-color: rgba(0, 0, 0, 0.0241);
   --marker-border-color: rgba(0, 0, 0, 0.4458);
+
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
 
   &.disabled {
     --cursor: not-allowed;
