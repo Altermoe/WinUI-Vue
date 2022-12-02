@@ -29,11 +29,16 @@ const internalBind = computed({
     emits('update:modelValue', v)
   },
 })
+
+const toggleValue = (option: CheckboxOption) => {
+  console.log(option)
+  // emits('update:modelValue', [])
+}
 </script>
 
 <template>
   <div class="win-checkbox">
-    <Checkbox v-for="op in options" :key="op.value" :option="op" :checked="true" />
+    <Checkbox v-for="op in options" :key="op.value" :option="op" :checked="true" @click="() => toggleValue(op)" />
   </div>
 </template>
 

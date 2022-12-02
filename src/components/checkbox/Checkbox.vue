@@ -14,7 +14,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="win-checkbox__option" :class="{ checked, disabled }">
+  <div v-bind="$attrs" class="win-checkbox__option" :class="{ checked, disabled }">
     <div class="win-checkbox__marker" />
     <div>{{ option.label }}</div>
   </div>
