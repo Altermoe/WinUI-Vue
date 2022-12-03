@@ -38,5 +38,11 @@ const options = [
         <CheckboxGroup v-model="example" :options="options" />
       </component>
     </Card>
+
+    <Card title="禁用">
+      <component :is="box">
+        <CheckboxGroup v-model="example" :options="options" disabled />
+      </component>
+    </Card>
   </AppPage>
 </template>

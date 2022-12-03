@@ -11,6 +11,7 @@ interface CheckboxOption {
 const props = defineProps<{
   modelValue?: CheckboxValue[]
   options?: CheckboxOption[]
+  disabled?: boolean
 }>()
 
 const emits = defineEmits<{
@@ -37,7 +38,7 @@ const toggleValue = (option: CheckboxOption) => {
 </script>
 
 <template>
-  <div class="win-checkbox">
+  <div class="win-checkbox" :class="{ disabled }">
     <Checkbox v-for="op in options" :key="op.value" :option="op" :checked="true" @click="() => toggleValue(op)" />
   </div>
 </template>
