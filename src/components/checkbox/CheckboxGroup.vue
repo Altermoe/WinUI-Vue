@@ -60,7 +60,7 @@ const toggleValue = (option: CheckboxOption) => {
 
 <style lang="scss" scoped>
 .win-checkbox {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
   gap: 1rem;
 }
