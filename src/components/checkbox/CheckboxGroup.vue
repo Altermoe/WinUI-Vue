@@ -53,7 +53,7 @@ const toggleValue = (option: CheckboxOption) => {
       :model-value="internalSetBind.has(op.value)"
       :disabled="disabled || op.disabled"
       :label="op.label"
-      @update:mode-value="() => toggleValue(op)"
+      @update:model-value="() => toggleValue(op)"
     />
   </div>
 </template>
