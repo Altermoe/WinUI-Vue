@@ -47,7 +47,7 @@ const toggleValue = () => {
 <style lang="scss" scoped>
 .win-checkbox__option {
   --cursor: pointer;
-  --color: rgba(0, 0, 0, 0.3614);
+  --color: rgba(0, 0, 0, 0.8956);
   --marker-text: '';
   --marker-bg-color: rgba(0, 0, 0, 0.0241);
   --marker-font-color: transparent;
@@ -57,6 +57,7 @@ const toggleValue = () => {
   flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
+  color: var(--color);
   cursor: var(--cursor);
 
   &.indeterminate {
@@ -66,6 +67,7 @@ const toggleValue = () => {
   &.disabled {
     --cursor: not-allowed;
     --marker-bg-color: transparent;
+    --color: rgba(0, 0, 0, 0.3614);
     &.checked {
       --marker-bg-color: rgba(0, 0, 0, 0.2169);
       --marker-border-color: transparent;
