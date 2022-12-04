@@ -32,13 +32,13 @@ const options2 = [
   <AppPage>
     <Card title="基础用法">
       <component :is="box">
-        <Checkbox label="单个使用" />
+        <Checkbox v-model="exampel1" label="单个使用" />
       </component>
     </Card>
 
     <Card title="单个禁用">
       <component :is="box">
-        <Checkbox label="单个使用" />
+        <Checkbox v-model="exampel1" label="单个禁用" disabled />
       </component>
     </Card>
 
@@ -61,6 +61,9 @@ const options2 = [
     </Card>
 
     <Card title="半选择">
+      <p class="mb-4">
+        半选择只会影响标记样式
+      </p>
       <component :is="box">
         <Checkbox v-model="exampel1" label="半选择" indeterminate />
         <Checkbox v-model="exampel1" label="半选择禁用" disabled indeterminate />
