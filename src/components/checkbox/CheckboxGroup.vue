@@ -6,6 +6,7 @@ type CheckboxValue = string | number
 interface CheckboxOption {
   label?: string
   value: CheckboxValue
+  disabled?: boolean
 }
 
 const props = defineProps<{
@@ -31,21 +32,36 @@ const internalBind = computed({
   },
 })
 
+const internalSetBind = computed(() => new Set(internalBind.value))
+
 const toggleValue = (option: CheckboxOption) => {
-  console.log(option)
-  // emits('update:modelValue', [])
+  if (props.disabled)
+    return
+  const set = unref(internalSetBind.value)
+  set.has(option.value)
+    ? set.delete(option.value)
+    : set.add(option.value)
+  internalBind.value = [...set]
 }
 </script>
 
 <template>
   <div class="win-checkbox" :class="{ disabled }">
-    <Checkbox v-for="op in options" :key="op.value" :option="op" :checked="true" @click="() => toggleValue(op)" />
+    <Checkbox
+      v-for="op in options"
+      :key="op.value"
+      :model-value="internalSetBind.has(op.value)"
+      :disabled="disabled || op.disabled"
+      :label="op.label"
+      @update:mode-value="() => toggleValue(op)"
+    />
   </div>
 </template>
 
 <style lang="scss" scoped>
 .win-checkbox {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 </style>
