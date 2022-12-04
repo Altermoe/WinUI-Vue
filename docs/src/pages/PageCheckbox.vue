@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import type { FunctionalComponent } from 'vue'
 import { AppPage } from '../components'
-import { Card, CheckboxGroup } from '@/components'
+import { Card, Checkbox, CheckboxGroup } from '@/components'
 
 const example = ref(['shanghai'])
+const exampel2 = ref(true)
 
 const box: FunctionalComponent = (props, ctx) => h(
   'div',
@@ -42,6 +43,13 @@ const options = [
     <Card title="禁用">
       <component :is="box">
         <CheckboxGroup v-model="example" :options="options" disabled />
+      </component>
+    </Card>
+
+    <Card title="半选择">
+      <component :is="box">
+        <Checkbox v-model="exampel2" label="半选择" indeterminate />
+        <Checkbox v-model="exampel2" label="半选择禁用" disabled indeterminate />
       </component>
     </Card>
   </AppPage>
