@@ -9,7 +9,7 @@ const props = withDefaults(defineProps<{
 })
 
 const emits = defineEmits<{
-  (e: 'update:modeValue', v: boolean): void
+  (e: 'update:modelValue', v: boolean): void
 }>()
 
 const cache = ref<boolean>(false)
@@ -21,7 +21,7 @@ const internalBind = computed({
       cache.value = v
       return
     }
-    emits('update:modeValue', v)
+    emits('update:modelValue', v)
   },
 })
 
