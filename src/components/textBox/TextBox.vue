@@ -90,7 +90,7 @@ const handleInput = (ev: Event) => {
 
 .win-textbox {
   --border-color: rgba(0, 0, 0, 0.06) rgba(0, 0, 0, 0.06) rgba(0, 0, 0, 0.16);
-  --bg-color: initial;
+  --bg-color: rgb(251, 251, 253);
   --text-width: 180px;
   --text-height: 30px;
   --text-padding: 4px 11px;
@@ -141,14 +141,24 @@ const handleInput = (ev: Event) => {
   font-size: 14px;
   outline: none;
 
+  &::placeholder {
+    transition: all ease 187ms;
+  }
+
   &:not(.disabled) {
     &:hover {
-      --bg-color: #F9F9F9;
+      --bg-color: rgb(246, 246, 246);
+    }
+    &:hover::placeholder {
+      color: rgb(95, 95, 95);
     }
 
     &:focus {
-      --bg-color: initial;
+      --bg-color: rgb(255, 255, 255);
       --border-color: rgba(0, 0, 0, 0.2);
+    }
+    &:focus::placeholder {
+      color: rgb(141, 141, 141);
     }
   }
 
