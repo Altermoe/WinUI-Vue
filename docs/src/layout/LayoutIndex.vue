@@ -58,7 +58,7 @@ const isFullScreen = ref(false)
 
                 <TextBox placeholder="搜索组件（开发中）" />
 
-                <NavMenu v-model="item" :items="items">
+                <NavMenu v-model="item" class="flex-1" :items="items">
                   <template #title="{ item: navItem }">
                     <div class="flex items-center gap-2">
                       <span class="align-middle">{{ navItem.title }}</span>
