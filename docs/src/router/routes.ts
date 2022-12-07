@@ -64,6 +64,14 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('../pages/PageSlider.vue'),
       },
       {
+        path: '/colorpicker',
+        name: 'Colorpicker',
+        meta: {
+          title: '颜色选择',
+        },
+        component: () => import('../pages/PageColorpicker.vue'),
+      },
+      {
         path: '/dropdown',
         name: 'Dropdown',
         meta: {
