@@ -89,12 +89,12 @@ const handleInput = (ev: Event) => {
 }
 
 .win-textbox {
-  --border-color: rgba(0, 0, 0, 0.06) rgba(0, 0, 0, 0.06) rgba(0, 0, 0, 0.16);
-  --bg-color: rgb(251, 251, 253);
-  --text-width: 180px;
-  --text-height: 30px;
-  --text-padding: 4px 11px;
-  --text-color: rgba(0, 0, 0, 0.61);
+  --input-border-color: rgba(0, 0, 0, 0.06) rgba(0, 0, 0, 0.06) rgba(0, 0, 0, 0.16);
+  --input-bg-color: rgb(251, 251, 253);
+  --input-text-color: rgba(0, 0, 0, 0.61);
+  --input-width: 180px;
+  --input-height: 30px;
+  --input-padding: 4px 11px;
   --cursor: normal;
 
   position: relative;
@@ -116,28 +116,28 @@ const handleInput = (ev: Event) => {
   }
 
   &.password {
-    --text-padding: 4px 31px 4px 11px;
+    --input-padding: 4px 31px 4px 11px;
   }
 
   &.clear {
-    --text-padding: 4px 31px 4px 11px;
+    --input-padding: 4px 31px 4px 11px;
   }
 }
 
 .win-textbox__input {
-  width: var(--text-width);
-  height: var(--text-height);
-  padding: var(--text-padding);
+  width: var(--input-width);
+  height: var(--input-height);
+  padding: var(--input-padding);
   border: 1px solid;
-  border-color: var(--border-color);
+  border-color: var(--input-border-color);
   border-radius: 4px;
   font-size: 14px;
   transition-property: background-color;
   transition-duration: 187ms;
   transition-timing-function: ease;
-  background-color: var(--bg-color);
+  background-color: var(--input-bg-color);
   cursor: var(--cursor, text);
-  color: var(--text-color);
+  color: var(--input-text-color);
   font-size: 14px;
   outline: none;
 
@@ -147,15 +147,15 @@ const handleInput = (ev: Event) => {
 
   &:not(.disabled) {
     &:hover {
-      --bg-color: rgb(246, 246, 246);
+      --input-bg-color: rgb(246, 246, 246);
     }
     &:hover::placeholder {
       color: rgb(95, 95, 95);
     }
 
     &:focus {
-      --bg-color: rgb(255, 255, 255);
-      --border-color: rgba(0, 0, 0, 0.2);
+      --input-bg-color: rgb(255, 255, 255);
+      --input-border-color: rgba(0, 0, 0, 0.2);
     }
     &:focus::placeholder {
       color: rgb(141, 141, 141);
@@ -164,9 +164,9 @@ const handleInput = (ev: Event) => {
 
   &.disabled {
     --cursor: not-allowed;
-    --border-color: rgba(0, 0, 0, 0.06);
-    --bg-color: rgba(249, 249, 249, 0.3);
-    --text-color: rgba(0, 0, 0, 0.3614);
+    --input-border-color: rgba(0, 0, 0, 0.06);
+    --input-bg-color: rgba(249, 249, 249, 0.3);
+    --input-text-color: rgba(0, 0, 0, 0.3614);
   }
 }
 
