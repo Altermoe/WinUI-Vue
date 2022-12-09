@@ -9,47 +9,90 @@ const props = withDefaults(defineProps<{
 const emits = defineEmits<{
   (e: 'update:modelValue', v?: string): void
 }>()
-
-const colormapRef = ref<HTMLCanvasElement | null>(null)
-const { width, height } = useElementSize(colormapRef)
-const colormapCtx = computed(() => colormapRef.value?.getContext('2d'))
-
-const drawBackground = ([w, h]: [number, number]) => {
-  const ctx = colormapCtx.value
-  if (!ctx)
-    throw new Error('无法获取绘制上下文')
-  ctx.save()
-  for (let i = 0; i < 256; i++) {
-    const gradient = ctx.createLinearGradient(0, 0, 1, 255)
-    gradient.addColorStop()
-    ctx.fillStyle = '#000'
-    ctx.fillRect(0, 0, w, h)
-  }
-  ctx.restore()
-}
-
-useResizeObserver(colormapRef, (entry) => {
-  const { width, height } = entry[0].contentRect
-  drawBackground([width, height])
-})
 </script>
 
 <template>
-  <div class="win-colorpicker" :class="{ round: type === 'hsl' }">
-    <canvas
-      ref="colormapRef"
-      class="win-colorpicker__colormap"
-      :width="width"
-      :height="height"
-    />
+  <div class="win-colorpicker">
+    <div class="win-colorpicker__colormap" :class="{ round: type === 'hsl' }" />
+    <div class="win-colorpicker__swatch-preview" />
+    <div class="win-colorpicker__slider" />
   </div>
 </template>
 
 <style lang="scss" scoped>
+.win-colorpicker {
+  --border-radius: 0;
+
+  display: grid;
+  grid-template-columns: auto auto;
+
+  &.round {
+    --border-radius: 50%
+  }
+}
+
 .win-colorpicker__colormap {
-  display: inline-block;
   width: 256px;
   height: 256px;
   overflow: hidden;
+  position: relative;
+  border-radius: 4px;
+  background: linear-gradient(90deg,
+    #FF0000 0.26%,
+    #FF9700 10.36%,
+    #CEFF00 20.46%,
+    #32FF00 30.56%,
+    #00FF67 40.66%,
+    #00FFFF 50.76%,
+    #0068FF 60.86%,
+    #2B00FF 70.96%,
+    #CD00FF 80.16%,
+    #FF009E 91.16%,
+    #FF0000 101.26%
+  );
+  &::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: linear-gradient(360deg, #FFFFFF 0%, rgba(255, 255, 255, 0.0001) 100%);
+  }
+  &.round {
+    border-radius: 50%;
+    background: conic-gradient(from -90deg at 50% 50%,
+      #FF0000 0deg,
+      #FF9700 36deg,
+      #CEFF00 72deg,
+      #32FF00 108deg,
+      #00FF67 144deg,
+      #00FFFF 180deg,
+      #0068FF 216deg,
+      #2B00FF 252deg,
+      #CD00FF 284.8deg,
+      #FF009E 324deg,
+      #FF0000 360deg
+    );
+    &::before {
+      background: radial-gradient(42.08% 42.08% at 50% 50%, #FFFFFF 0%, rgba(255, 255, 255, 0.0001) 100%);
+    }
+  }
+}
+
+.win-colorpicker__swatch-preview {
+  width: 42px;
+  height: 256px;
+  margin-left: 13px;
+  border: 1px solid rgba(0, 0, 0, 0.0578);
+  border-radius: 4px;
+}
+
+.win-colorpicker__slider {
+  margin-top: 21px;
+  grid-column: span 2;
+  width: 100%;
+  height: 32px;
+  border: 1px solid red;
 }
 </style>
