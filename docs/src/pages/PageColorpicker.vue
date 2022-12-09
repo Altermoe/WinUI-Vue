@@ -19,5 +19,11 @@ const box: FunctionalComponent = (props, ctx) => h(
         <ColorPicker v-model="example" />
       </component>
     </Card>
+
+    <Card title="HSL 模式">
+      <component :is="box">
+        <ColorPicker v-model="example" type="hsl" />
+      </component>
+    </Card>
   </AppPage>
 </template>
