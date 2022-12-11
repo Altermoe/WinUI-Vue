@@ -1,7 +1,13 @@
 <script lang="ts" setup>
+import type { CSSProperties } from 'vue'
+
 interface SliderProps {
   modelValue?: number
   disabled?: boolean
+  width?: CSSProperties['width']
+  trackHeight?: number
+  trackColor?: CSSProperties['background']
+  thumbColor?: CSSProperties['background']
   min?: number
   max?: number
 }
@@ -10,6 +16,11 @@ const props = withDefaults(defineProps<SliderProps>(), {
   modelValue: undefined,
   min: 0,
   max: 100,
+  width: '120px',
+  height: '22px',
+  trackHeight: 4,
+  trackColor: '#005FB8',
+  thumbColor: '#005FB8',
 })
 
 const emits = defineEmits<{
@@ -32,7 +43,11 @@ const bindValue = computed({
 const range = computed(() => Math.abs(props.max - props.min))
 const ratio = computed(() => (bindValue.value - props.min) / range.value)
 
+const containerRef = ref<HTMLElement | null>(null)
 const thumbRef = ref<HTMLElement | null>(null)
+
+const { width: containerW, height: containerH } = useElementSize(containerRef)
+
 useEventListener(thumbRef, 'pointerdown', (ev) => {
   if (props.disabled || (ev as PointerEvent).button !== 0)
     return
@@ -63,7 +78,18 @@ useEventListener(thumbRef, 'pointerdown', (ev) => {
 </script>
 
 <template>
-  <div class="win-slider" :class="{ disabled }">
+  <div
+    ref="containerRef"
+    class="win-slider"
+    :class="{ disabled }"
+    :style="{
+      '--slider-width': `${containerW}px`,
+      '--slider-track-height': `${trackHeight / 2}px`,
+      '--slider-track-color': trackColor,
+      '--slider-thumb-color': thumbColor,
+      width,
+    }"
+  >
     <div ref="thumbRef" class="win-slider__thumb" />
   </div>
 </template>
@@ -72,10 +98,7 @@ useEventListener(thumbRef, 'pointerdown', (ev) => {
 .win-slider {
   --slider-cursor: pointer;
   --slider-height: 22px;
-  --slider-width: 120px;
-  --slider-track-color: #005FB8;
   --slider-thumb-bg-ratio: 0%;
-  --slider-thumb-color: #005FB8;
   --slider-thumb-radius: 6px;
   --slider-thumb-ratio: v-bind(ratio);
 
@@ -86,13 +109,13 @@ useEventListener(thumbRef, 'pointerdown', (ev) => {
 
   &::before {
     content: '';
-    background: var(--slider-thumb-color);
+    background: var(--slider-track-color);
     width: 100%;
     height: 100%;
     position: absolute;
     top: 0;
     left: 0;
-    clip-path: inset(calc(var(--slider-height) / 2 - 2px) calc(var(--slider-height) / 2 - 2px) round 2px);
+    clip-path: inset(calc(var(--slider-height) / 2 - var(--slider-track-height)) calc(var(--slider-height) / 2 - 2px) round var(--slider-track-height));
   }
 
   &:not(.disabled) {
@@ -105,7 +128,6 @@ useEventListener(thumbRef, 'pointerdown', (ev) => {
       --slider-thumb-bg-ratio: 100%;
     }
   }
-
   &.disabled {
     --slider-cursor: not-allowed;
     --slider-thumb-color: rgba(0, 0, 0, 0.2169);
