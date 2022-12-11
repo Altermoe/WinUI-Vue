@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { Slider } from '../'
+
 const props = withDefaults(defineProps<{
   modelValue?: string
   type?: 'rgba' | 'hsl'
@@ -15,7 +17,14 @@ const emits = defineEmits<{
   <div class="win-colorpicker">
     <div class="win-colorpicker__colormap" :class="{ round: type === 'hsl' }" />
     <div class="win-colorpicker__swatch-preview" />
-    <div class="win-colorpicker__slider" />
+    <div class="win-colorpicker__slider">
+      <Slider
+        width="100%"
+        :track-height="12"
+        track-color="linear-gradient(to right, #000, transparent)"
+        thumb-color="#000"
+      />
+    </div>
   </div>
 </template>
 
@@ -93,6 +102,6 @@ const emits = defineEmits<{
   grid-column: span 2;
   width: 100%;
   height: 32px;
-  border: 1px solid red;
+  // border: 1px solid red;
 }
 </style>
