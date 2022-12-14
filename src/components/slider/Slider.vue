@@ -17,7 +17,6 @@ const props = withDefaults(defineProps<SliderProps>(), {
   min: 0,
   max: 100,
   width: '120px',
-  height: '22px',
   trackHeight: 4,
   trackColor: '#005FB8',
   thumbColor: '#005FB8',
@@ -48,29 +47,44 @@ const thumbRef = ref<HTMLElement | null>(null)
 
 const { width: containerW, height: containerH } = useElementSize(containerRef)
 
-useEventListener(thumbRef, 'pointerdown', (ev) => {
-  if (props.disabled || (ev as PointerEvent).button !== 0)
+useEventListener<PointerEvent>(thumbRef, 'pointerdown', (ev) => {
+  if (props.disabled || ev.button !== 0)
     return
 
   const container = (ev.target as HTMLElement).parentElement as HTMLElement
-  const { x: rawXmin, width: rawWidth } = container.getBoundingClientRect()
-  const rawXmax = rawXmin + rawWidth
+  const { x: cxmin, y: cymin, width: cw, height: ch } = container.getBoundingClientRect()
+  console.log(cw, ch, container.clientWidth, container.clientHeight)
+  /** 容器的斜率 */
+  const k1 = ch / cw
+  /** 轨道端点为了在视觉上适配滑块而向内缩减的偏移量 */
   const offset = parseInt(getComputedStyle(container)
     .getPropertyValue('--slider-height')
     .match(/\d+/)
     ?.[0] ?? '',
   ) / 2
-  const xmin = rawXmin + offset
-  const xmax = rawXmax - offset
-  const width = xmax - xmin
+  /** 计算容器长度（不含缩减），这里不使用宽度是因为要适配不同旋转角度的轨道 */
+  const len = Math.hypot(cw, ch) - 2 * offset
+
+  /** 缓存点击的起始位置 */
+  const startPoint = [ev.x, ev.y]
 
   const stopPointermoveListerner = useEventListener('pointermove', (moveEv) => {
-    const { x } = moveEv as PointerEvent
-    const posRatio = Math.min(Math.max(0, (x - xmin) / width), 1)
+    const { x, y } = moveEv as PointerEvent
+    /** 移动线段的长度 */
+    const moveLen = Math.hypot(x - startPoint[0], y - startPoint[1])
+    /** 移动线段的斜率 */
+    const k2 = (y - startPoint[1]) / (x - startPoint[0])
+    /** 移动线段与容器线段的夹角 */
+    const arc = Math.atan((k2 - k1) / (1 + k1 * k2))
+    /** 移动线段在容器线段上的投影距离 */
+    const peojectionDist = moveLen * Math.sin(arc)
+    console.log({ peojectionDist })
+    /** 投影长度占容器线段的比值 */
+    const posRatio = Math.min(Math.max(0, peojectionDist / len), 1)
     bindValue.value = posRatio * range.value
   })
 
-  const stopPointerupListener = useEventListener('pointerup', () => {
+  const stopPointerupListener = useEventListener('click', () => {
     stopPointermoveListerner()
     stopPointerupListener()
   })
