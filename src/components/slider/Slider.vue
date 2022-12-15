@@ -53,6 +53,7 @@ useEventListener<PointerEvent>(thumbRef, 'pointerdown', (ev) => {
 
   const container = (ev.target as HTMLElement).parentElement as HTMLElement
   const { x: cxmin, y: cymin, width: cw, height: ch } = container.getBoundingClientRect()
+  // TODO 这个算法不适用水平情况，需要更改设计
   console.log(cw, ch, container.clientWidth, container.clientHeight)
   /** 容器的斜率 */
   const k1 = ch / cw
