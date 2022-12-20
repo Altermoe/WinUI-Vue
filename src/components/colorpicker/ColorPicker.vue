@@ -40,6 +40,7 @@ const emits = defineEmits<{
   }
 }
 
+// 左上的大框颜色选择器
 .win-colorpicker__colormap {
   width: 256px;
   height: 256px;
@@ -89,6 +90,7 @@ const emits = defineEmits<{
   }
 }
 
+// 右边的颜色预览器
 .win-colorpicker__swatch-preview {
   width: 42px;
   height: 256px;
@@ -97,6 +99,8 @@ const emits = defineEmits<{
   border-radius: 4px;
 }
 
+// 饱和度滑动选择器
+// TODO 换成内部组件
 .win-colorpicker__slider {
   margin-top: 21px;
   grid-column: span 2;
