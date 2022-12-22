@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { CSSProperties } from 'vue'
+import Flatten from '@flatten-js/core'
 
 interface SliderProps {
   modelValue?: number
@@ -47,47 +48,46 @@ const thumbRef = ref<HTMLElement | null>(null)
 
 const { width: containerW, height: containerH } = useElementSize(containerRef)
 
-useEventListener<PointerEvent>(thumbRef, 'pointerdown', (ev) => {
-  if (props.disabled || ev.button !== 0)
+/** 轨道端点为了在视觉上适配滑块而向内缩减的偏移量 */
+const offset = 11
+
+// 任意角度
+useEventListener<PointerEvent>(thumbRef, 'pointerdown', (startEv) => {
+  if (props.disabled || startEv.button !== 0 || !containerRef.value)
     return
 
-  const container = (ev.target as HTMLElement).parentElement as HTMLElement
-  const { x: cxmin, y: cymin, width: cw, height: ch } = container.getBoundingClientRect()
-  // TODO 这个算法不适用水平情况，需要更改设计
-  console.log(cw, ch, container.clientWidth, container.clientHeight)
-  /** 容器的斜率 */
-  const k1 = ch / cw
-  /** 轨道端点为了在视觉上适配滑块而向内缩减的偏移量 */
-  const offset = parseInt(getComputedStyle(container)
-    .getPropertyValue('--slider-height')
-    .match(/\d+/)
-    ?.[0] ?? '',
-  ) / 2
-  /** 计算容器长度（不含缩减），这里不使用宽度是因为要适配不同旋转角度的轨道 */
-  const len = Math.hypot(cw, ch) - 2 * offset
+  // 获取外接正交矩形的坐标
+  const { x: x1, y: y1 } = containerRef.value.getBoundingClientRect()
+  console.log({ x1, y1 })
 
-  /** 缓存点击的起始位置 */
-  const startPoint = [ev.x, ev.y]
+  // 获取变换矩阵
+  const { transform } = getComputedStyle(containerRef.value)
+  const [, scaleX, skewY, skewX, scaleY, tx, ty] = (!transform || transform === 'none')
+    ? [undefined, 1, 0, 0, 1, 0, 0]
+    : transform.match(/\((.+?),(.+?),(.+?),(.+?),(.+?),(.+?)\)/)?.map(Number) as number[]
+  const matrix = { scaleX, scaleY, skewY, skewX, translateX: tx, translateY: ty }
+  console.log('[变换矩阵]', matrix)
 
-  const stopPointermoveListerner = useEventListener('pointermove', (moveEv) => {
-    const { x, y } = moveEv as PointerEvent
-    /** 移动线段的长度 */
-    const moveLen = Math.hypot(x - startPoint[0], y - startPoint[1])
-    /** 移动线段的斜率 */
-    const k2 = (y - startPoint[1]) / (x - startPoint[0])
-    /** 移动线段与容器线段的夹角 */
-    const arc = Math.atan((k2 - k1) / (1 + k1 * k2))
-    /** 移动线段在容器线段上的投影距离 */
-    const peojectionDist = moveLen * Math.sin(arc)
-    console.log({ peojectionDist })
-    /** 投影长度占容器线段的比值 */
-    const posRatio = Math.min(Math.max(0, peojectionDist / len), 1)
-    bindValue.value = posRatio * range.value
+  // 根据外接正交矩形和变换矩阵求出原始 DOM 的坐标
+  const x = (1 / (scaleX * scaleY - skewY * skewX)) * (scaleY * (x1 - tx) - skewX * (y1 - ty))
+  const y = (1 / (scaleX * scaleY - skewY * skewX)) * (-skewY * (x1 - tx) + scaleX * (y1 - ty))
+
+  console.log('[变换前的坐标]', [x, y])
+
+  // 计算旋转角度
+  // const angle = Math.atan2(matrix[1], matrix[0]) * 180 / Math.PI
+
+  const { x: startX, y: startY } = startEv
+
+  const stopMoveListener = useEventListener('pointermove', (moveEv) => {
+    const { x: moveX, y: moveY } = moveEv
+    const moveVector = Flatten.vector(Flatten.point(startX, startY), Flatten.point(moveX, moveY))
+    console.log('[移动矢量]', moveVector.length)
   })
 
-  const stopPointerupListener = useEventListener('click', () => {
-    stopPointermoveListerner()
-    stopPointerupListener()
+  const stopUpListener = useEventListener('pointerup', () => {
+    stopMoveListener()
+    stopUpListener()
   })
 })
 </script>
@@ -100,8 +100,6 @@ useEventListener<PointerEvent>(thumbRef, 'pointerdown', (ev) => {
     :style="{
       '--slider-width': `${containerW}px`,
       '--slider-track-height': `${trackHeight / 2}px`,
-      '--slider-track-color': trackColor,
-      '--slider-thumb-color': thumbColor,
       width,
     }"
   >
@@ -116,11 +114,16 @@ useEventListener<PointerEvent>(thumbRef, 'pointerdown', (ev) => {
   --slider-thumb-bg-ratio: 0%;
   --slider-thumb-radius: 6px;
   --slider-thumb-ratio: v-bind(ratio);
+  --slider-track-color: v-bind(trackColor);
+  --slider-thumb-color: v-bind(thumbColor);
 
   width: var(--slider-width);
   height: var(--slider-height);
   position: relative;
   transition: all ease 176ms;
+  user-select: none;
+  transform: rotate(-45deg);
+  // transform-origin: 0 0;
 
   &::before {
     content: '';
