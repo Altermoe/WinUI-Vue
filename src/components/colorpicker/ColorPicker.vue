@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { Slider } from '../'
+import { Slider, TextBox } from '../'
 
 const props = withDefaults(defineProps<{
   modelValue?: string
@@ -11,6 +11,8 @@ const props = withDefaults(defineProps<{
 const emits = defineEmits<{
   (e: 'update:modelValue', v?: string): void
 }>()
+
+const opacity = ref('1')
 </script>
 
 <template>
@@ -24,6 +26,7 @@ const emits = defineEmits<{
         track-color="linear-gradient(to right, #000, transparent)"
         thumb-color="#000"
       />
+      <TextBox v-model="opacity" />
     </div>
   </div>
 </template>
