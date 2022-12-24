@@ -26,6 +26,12 @@ const opacity = ref('1')
         track-color="linear-gradient(to right, #000, transparent)"
         thumb-color="#000"
       />
+    </div>
+    <div class="win-colorpicker__input">
+      <TextBox v-model="opacity" />
+      <TextBox v-model="opacity" />
+      <TextBox v-model="opacity" />
+      <TextBox v-model="opacity" />
       <TextBox v-model="opacity" />
     </div>
   </div>
@@ -103,12 +109,17 @@ const opacity = ref('1')
 }
 
 // 饱和度滑动选择器
-// TODO 换成内部组件
 .win-colorpicker__slider {
   margin-top: 21px;
   grid-column: span 2;
   width: 100%;
   height: 32px;
-  // border: 1px solid red;
+}
+
+.win-colorpicker__input {
+  grid-column: span 2;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
 }
 </style>
