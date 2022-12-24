@@ -99,6 +99,7 @@ const handleInput = (ev: Event) => {
 
   position: relative;
   overflow: hidden;
+  width: fit-content;
 
   &.focused::before {
     content: '';
