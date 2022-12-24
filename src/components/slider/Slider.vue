@@ -122,8 +122,6 @@ useEventListener<PointerEvent>(thumbRef, 'pointerdown', (startEv) => {
   position: relative;
   transition: all ease 176ms;
   user-select: none;
-  transform: rotate(-45deg);
-  // transform-origin: 0 0;
 
   &::before {
     content: '';
