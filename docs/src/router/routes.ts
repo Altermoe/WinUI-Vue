@@ -8,6 +8,15 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('../layout/LayoutIndex.vue'),
     children: [
       {
+        path: '/about-me',
+        name: 'About me',
+        meta: {
+          title: '关于我',
+          hidden: true,
+        },
+        component: () => import('../pages/PageAboutme.vue'),
+      },
+      {
         path: '/button',
         name: 'Button',
         meta: {

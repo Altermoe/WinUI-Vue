@@ -7,5 +7,7 @@ declare module 'vue-router' {
     title?: string
     /** 路由图标 - 可用于面包屑、侧边栏 */
     icon?: string
+    /** 是否可见 */
+    hidden?: boolean
   }
 }
