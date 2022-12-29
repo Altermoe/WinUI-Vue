@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+defineProps<{
+  image?: ImageBitmap
+  offset?: [number, number]
+}>()
 </script>
 
 <template>
