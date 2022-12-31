@@ -4,6 +4,7 @@
  * 是考虑到 Blob 可以比较方便的转换为 File、ImageBitmap 等类型
  */
 const props = defineProps<{
+  rawImage: Blob
   modelValue?: Blob
 }>()
 
@@ -11,12 +12,16 @@ const emits = defineEmits<{
   (e: 'update:modelValue', v?: Blob): void
 }>()
 
+const rawImageBlob = toRef(props, 'rawImage')
+const rawImageUrl = useObjectUrl(rawImageBlob)
+
 const containerRef = ref<HTMLElement | null>(null)
 const { width, height } = useElementBounding(containerRef)
 </script>
 
 <template>
   <div ref="containerRef" class="win-image-editor">
+    <img :src="rawImageUrl">
     <canvas class="win-image-editor__canvas" :width="width" :height="height" />
   </div>
 </template>
