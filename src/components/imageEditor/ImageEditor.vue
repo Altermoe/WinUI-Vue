@@ -1,7 +1,14 @@
 <script lang="ts" setup>
-defineProps<{
-  image?: ImageBitmap
-  offset?: [number, number]
+/**
+ * 之所以选择 Blob 作为绑定类型，
+ * 是考虑到 Blob 可以比较方便的转换为 File、ImageBitmap 等类型
+ */
+const props = defineProps<{
+  modelValue?: Blob
+}>()
+
+const emits = defineEmits<{
+  (e: 'update:modelValue', v?: Blob): void
 }>()
 
 const containerRef = ref<HTMLElement | null>(null)
