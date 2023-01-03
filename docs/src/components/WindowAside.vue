@@ -1,3 +1,7 @@
+<script lang="ts" setup>
+/** 侧边栏上部个人信息按钮 */
+</script>
+
 <template>
   <router-link
     active-class="router-button-active"
