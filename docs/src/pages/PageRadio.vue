@@ -3,7 +3,7 @@ import type { FunctionalComponent } from 'vue'
 import { AppPage } from '../components'
 import { Card, RadioGroup } from '@/components'
 
-const example = ref('shanghai')
+const example = ref('banya')
 
 const box: FunctionalComponent = (props, ctx) => h(
   'div',
@@ -13,20 +13,20 @@ const box: FunctionalComponent = (props, ctx) => h(
 
 const options = [
   {
-    label: '北京',
-    value: 'beijing',
+    label: '板鸭',
+    value: 'banana',
   },
   {
-    label: '上海',
-    value: 'shanghai',
+    label: '板鸭',
+    value: 'banya',
   },
   {
-    label: '广州',
-    value: 'guangzhou',
+    label: '烧鸡',
+    value: 'shaoji',
   },
   {
-    label: '深圳',
-    value: 'shenzhen',
+    label: '咕呀',
+    value: 'guya',
   },
 ]
 </script>
