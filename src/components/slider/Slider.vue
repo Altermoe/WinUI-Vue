@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import type { CSSProperties } from 'vue'
-import Flatten from '@flatten-js/core'
 
 interface SliderProps {
   modelValue?: number
@@ -48,48 +47,9 @@ const thumbRef = ref<HTMLElement | null>(null)
 
 const { width: containerW, height: containerH } = useElementSize(containerRef)
 
-/** 轨道端点为了在视觉上适配滑块而向内缩减的偏移量 */
-const offset = 11
-
-// 任意角度
-useEventListener<PointerEvent>(thumbRef, 'pointerdown', (startEv) => {
-  if (props.disabled || startEv.button !== 0 || !containerRef.value)
-    return
-
-  // 获取外接正交矩形的坐标
-  const { x: x1, y: y1 } = containerRef.value.getBoundingClientRect()
-  console.log({ x1, y1 })
-
-  // 获取变换矩阵
-  const { transform } = getComputedStyle(containerRef.value)
-  const [, scaleX, skewY, skewX, scaleY, tx, ty] = (!transform || transform === 'none')
-    ? [undefined, 1, 0, 0, 1, 0, 0]
-    : transform.match(/\((.+?),(.+?),(.+?),(.+?),(.+?),(.+?)\)/)?.map(Number) as number[]
-  const matrix = { scaleX, scaleY, skewY, skewX, translateX: tx, translateY: ty }
-  console.log('[变换矩阵]', matrix)
-
-  // 根据外接正交矩形和变换矩阵求出原始 DOM 的坐标
-  const x = (1 / (scaleX * scaleY - skewY * skewX)) * (scaleY * (x1 - tx) - skewX * (y1 - ty))
-  const y = (1 / (scaleX * scaleY - skewY * skewX)) * (-skewY * (x1 - tx) + scaleX * (y1 - ty))
-
-  console.log('[变换前的坐标]', [x, y])
-
-  // 计算旋转角度
-  // const angle = Math.atan2(matrix[1], matrix[0]) * 180 / Math.PI
-
-  const { x: startX, y: startY } = startEv
-
-  const stopMoveListener = useEventListener('pointermove', (moveEv) => {
-    const { x: moveX, y: moveY } = moveEv
-    const moveVector = Flatten.vector(Flatten.point(startX, startY), Flatten.point(moveX, moveY))
-    console.log('[移动矢量]', moveVector.length)
-  })
-
-  const stopUpListener = useEventListener('pointerup', () => {
-    stopMoveListener()
-    stopUpListener()
-  })
-})
+const handleChange = (ev: Event) => {
+  console.log('change', ev)
+}
 </script>
 
 <template>
@@ -103,6 +63,7 @@ useEventListener<PointerEvent>(thumbRef, 'pointerdown', (startEv) => {
       width,
     }"
   >
+    <input class="shadow-slide" type="ranger" :min="min" :max="max" @change="handleChange">
     <div ref="thumbRef" class="win-slider__thumb" />
   </div>
 </template>
