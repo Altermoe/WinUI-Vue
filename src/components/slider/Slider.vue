@@ -8,6 +8,7 @@ interface SliderProps {
   trackHeight?: number
   trackColor?: CSSProperties['background']
   thumbColor?: CSSProperties['background']
+  step?: number
   min?: number
   max?: number
 }
@@ -16,6 +17,7 @@ const props = withDefaults(defineProps<SliderProps>(), {
   modelValue: undefined,
   min: 0,
   max: 100,
+  step: 1,
   width: '120px',
   trackHeight: 4,
   trackColor: '#005FB8',
@@ -43,12 +45,19 @@ const range = computed(() => Math.abs(props.max - props.min))
 const ratio = computed(() => (bindValue.value - props.min) / range.value)
 
 const containerRef = ref<HTMLElement | null>(null)
-const thumbRef = ref<HTMLElement | null>(null)
 
 const { width: containerW, height: containerH } = useElementSize(containerRef)
 
+const inputRef = ref<HTMLInputElement | null>(null)
+onMounted(() => {
+  if (!inputRef.value || props.modelValue === undefined)
+    return
+  if (props.modelValue === undefined || props.modelValue < props.min || props.modelValue > props.max)
+    return
+  inputRef.value.value = `${props.modelValue}`
+})
 const handleChange = (ev: Event) => {
-  console.log('change', ev)
+  bindValue.value = Number((ev.target as HTMLInputElement).value)
 }
 </script>
 
@@ -63,87 +72,17 @@ const handleChange = (ev: Event) => {
       width,
     }"
   >
-    <input class="shadow-slide" type="ranger" :min="min" :max="max" @change="handleChange">
-    <div ref="thumbRef" class="win-slider__thumb" />
+    <input ref="inputRef" class="shadow-slide" type="range" :min="min" :max="max" :step="step" @input="handleChange">
   </div>
 </template>
 
 <style lang="scss" scoped>
-.win-slider {
-  --slider-cursor: pointer;
-  --slider-height: 22px;
-  --slider-thumb-bg-ratio: 0%;
-  --slider-thumb-radius: 6px;
-  --slider-thumb-ratio: v-bind(ratio);
-  --slider-track-color: v-bind(trackColor);
-  --slider-thumb-color: v-bind(thumbColor);
+// .win-slider {
+// }
 
+.shadow-slide {
+  display: block;
   width: var(--slider-width);
-  height: var(--slider-height);
-  position: relative;
-  transition: all ease 176ms;
-  user-select: none;
-
-  &::before {
-    content: '';
-    background: var(--slider-track-color);
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    clip-path: inset(calc(var(--slider-height) / 2 - var(--slider-track-height)) calc(var(--slider-height) / 2 - 2px) round var(--slider-track-height));
-  }
-
-  &:not(.disabled) {
-    &:hover {
-      --slider-thumb-radius: 7px;
-    }
-
-    &:active {
-      --slider-thumb-radius: 5px;
-      --slider-thumb-bg-ratio: 100%;
-    }
-  }
-  &.disabled {
-    --slider-cursor: not-allowed;
-    --slider-thumb-color: rgba(0, 0, 0, 0.2169);
-    --slider-track-color: rgba(0, 0, 0, 0.2169);
-  }
-}
-
-.win-slider__thumb {
-  cursor: var(--slider-cursor);
-  width: var(--slider-height);
-  height: var(--slider-height);
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.06) var(--slider-thumb-bg-ratio), rgba(0, 0, 0, 0.16));
-  border-radius: 50%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform: translateX(calc(var(--slider-thumb-ratio) * (var(--slider-width) - var(--slider-height))));
-
-  &::before {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    left: 0;
-    top: 0;
-    background: #fff;
-    clip-path: circle(10px);
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    left: 0;
-    top: 0;
-    background: var(--slider-thumb-color);
-    clip-path: circle(var(--slider-thumb-radius));
-    transition: all ease 176ms;
-  }
+  // opacity: 0;
 }
 </style>

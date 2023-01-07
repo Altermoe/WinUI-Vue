@@ -3,7 +3,7 @@ import type { FunctionalComponent } from 'vue'
 import { AppPage } from '../components'
 import { Card, Slider } from '@/components'
 
-const example = ref(50)
+const example = ref(30)
 
 const box: FunctionalComponent = (props, ctx) => h(
   'div',
