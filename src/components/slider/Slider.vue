@@ -28,6 +28,9 @@ const emits = defineEmits<{
   (e: 'update:modelValue', v: number): void
 }>()
 
+const containerRef = ref<HTMLElement | null>(null)
+const inputRef = ref<HTMLInputElement | null>(null)
+
 const internalBind = ref(0)
 
 const bindValue = computed({
@@ -44,11 +47,8 @@ const bindValue = computed({
 const range = computed(() => Math.abs(props.max - props.min))
 const ratio = computed(() => (bindValue.value - props.min) / range.value)
 
-const containerRef = ref<HTMLElement | null>(null)
-
 const { width: containerW, height: containerH } = useElementSize(containerRef)
 
-const inputRef = ref<HTMLInputElement | null>(null)
 onMounted(() => {
   if (!inputRef.value || props.modelValue === undefined)
     return
@@ -72,7 +72,7 @@ const handleChange = (ev: Event) => {
       width,
     }"
   >
-    <input ref="inputRef" class="shadow-slide" type="range" :min="min" :max="max" :step="step" @input="handleChange">
+    <input ref="inputRef" class="shadow-slide" type="range" :min="min" :max="max" :value="bindValue" :step="step" @input="handleChange">
   </div>
 </template>
 
