@@ -12,14 +12,14 @@ const ctx = getCurrentInstance()
 </script>
 
 <template>
-  <div class="win-card" v-bind="$attrs" :class="{ bordered }">
+  <div class="win-card" :class="{ bordered }">
     <div v-if="title" class="win-card-title">
       <slot name="title">
         {{ title }}
       </slot>
     </div>
 
-    <div class="win-card-main">
+    <div class="win-card-main" v-bind="$attrs">
       <slot name="default" />
     </div>
 

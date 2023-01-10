@@ -1,5 +1,7 @@
 <script lang="ts" setup>
 import type { CSSProperties } from 'vue'
+import { fromEvent, map, switchMap, takeUntil } from 'rxjs'
+import Flatten from '@flatten-js/core'
 
 interface SliderProps {
   modelValue?: number
@@ -29,7 +31,9 @@ const emits = defineEmits<{
 }>()
 
 const containerRef = ref<HTMLElement | null>(null)
-const inputRef = ref<HTMLInputElement | null>(null)
+const thumbRef = ref<HTMLElement | null>(null)
+const headRef = ref<HTMLElement | null>(null)
+const tailRef = ref<HTMLElement | null>(null)
 
 const internalBind = ref(0)
 
@@ -45,26 +49,67 @@ const bindValue = computed({
 })
 
 const range = computed(() => Math.abs(props.max - props.min))
+const { width: containerW } = useElementSize(containerRef)
+const { width: thumbW } = useElementSize(thumbRef)
 const ratio = computed(() => (bindValue.value - props.min) / range.value)
 
-const { width: containerW, height: containerH } = useElementSize(containerRef)
+const getHorizontalCentralAxis = (a: HTMLElement, b: HTMLElement) => {
+  const shapeA = a.getBoundingClientRect()
+  const shapeB = b.getBoundingClientRect()
+  return Flatten.vector(
+    Flatten.point(shapeA.x, shapeA.y),
+    Flatten.point(shapeB.x, shapeB.y),
+  )
+}
+
+const clamp = (min: number, max: number, value: number) => {
+  return Math.max(min, Math.min(max, value))
+}
 
 onMounted(() => {
-  if (!inputRef.value || props.modelValue === undefined)
+  if (!thumbRef.value)
     return
-  if (props.modelValue === undefined || props.modelValue < props.min || props.modelValue > props.max)
-    return
-  inputRef.value.value = `${props.modelValue}`
+
+  const pointerdown = fromEvent<PointerEvent>(thumbRef.value, 'pointerdown')
+  const pointermove = fromEvent<PointerEvent>(window, 'pointermove')
+  const pointerup = fromEvent(window, 'pointerup')
+
+  pointerdown
+    .pipe(switchMap(({ x: startX, y: startY }) => {
+      const start = Flatten.point(startX, startY)
+      const startValue = bindValue.value
+      return pointermove.pipe(
+        takeUntil(pointerup),
+        map(({ x, y }) => {
+          if (!headRef.value || !tailRef.value) {
+            return {
+              moveLen: 0,
+              startValue,
+            }
+          }
+          const axisVector = getHorizontalCentralAxis(headRef.value, tailRef.value)
+          const moveVector = Flatten.vector(start, Flatten.point(x, y))
+          const angle = Math.cos(moveVector.angleTo(axisVector))
+          const directionalCoefficient = angle / Math.abs(angle)
+          return {
+            moveLen: moveVector.projectionOn(axisVector).length * directionalCoefficient,
+            startValue,
+          }
+        }),
+      )
+    }))
+    .subscribe(({ startValue, moveLen }) => {
+      const result = clamp(props.min, props.max, startValue + moveLen)
+      bindValue.value = Math.floor(result / props.step) * props.step
+    })
 })
-const handleChange = (ev: Event) => {
-  bindValue.value = Number((ev.target as HTMLInputElement).value)
-}
 </script>
 
 <template>
   <div
     ref="containerRef"
     class="win-slider"
+    v-bind="$attrs"
     :class="{ disabled }"
     :style="{
       '--slider-width': `${containerW}px`,
@@ -72,17 +117,43 @@ const handleChange = (ev: Event) => {
       width,
     }"
   >
-    <input ref="inputRef" class="shadow-slide" type="range" :min="min" :max="max" :value="bindValue" :step="step" @input="handleChange">
+    <div ref="headRef" class="positioning-element positioning-element__head" />
+    <div ref="tailRef" class="positioning-element positioning-element__tail" />
+    <div ref="thumbRef" class="thumb" :style="{ transform: `translate(${ratio * (containerW - thumbW)}px, 0)` }" />
   </div>
 </template>
 
 <style lang="scss" scoped>
-// .win-slider {
-// }
+.win-slider {
+  border: 1px solid red;
+  width: v-bind(width);
+  height: 24px;
+  position: relative;
+  background: linear-gradient(transparent 49%, red 50%, transparent 50%);
 
-.shadow-slide {
-  display: block;
-  width: var(--slider-width);
-  // opacity: 0;
+  .thumb {
+    width: 22px;
+    height: 22px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: blue;
+    user-select: none;
+  }
+
+  .positioning-element {
+    width: 0;
+    height: 0;
+    top: 50%;
+    position: absolute;
+  }
+
+  .positioning-element__head {
+    left: 0;
+  }
+
+  .positioning-element__tail {
+    left: 100%;
+  }
 }
 </style>
