@@ -19,7 +19,7 @@ const item = computed({
 
 const visible = refAutoReset(true, 1000)
 
-const isFullScreen = ref(false)
+const isFullScreen = ref(true)
 </script>
 
 <template>
