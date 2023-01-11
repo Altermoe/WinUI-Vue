@@ -106,12 +106,6 @@ onMounted(() => {
       bindValue.value = Math.floor(result / props.step) * props.step
     })
 })
-
-onMounted(() => {
-  const v1 = Flatten.vector(1, 0)
-  const v2 = Flatten.vector(1, 0)
-  console.log('angel', v1.angleTo(v2))
-})
 </script>
 
 <template>
