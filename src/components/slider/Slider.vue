@@ -66,6 +66,17 @@ const clamp = (min: number, max: number, value: number) => {
   return Math.max(min, Math.min(max, value))
 }
 
+const getProjectionLength = (v1: Flatten.Vector, v2: Flatten.Vector) => {
+  try {
+    const angle = Math.cos(v1.angleTo(v2))
+    const directionalCoefficient = angle / Math.abs(angle)
+    return v1.projectionOn(v2).length * directionalCoefficient
+  }
+  catch {
+    return 0
+  }
+}
+
 onMounted(() => {
   if (!thumbRef.value)
     return
@@ -81,20 +92,12 @@ onMounted(() => {
       return pointermove.pipe(
         takeUntil(pointerup),
         map(({ x, y }) => {
-          if (!headRef.value || !tailRef.value) {
-            return {
-              moveLen: 0,
-              startValue,
-            }
-          }
+          if (!headRef.value || !tailRef.value)
+            return { moveLen: 0, startValue }
           const axisVector = getHorizontalCentralAxis(headRef.value, tailRef.value)
           const moveVector = Flatten.vector(start, Flatten.point(x, y))
-          const angle = Math.cos(moveVector.angleTo(axisVector))
-          const directionalCoefficient = angle / Math.abs(angle)
-          return {
-            moveLen: moveVector.projectionOn(axisVector).length * directionalCoefficient,
-            startValue,
-          }
+          const moveLen = getProjectionLength(moveVector, axisVector)
+          return { moveLen, startValue }
         }),
       )
     }))
@@ -102,6 +105,12 @@ onMounted(() => {
       const result = clamp(props.min, props.max, startValue + moveLen)
       bindValue.value = Math.floor(result / props.step) * props.step
     })
+})
+
+onMounted(() => {
+  const v1 = Flatten.vector(1, 0)
+  const v2 = Flatten.vector(1, 0)
+  console.log('angel', v1.angleTo(v2))
 })
 </script>
 
