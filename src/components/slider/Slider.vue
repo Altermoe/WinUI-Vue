@@ -43,6 +43,8 @@ const tailRef = ref<HTMLElement | null>(null)
 
 const { width: containerW } = useElementSize(containerRef)
 const { width: thumbW } = useElementSize(thumbRef)
+/** 容器长度减去滑块长度后的实际可用滑动长度 */
+const slideLength = computed(() => containerW.value - thumbW.value)
 
 /** 非受控状态下的内部缓存值 */
 const internalBind = ref(0)
@@ -59,8 +61,10 @@ const bindValue = computed({
   },
 })
 
+/** 区间值的总大小 */
+const range = computed(() => Math.abs(props.max - props.min))
 /** 当前值占区间的比 */
-const ratio = computed(() => (bindValue.value - props.min) / Math.abs(props.max - props.min))
+const ratio = computed(() => (bindValue.value - props.min) / range.value)
 
 /** 将定位元素转换为矢量 */
 const getHorizontalCentralAxis = (a: HTMLElement, b: HTMLElement) => {
@@ -113,7 +117,10 @@ const slideObservable = pointerdown.pipe(
 )
 
 useSubscription(slideObservable.subscribe(({ startValue, moveLen }) => {
-  const result = clamp(props.min, props.max, startValue + moveLen)
+  // 先算出移动距离占可滑动长度的比
+  const lenRatio = moveLen / slideLength.value
+  // 再根据区间长度和上下限计算应该得到的数值
+  const result = clamp(props.min, props.max, startValue + lenRatio * range.value)
   bindValue.value = Math.floor(result / props.step) * props.step
 }))
 </script>
@@ -132,7 +139,7 @@ useSubscription(slideObservable.subscribe(({ startValue, moveLen }) => {
   >
     <div ref="headRef" class="positioning-element positioning-element__head" />
     <div ref="tailRef" class="positioning-element positioning-element__tail" />
-    <div ref="thumbRef" class="thumb" :style="{ transform: `translate(${ratio * (containerW - thumbW)}px, 0)` }" />
+    <div ref="thumbRef" class="thumb" :style="{ transform: `translate(${ratio * slideLength}px, 0)` }" />
   </div>
 </template>
 
