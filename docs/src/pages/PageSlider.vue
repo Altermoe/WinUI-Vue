@@ -16,16 +16,18 @@ const box: FunctionalComponent = (props, ctx) => h(
 
 <template>
   <AppPage>
-    <Card title="基础用法" class="flex">
-      <div class="flex-1">
-        <div>{{ example }}</div>
-        <component :is="box">
-          <Slider v-model="example" :style="{ transform: `rotate(${rotate}deg)` }" />
-        </component>
-      </div>
-      <div class="flex-1 flex flex-col items-start">
-        旋转角度
-        <input :min="0" :max="360" :value="`${rotate}`" type="range" @input="(ev) => rotate = Number((ev.target as HTMLInputElement).value)">
+    <Card title="基础用法">
+      <div class="flex flex-wrap gap-2">
+        <div class="flex-1">
+          <div>{{ example }}</div>
+          <component :is="box">
+            <Slider v-model="example" :style="{ transform: `rotate(${rotate}deg)` }" />
+          </component>
+        </div>
+        <div class="flex-1 flex flex-col items-start">
+          旋转角度
+          <input :min="0" :max="360" :value="`${rotate}`" type="range" @input="(ev) => rotate = Number((ev.target as HTMLInputElement).value)">
+        </div>
       </div>
     </Card>
 
