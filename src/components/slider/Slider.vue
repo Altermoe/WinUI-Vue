@@ -1,6 +1,8 @@
 <script lang="ts" setup>
-import type { CSSProperties } from 'vue'
-import { fromEvent, map, switchMap, takeUntil } from 'rxjs'
+import type { CSSProperties, Ref } from 'vue'
+import type { Observable } from 'rxjs'
+import { filter, fromEvent, map, switchMap, takeUntil } from 'rxjs'
+import { fromEvent as fromEventRef, useSubscription } from '@vueuse/rxjs'
 import Flatten from '@flatten-js/core'
 
 interface SliderProps {
@@ -30,13 +32,22 @@ const emits = defineEmits<{
   (e: 'update:modelValue', v: number): void
 }>()
 
+/** slider 容器 DOM，用于计算滑块在组件中的相对位置 */
 const containerRef = ref<HTMLElement | null>(null)
+/** 滑块 DOM，用于计算滑块在组件中的相对位置 */
 const thumbRef = ref<HTMLElement | null>(null)
+/** 头部定位 DOM，用于计算组件旋转角度和滑动矢量在容器水平中轴线的投影距离 */
 const headRef = ref<HTMLElement | null>(null)
+/** 尾部定位 DOM，用于计算组件旋转角度和滑动矢量在容器水平中轴线的投影距离 */
 const tailRef = ref<HTMLElement | null>(null)
 
+const { width: containerW } = useElementSize(containerRef)
+const { width: thumbW } = useElementSize(thumbRef)
+
+/** 非受控状态下的内部缓存值 */
 const internalBind = ref(0)
 
+/** 内部双绑值 */
 const bindValue = computed({
   get: () => props.modelValue === undefined ? internalBind.value : props.modelValue,
   set: (v) => {
@@ -48,11 +59,10 @@ const bindValue = computed({
   },
 })
 
-const range = computed(() => Math.abs(props.max - props.min))
-const { width: containerW } = useElementSize(containerRef)
-const { width: thumbW } = useElementSize(thumbRef)
-const ratio = computed(() => (bindValue.value - props.min) / range.value)
+/** 当前值占区间的比 */
+const ratio = computed(() => (bindValue.value - props.min) / Math.abs(props.max - props.min))
 
+/** 将定位元素转换为矢量 */
 const getHorizontalCentralAxis = (a: HTMLElement, b: HTMLElement) => {
   const shapeA = a.getBoundingClientRect()
   const shapeB = b.getBoundingClientRect()
@@ -62,10 +72,7 @@ const getHorizontalCentralAxis = (a: HTMLElement, b: HTMLElement) => {
   )
 }
 
-const clamp = (min: number, max: number, value: number) => {
-  return Math.max(min, Math.min(max, value))
-}
-
+/** 获取投影长度，处理一下矢量长度为 0 时的特殊情况 */
 const getProjectionLength = (v1: Flatten.Vector, v2: Flatten.Vector) => {
   try {
     const angle = Math.cos(v1.angleTo(v2))
@@ -77,35 +84,38 @@ const getProjectionLength = (v1: Flatten.Vector, v2: Flatten.Vector) => {
   }
 }
 
-onMounted(() => {
-  if (!thumbRef.value)
-    return
+/** 取区间值 */
+const clamp = (min: number, max: number, value: number) => {
+  return Math.max(min, Math.min(max, value))
+}
 
-  const pointerdown = fromEvent<PointerEvent>(thumbRef.value, 'pointerdown')
-  const pointermove = fromEvent<PointerEvent>(window, 'pointermove')
-  const pointerup = fromEvent(window, 'pointerup')
+const pointerdown = fromEventRef(thumbRef as Ref<HTMLElement>, 'pointerdown') as Observable<PointerEvent>
+const pointermove = fromEvent<PointerEvent>(window, 'pointermove')
+const pointerup = fromEvent(window, 'pointerup')
 
-  pointerdown
-    .pipe(switchMap(({ x: startX, y: startY }) => {
-      const start = Flatten.point(startX, startY)
-      const startValue = bindValue.value
-      return pointermove.pipe(
-        takeUntil(pointerup),
-        map(({ x, y }) => {
-          if (!headRef.value || !tailRef.value)
-            return { moveLen: 0, startValue }
-          const axisVector = getHorizontalCentralAxis(headRef.value, tailRef.value)
-          const moveVector = Flatten.vector(start, Flatten.point(x, y))
-          const moveLen = getProjectionLength(moveVector, axisVector)
-          return { moveLen, startValue }
-        }),
-      )
-    }))
-    .subscribe(({ startValue, moveLen }) => {
-      const result = clamp(props.min, props.max, startValue + moveLen)
-      bindValue.value = Math.floor(result / props.step) * props.step
-    })
-})
+const slideObservable = pointerdown.pipe(
+  filter(() => !props.disabled),
+  map(({ x: startX, y: startY }) => Flatten.point(startX, startY)),
+  switchMap((start) => {
+    const startValue = bindValue.value
+    return pointermove.pipe(
+      takeUntil(pointerup),
+      map(({ x, y }) => {
+        if (!headRef.value || !tailRef.value)
+          return { moveLen: 0, startValue }
+        const axisVector = getHorizontalCentralAxis(headRef.value, tailRef.value)
+        const moveVector = Flatten.vector(start, Flatten.point(x, y))
+        const moveLen = getProjectionLength(moveVector, axisVector)
+        return { moveLen, startValue }
+      }),
+    )
+  }),
+)
+
+useSubscription(slideObservable.subscribe(({ startValue, moveLen }) => {
+  const result = clamp(props.min, props.max, startValue + moveLen)
+  bindValue.value = Math.floor(result / props.step) * props.step
+}))
 </script>
 
 <template>
@@ -128,11 +138,18 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .win-slider {
+  --thumb-bg: linear-gradient(to bottom, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.16));
+  --thumb-cursor: pointer;
+
   border: 1px solid red;
   width: v-bind(width);
   height: 24px;
   position: relative;
-  background: linear-gradient(transparent 49%, red 50%, transparent 50%);
+
+  &.disabled {
+    --thumb-cursor: not-allowed;
+    --thumb-ng: linear-gradient(to bottom, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.07));
+  }
 
   .thumb {
     width: 22px;
@@ -140,8 +157,10 @@ onMounted(() => {
     position: absolute;
     left: 0;
     top: 0;
-    background-color: blue;
+    background: var(--thumb-bg);
+    border-radius: 100%;
     user-select: none;
+    cursor: var(--thumb-cursor);
   }
 
   .positioning-element {
