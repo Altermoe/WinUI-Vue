@@ -169,6 +169,10 @@ useSubscription(slideObservable.subscribe(({ startValue, moveLen }) => {
     user-select: none;
     cursor: var(--thumb-cursor);
   }
+  .thumb::before {
+    content: '';
+    position: absolute;
+  }
 
   .positioning-element {
     width: 0;
