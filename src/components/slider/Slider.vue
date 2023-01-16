@@ -172,6 +172,7 @@ useSubscription(slideObservable.subscribe(({ startValue, moveLen }) => {
   .thumb::before {
     content: '';
     position: absolute;
+    width: 100%;
   }
 
   .positioning-element {
