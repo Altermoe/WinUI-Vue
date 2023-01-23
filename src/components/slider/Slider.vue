@@ -137,8 +137,11 @@ useSubscription(slideObservable.subscribe(({ startValue, moveLen }) => {
       width,
     }"
   >
+    <!-- 头部定位元素 -->
     <div ref="headRef" class="positioning-element positioning-element__head" />
+    <!-- 尾部定位元素 -->
     <div ref="tailRef" class="positioning-element positioning-element__tail" />
+    <!-- 滑块元素 -->
     <div ref="thumbRef" class="thumb" :style="{ transform: `translate(${ratio * slideLength}px, 0)` }" />
   </div>
 </template>
