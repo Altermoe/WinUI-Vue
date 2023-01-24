@@ -143,6 +143,7 @@ useSubscription(slideObservable.subscribe(({ startValue, moveLen }) => {
     <div ref="tailRef" class="positioning-element positioning-element__tail" />
     <!-- 滑块元素 -->
     <div ref="thumbRef" class="thumb" :style="{ transform: `translate(${ratio * slideLength}px, 0)` }" />
+    <!-- 轨道应该基于容器元素本身来实现，滑块相对于容器元素进行定位  -->
   </div>
 </template>
 
@@ -178,6 +179,7 @@ useSubscription(slideObservable.subscribe(({ startValue, moveLen }) => {
     width: 100%;
   }
 
+  // 定位元素没有宽高（即其左上角坐标就是点的坐标，以便滑块计算滑动距离）
   .positioning-element {
     width: 0;
     height: 0;
