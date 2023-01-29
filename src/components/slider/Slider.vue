@@ -151,6 +151,7 @@ useSubscription(slideObservable.subscribe(({ startValue, moveLen }) => {
 .win-slider {
   --thumb-bg: linear-gradient(to bottom, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.16));
   --thumb-cursor: pointer;
+  --thumb-radius: 4px;
 
   border: 1px solid red;
   width: v-bind(width);
@@ -177,6 +178,14 @@ useSubscription(slideObservable.subscribe(({ startValue, moveLen }) => {
     content: '';
     position: absolute;
     width: 100%;
+  }
+  .thumb:not(.disabled) {
+    &:hover {
+      --thumb-radius: 5px;
+    }
+    &:active {
+      --thumb-radius: 3px;
+    }
   }
 
   // 定位元素没有宽高（即其左上角坐标就是点的坐标，以便滑块计算滑动距离）
