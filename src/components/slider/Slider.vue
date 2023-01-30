@@ -97,6 +97,7 @@ const pointerdown = fromEventRef(thumbRef as Ref<HTMLElement>, 'pointerdown') as
 const pointermove = fromEvent<PointerEvent>(window, 'pointermove')
 const pointerup = fromEvent(window, 'pointerup')
 
+/** 基于双定位点获取移动投影量实现的滑动距离计算过程，可以适应任意角度的平面旋转 */
 const slideObservable = pointerdown.pipe(
   filter(() => !props.disabled),
   map(({ x: startX, y: startY }) => Flatten.point(startX, startY)),
