@@ -1,7 +1,7 @@
 {
-  "name": "@fluentui-vue/hooks",
+  "name": "@fluere-vue/hooks",
   "version": "0.0.1",
-  "description": "FluentUI-Vue 共享 Hooks",
+  "description": "FluereVue 共享 Hooks",
   "keywords": [],
   "license": "MIT",
   "author": "夕云葛城",

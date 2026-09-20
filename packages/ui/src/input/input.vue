@@ -1,6 +1,6 @@
 <script lang="ts">
 /**
- * Fluent Input 组件 Props 契约
+ * FluereInput 组件 Props 契约
  *
  * 设计规范来源：Fluent Design 2 — TextField / Input
  * （fluent-components / fluent-tokens：data/fluent-tokens.json）
@@ -15,7 +15,7 @@
  * - focus 用 box-shadow 模拟 2px 描边，避免 1px→2px 撑大布局
  * - invalid 用 status danger 描边 + aria-invalid
  */
-export interface FluentInputProps {
+export interface FluereInputProps {
   /**
    * 尺寸
    * @default 'medium'
@@ -56,7 +56,7 @@ export interface FluentInputProps {
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = withDefaults(defineProps<FluentInputProps>(), {
+const props = withDefaults(defineProps<FluereInputProps>(), {
   size: 'medium',
   appearance: 'outline',
   disabled: false,
@@ -75,7 +75,7 @@ const rootClass = computed(() => [
 ])
 
 defineOptions({
-  name: 'FluentInput',
+  name: 'FluereInput',
 })
 </script>
 

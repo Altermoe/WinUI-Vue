@@ -1,8 +1,8 @@
 {
-  "name": "@fluentui-vue/playground",
+  "name": "@fluere-vue/playground",
   "version": "0.0.1",
   "private": true,
-  "description": "FluentUI-Vue Playground",
+  "description": "FluereVue Playground",
   "keywords": [],
   "license": "MIT",
   "author": "夕云葛城",

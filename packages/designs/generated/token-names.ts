@@ -462,4 +462,4 @@ export const tokenNames = {
   "shadow64Brand": true
 } as const
 
-export type FluentTokenName = keyof typeof tokenNames
+export type FluereTokenName = keyof typeof tokenNames

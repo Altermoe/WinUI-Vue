@@ -23,7 +23,7 @@ const isActive = (slug: string) => route.path === `/components/${slug}`
             >
               W
             </div>
-            WinUI-Vue
+            FluereVue
           </NuxtLink>
           <nav class="hidden md:flex items-center gap-6 text-sm text-colorNeutralForeground2">
             <NuxtLink

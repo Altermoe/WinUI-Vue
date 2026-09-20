@@ -5,12 +5,12 @@ import {
   FluentIconDelete24Regular,
   FluentIconSearch20Regular,
   FluentIconSettings24Regular,
-} from '@fluentui-vue/icons'
-import type { FluentIconStyle } from '@fluentui-vue/icons'
+} from '@fluere-vue/icons'
+import type { FluentIconStyle } from '@fluere-vue/icons'
 // oxlint-disable-next-line import/no-namespace -- 按 exportName 动态查组件，命名导入无法枚举 1.9w+ 图标
-import * as icons from '@fluentui-vue/icons'
-import iconsData from '@fluentui-vue/icons/data'
-import { FluentButton } from '@fluentui-vue/ui'
+import * as icons from '@fluere-vue/icons'
+import iconsData from '@fluere-vue/icons/data'
+import { FluereButton } from '@fluere-vue/ui'
 import { computed, ref } from 'vue'
 import type { Component } from 'vue'
 
@@ -140,7 +140,7 @@ const copyName = async (exportName: string): Promise<void> => {
       <pre
         class="bg-colorNeutralBackground2 border border-colorNeutralStroke2 rounded-fluent-md p-fluent-l text-sm text-colorNeutralForeground1 overflow-x-auto mb-fluent-l"
       ><code>{{
-        `import { FluentIconAdd20Filled } from '@fluentui-vue/icons'
+        `import { FluentIconAdd20Filled } from '@fluere-vue/icons'
 
 <FluentIconAdd20Filled />
 <FluentIconAdd20Filled size="24" title="添加" />`
@@ -151,12 +151,12 @@ const copyName = async (exportName: string): Promise<void> => {
         <FluentIconSettings24Regular />
         <FluentIconDelete24Regular />
         <FluentIconCheckmarkCircle24Filled />
-        <FluentButton
+        <FluereButton
           appearance="primary"
           :icon="FluentIconAdd20Filled"
         >
           Add
-        </FluentButton>
+        </FluereButton>
       </div>
     </section>
 

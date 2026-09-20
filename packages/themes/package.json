@@ -1,7 +1,7 @@
 {
-  "name": "@fluentui-vue/themes",
+  "name": "@fluere-vue/themes",
   "version": "0.0.1",
-  "description": "基于 Fluent Design 2 设计语言的 unocss 主题适配层（生成自 @fluentui-vue/designs 的 token 事实源）",
+  "description": "基于 Fluent Design 2 设计语言的 unocss 主题适配层（生成自 @fluere-vue/designs 的 token 事实源）",
   "keywords": [],
   "license": "MIT",
   "author": "夕云葛城",
@@ -15,8 +15,8 @@
     "tsc": "tsc --noEmit"
   },
   "dependencies": {
-    "@fluentui-vue/designs": "workspace:*",
-    "@fluentui/tokens": "catalog:"
+    "@fluentui/tokens": "catalog:",
+    "@fluere-vue/designs": "workspace:*"
   },
   "devDependencies": {
     "unocss": "catalog:"

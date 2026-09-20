@@ -2,7 +2,7 @@
 import type { Component } from 'vue'
 
 /**
- * Fluent Button 组件 Props 契约
+ * FluereButton 组件 Props 契约
  *
  * 设计规范来源：Fluent Design 2 — Button & Toggle button
  * （fluent-components / fluent-tokens：data/fluent-tokens.json）
@@ -29,7 +29,7 @@ import type { Component } from 'vue'
  * 状态：rest / hover / pressed / selected / focus / disabled
  * - selected 同时作为 toggle button 的受控状态（aria-pressed）
  */
-export interface FluentButtonProps {
+export interface FluereButtonProps {
   /**
    * 按钮外观变体
    * @default 'secondary'
@@ -94,7 +94,7 @@ export interface FluentButtonProps {
 <script setup lang="ts" generic="TIcon extends Component = Component">
 import { computed } from 'vue'
 
-const props = withDefaults(defineProps<FluentButtonProps>(), {
+const props = withDefaults(defineProps<FluereButtonProps>(), {
   appearance: 'secondary',
   size: 'medium',
   shape: 'rounded',
@@ -119,7 +119,7 @@ const rootClass = computed(() => [
 ])
 
 defineOptions({
-  name: 'FluentButton',
+  name: 'FluereButton',
 })
 </script>
 

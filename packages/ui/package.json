@@ -1,5 +1,5 @@
 {
-  "name": "@fluentui-vue/ui",
+  "name": "@fluere-vue/ui",
   "version": "0.0.1",
   "description": "基于 Fluent Design 2 设计语言的 Vue3 组件实现",
   "keywords": [],
@@ -12,10 +12,10 @@
   },
   "scripts": {},
   "dependencies": {
-    "@fluentui-vue/designs": "workspace:*",
-    "@fluentui-vue/themes": "workspace:*",
     "@fluentui/svg-icons": "catalog:",
     "@fluentui/tokens": "catalog:",
+    "@fluere-vue/designs": "workspace:*",
+    "@fluere-vue/themes": "workspace:*",
     "reka-ui": "catalog:"
   },
   "devDependencies": {

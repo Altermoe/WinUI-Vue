@@ -1,4 +1,4 @@
-import { presetFluent } from '@fluentui-vue/themes'
+import { presetFluere } from '@fluere-vue/themes'
 import { presetWind4, type Preset } from 'unocss'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
@@ -7,7 +7,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@unocss/nuxt'],
   unocss: {
-    presets: [presetWind4(), presetFluent() as Preset],
+    presets: [presetWind4(), presetFluere() as Preset],
     content: {
       pipeline: {
         include: [
@@ -25,7 +25,7 @@ export default defineNuxtConfig({
       htmlAttrs: {
         lang: 'zh-CN',
       },
-      title: 'FluentUI-Vue',
+      title: 'FluereVue',
       link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
     },
   },

@@ -7,7 +7,7 @@
 
 1. **单一事实源**：`data/fluent-tokens.json`（来自 fluent-tokens skill）成为唯一持有 token **值**的文件；其余一切（CSS 变量、UnoCSS 主题、组件样式）都从它生成或引用 token **名**。
 2. **可感知开发**：代码里可见的永远是语义 token 名（`var(--colorBrandBackground)` 或 `bg-colorBrandBackground`），杜绝硬编码 magic value 与第二套手写词汇。
-3. **组件库自包含**：`@fluentui-vue/ui` 不要求消费方配置 UnoCSS；组件内部用 `<style scoped>` + `var(--TokenName)`。
+3. **组件库自包含**：`@fluere-vue/ui` 不要求消费方配置 UnoCSS；组件内部用 `<style scoped>` + `var(--TokenName)`。
 4. **UnoCSS 定位调整**：从组件库的**必要依赖**降级为**应用/页面层的可选 DX 增强**（docs、演示、消费方页面）。
 
 ## 2. 已确认决策
@@ -36,7 +36,7 @@
         ├───────────────┐                        │
         ▼               ▼                        ▼
   组件库 ui            （适配层导出）        应用/页面层
-  <style scoped>       @fluentui-vue/themes   docs / 演示
+  <style scoped>       @fluere-vue/themes   docs / 演示
   var(--TokenName)      re-export 生成产物      bg-colorBrandBackground
   自包含                                         可感知开发
 ```
@@ -45,9 +45,9 @@
 
 | 包                       | 层     | 职责                                                                                                                                                 |
 | ------------------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@fluentui-vue/designs`  | 语言层 | 持有 `data/fluent-tokens.json`（唯一事实源）+ `scripts/generate.mjs`（JSON → 适配产物）+ `scripts/sync-tokens.mjs`（从 `@fluentui/tokens` 重新抽取） |
-| `@fluentui-vue/themes`   | 适配层 | 消费 designs 生成产物，对外导出 `presetFluent`（UnoCSS preset）与 `tokens.css` 路径；`@fluentui/tokens` 降为 devDependency                           |
-| `@fluentui-vue/ui`       | 组件层 | SFC + `<style scoped>` 引用 `var(--TokenName)`；入口导入 `tokens.css`                                                                                |
+| `@fluere-vue/designs`    | 语言层 | 持有 `data/fluent-tokens.json`（唯一事实源）+ `scripts/generate.mjs`（JSON → 适配产物）+ `scripts/sync-tokens.mjs`（从 `@fluentui/tokens` 重新抽取） |
+| `@fluere-vue/themes`     | 适配层 | 消费 designs 生成产物，对外导出 `presetFluere`（UnoCSS preset）与 `tokens.css` 路径；`@fluentui/tokens` 降为 devDependency                           |
+| `@fluere-vue/ui`         | 组件层 | SFC + `<style scoped>` 引用 `var(--TokenName)`；入口导入 `tokens.css`                                                                                |
 | `apps/docs` / playground | 应用层 | 页面级 UnoCSS 工具类（精确 token 名）；禁止 `gray-*`/`white` 硬编码                                                                                  |
 
 ## 4. 生成管线

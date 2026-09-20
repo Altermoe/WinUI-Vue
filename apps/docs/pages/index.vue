@@ -41,12 +41,12 @@ const stats = [
 const ctLinks = [
   {
     title: 'Install and Setup',
-    desc: '了解如何在项目中安装和配置 WinUI-Vue，并构建和样式化你的第一个组件。',
+    desc: '了解如何在项目中安装和配置 FluereVue，并构建和样式化你的第一个组件。',
     to: '/components',
   },
   {
     title: 'Browse components',
-    desc: '查看 WinUI-Vue 提供的所有组件和工具。',
+    desc: '查看 FluereVue 提供的所有组件和工具。',
     to: '/components/button',
   },
   {
@@ -74,7 +74,7 @@ const ctLinks = [
             >
               W
             </div>
-            WinUI-Vue
+            FluereVue
           </NuxtLink>
           <nav class="hidden md:flex items-center gap-6 text-sm text-colorNeutralForeground2">
             <NuxtLink
@@ -257,7 +257,7 @@ const ctLinks = [
         <div class="max-w-6xl mx-auto px-6">
           <h2 class="text-3xl font-bold text-center mb-4">Ready to get started?</h2>
           <p class="text-colorNeutralForeground2 text-center mb-12 max-w-xl mx-auto">
-            无论你是在构建内部工具还是面向客户的产品，WinUI-Vue 都能帮你快速打造流畅的用户界面。
+            无论你是在构建内部工具还是面向客户的产品，FluereVue 都能帮你快速打造流畅的用户界面。
           </p>
           <div class="grid md:grid-cols-3 gap-6">
             <NuxtLink
@@ -291,9 +291,9 @@ const ctLinks = [
           >
             W
           </div>
-          WinUI-Vue
+          FluereVue
         </div>
-        <div>© 2026 WinUI-Vue. MIT License.</div>
+        <div>© 2026 FluereVue. MIT License.</div>
       </div>
     </footer>
   </div>

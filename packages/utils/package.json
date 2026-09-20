@@ -1,7 +1,7 @@
 {
-  "name": "@fluentui-vue/utils",
+  "name": "@fluere-vue/utils",
   "version": "0.0.1",
-  "description": "FluentUI-Vue 共享工具函数",
+  "description": "FluereVue 共享工具函数",
   "keywords": [],
   "license": "MIT",
   "author": "夕云葛城",

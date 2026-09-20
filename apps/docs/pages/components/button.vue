@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FluentButton } from '@fluentui-vue/ui'
+import { FluereButton } from '@fluere-vue/ui'
 
 definePageMeta({
   layout: 'components',
@@ -17,11 +17,11 @@ definePageMeta({
     >
       <h3 class="text-lg font-medium text-colorNeutralForeground1 mb-4">外观变体</h3>
       <div class="flex gap-fluent-m flex-wrap">
-        <FluentButton appearance="primary"> Primary </FluentButton>
-        <FluentButton appearance="secondary"> Secondary </FluentButton>
-        <FluentButton appearance="outline"> Outline </FluentButton>
-        <FluentButton appearance="subtle"> Subtle </FluentButton>
-        <FluentButton appearance="transparent"> Transparent </FluentButton>
+        <FluereButton appearance="primary"> Primary </FluereButton>
+        <FluereButton appearance="secondary"> Secondary </FluereButton>
+        <FluereButton appearance="outline"> Outline </FluereButton>
+        <FluereButton appearance="subtle"> Subtle </FluereButton>
+        <FluereButton appearance="transparent"> Transparent </FluereButton>
       </div>
     </section>
 
@@ -31,9 +31,9 @@ definePageMeta({
     >
       <h3 class="text-lg font-medium text-colorNeutralForeground1 mb-4">尺寸</h3>
       <div class="flex gap-fluent-m items-center flex-wrap">
-        <FluentButton size="small"> Small </FluentButton>
-        <FluentButton size="medium"> Medium </FluentButton>
-        <FluentButton size="large"> Large </FluentButton>
+        <FluereButton size="small"> Small </FluereButton>
+        <FluereButton size="medium"> Medium </FluereButton>
+        <FluereButton size="large"> Large </FluereButton>
       </div>
     </section>
 
@@ -43,9 +43,9 @@ definePageMeta({
     >
       <h3 class="text-lg font-medium text-colorNeutralForeground1 mb-4">形状</h3>
       <div class="flex gap-fluent-m flex-wrap">
-        <FluentButton shape="rounded"> Rounded </FluentButton>
-        <FluentButton shape="circular"> Circular </FluentButton>
-        <FluentButton shape="square"> Square </FluentButton>
+        <FluereButton shape="rounded"> Rounded </FluereButton>
+        <FluereButton shape="circular"> Circular </FluereButton>
+        <FluereButton shape="square"> Square </FluereButton>
       </div>
     </section>
 
@@ -55,36 +55,36 @@ definePageMeta({
     >
       <h3 class="text-lg font-medium text-colorNeutralForeground1 mb-4">禁用状态</h3>
       <div class="flex gap-fluent-m flex-wrap">
-        <FluentButton
+        <FluereButton
           appearance="primary"
           disabled
         >
           Primary
-        </FluentButton>
-        <FluentButton
+        </FluereButton>
+        <FluereButton
           appearance="secondary"
           disabled
         >
           Secondary
-        </FluentButton>
-        <FluentButton
+        </FluereButton>
+        <FluereButton
           appearance="outline"
           disabled
         >
           Outline
-        </FluentButton>
-        <FluentButton
+        </FluereButton>
+        <FluereButton
           appearance="subtle"
           disabled
         >
           Subtle
-        </FluentButton>
-        <FluentButton
+        </FluereButton>
+        <FluereButton
           appearance="transparent"
           disabled
         >
           Transparent
-        </FluentButton>
+        </FluereButton>
       </div>
     </section>
 
@@ -94,36 +94,36 @@ definePageMeta({
     >
       <h3 class="text-lg font-medium text-colorNeutralForeground1 mb-4">选中状态</h3>
       <div class="flex gap-fluent-m flex-wrap">
-        <FluentButton
+        <FluereButton
           appearance="primary"
           selected
         >
           Primary
-        </FluentButton>
-        <FluentButton
+        </FluereButton>
+        <FluereButton
           appearance="secondary"
           selected
         >
           Secondary
-        </FluentButton>
-        <FluentButton
+        </FluereButton>
+        <FluereButton
           appearance="outline"
           selected
         >
           Outline
-        </FluentButton>
-        <FluentButton
+        </FluereButton>
+        <FluereButton
           appearance="subtle"
           selected
         >
           Subtle
-        </FluentButton>
-        <FluentButton
+        </FluereButton>
+        <FluereButton
           appearance="transparent"
           selected
         >
           Transparent
-        </FluentButton>
+        </FluereButton>
       </div>
     </section>
 
@@ -133,24 +133,24 @@ definePageMeta({
     >
       <h3 class="text-lg font-medium text-colorNeutralForeground1 mb-4">带图标</h3>
       <div class="flex gap-fluent-m flex-wrap items-center">
-        <FluentButton
+        <FluereButton
           appearance="primary"
           size="small"
         >
           Small
-        </FluentButton>
-        <FluentButton
+        </FluereButton>
+        <FluereButton
           appearance="primary"
           size="medium"
         >
           Medium
-        </FluentButton>
-        <FluentButton
+        </FluereButton>
+        <FluereButton
           appearance="primary"
           size="large"
         >
           Large
-        </FluentButton>
+        </FluereButton>
       </div>
     </section>
 
@@ -160,18 +160,18 @@ definePageMeta({
     >
       <h3 class="text-lg font-medium text-colorNeutralForeground1 mb-4">图标后置</h3>
       <div class="flex gap-fluent-m flex-wrap">
-        <FluentButton
+        <FluereButton
           appearance="primary"
           icon-position="after"
         >
           Add
-        </FluentButton>
-        <FluentButton
+        </FluereButton>
+        <FluereButton
           appearance="secondary"
           icon-position="after"
         >
           Add
-        </FluentButton>
+        </FluereButton>
       </div>
     </section>
 
@@ -181,32 +181,32 @@ definePageMeta({
     >
       <h3 class="text-lg font-medium text-colorNeutralForeground1 mb-4">纯图标</h3>
       <div class="flex gap-fluent-m items-center flex-wrap">
-        <FluentButton
+        <FluereButton
           appearance="primary"
           size="small"
           icon-only
         />
-        <FluentButton
+        <FluereButton
           appearance="primary"
           size="medium"
           icon-only
         />
-        <FluentButton
+        <FluereButton
           appearance="primary"
           size="large"
           icon-only
         />
-        <FluentButton
+        <FluereButton
           appearance="secondary"
           size="small"
           icon-only
         />
-        <FluentButton
+        <FluereButton
           appearance="secondary"
           size="medium"
           icon-only
         />
-        <FluentButton
+        <FluereButton
           appearance="secondary"
           size="large"
           icon-only
@@ -220,18 +220,18 @@ definePageMeta({
     >
       <h3 class="text-lg font-medium text-colorNeutralForeground1 mb-4">块级按钮</h3>
       <div class="space-y-fluent-s">
-        <FluentButton
+        <FluereButton
           appearance="primary"
           block
         >
           Block Primary
-        </FluentButton>
-        <FluentButton
+        </FluereButton>
+        <FluereButton
           appearance="secondary"
           block
         >
           Block Secondary
-        </FluentButton>
+        </FluereButton>
       </div>
     </section>
   </div>

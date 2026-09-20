@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FluentInput } from '@fluentui-vue/ui'
+import { FluereInput } from '@fluere-vue/ui'
 import { ref } from 'vue'
 
 definePageMeta({
@@ -20,12 +20,12 @@ const value = ref('')
     >
       <h3 class="text-lg font-medium text-colorNeutralForeground1 mb-4">基础用法</h3>
       <div class="flex flex-col gap-fluent-l max-w-sm">
-        <FluentInput
+        <FluereInput
           v-model="value"
           placeholder="请输入内容"
         />
         <p class="text-sm text-colorNeutralForeground3">当前值：{{ value || '（空）' }}</p>
-        <FluentInput
+        <FluereInput
           placeholder="禁用状态"
           disabled
         />
@@ -38,15 +38,15 @@ const value = ref('')
     >
       <h3 class="text-lg font-medium text-colorNeutralForeground1 mb-4">尺寸</h3>
       <div class="flex flex-col gap-fluent-l max-w-sm">
-        <FluentInput
+        <FluereInput
           size="small"
           placeholder="Small (24px)"
         />
-        <FluentInput
+        <FluereInput
           size="medium"
           placeholder="Medium (32px)"
         />
-        <FluentInput
+        <FluereInput
           size="large"
           placeholder="Large (40px)"
         />
@@ -59,11 +59,11 @@ const value = ref('')
     >
       <h3 class="text-lg font-medium text-colorNeutralForeground1 mb-4">外观</h3>
       <div class="flex flex-col gap-fluent-l max-w-sm">
-        <FluentInput
+        <FluereInput
           appearance="outline"
           placeholder="Outline（默认）"
         />
-        <FluentInput
+        <FluereInput
           appearance="underline"
           placeholder="Underline（下划线）"
         />
@@ -76,7 +76,7 @@ const value = ref('')
     >
       <h3 class="text-lg font-medium text-colorNeutralForeground1 mb-4">错误状态</h3>
       <div class="flex flex-col gap-fluent-l max-w-sm">
-        <FluentInput
+        <FluereInput
           invalid
           placeholder="错误输入"
           aria-describedby="input-error-hint"

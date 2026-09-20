@@ -22,19 +22,19 @@
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "paths": {
-      "@fluentui-vue/themes": ["./packages/themes/src/index.ts"],
-      "@fluentui-vue/themes/*": ["./packages/themes/src/*"],
-      "@fluentui-vue/designs": ["./packages/designs/src/index.ts"],
-      "@fluentui-vue/designs/*": ["./packages/designs/src/*"],
-      "@fluentui-vue/ui": ["./packages/ui/src/index.ts"],
-      "@fluentui-vue/ui/*": ["./packages/ui/src/*"],
-      "@fluentui-vue/hooks": ["./packages/hooks/src/index.ts"],
-      "@fluentui-vue/hooks/*": ["./packages/hooks/src/*"],
-      "@fluentui-vue/utils": ["./packages/utils/src/index.ts"],
-      "@fluentui-vue/utils/*": ["./packages/utils/src/*"],
-      "@fluentui-vue/icons": ["./packages/icons/src/index.ts"],
-      "@fluentui-vue/icons/data": ["./packages/icons/generated/icons.json"],
-      "@fluentui-vue/icons/*": ["./packages/icons/src/*"]
+      "@fluere-vue/themes": ["./packages/themes/src/index.ts"],
+      "@fluere-vue/themes/*": ["./packages/themes/src/*"],
+      "@fluere-vue/designs": ["./packages/designs/src/index.ts"],
+      "@fluere-vue/designs/*": ["./packages/designs/src/*"],
+      "@fluere-vue/ui": ["./packages/ui/src/index.ts"],
+      "@fluere-vue/ui/*": ["./packages/ui/src/*"],
+      "@fluere-vue/hooks": ["./packages/hooks/src/index.ts"],
+      "@fluere-vue/hooks/*": ["./packages/hooks/src/*"],
+      "@fluere-vue/utils": ["./packages/utils/src/index.ts"],
+      "@fluere-vue/utils/*": ["./packages/utils/src/*"],
+      "@fluere-vue/icons": ["./packages/icons/src/index.ts"],
+      "@fluere-vue/icons/data": ["./packages/icons/generated/icons.json"],
+      "@fluere-vue/icons/*": ["./packages/icons/src/*"]
     }
   }
 }

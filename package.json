@@ -1,28 +1,29 @@
 {
-  "name": "fluentui-vue",
+  "name": "fluere-vue",
   "version": "0.0.1",
-  "description": "Fluent Design 2 设计规范的 Vue3 实现",
+  "description": "FluereVue：Fluent Design 2 设计规范的 Vue3 实现",
   "keywords": [
     "component library",
-    "fluentui",
+    "fluere",
+    "fluere-vue",
     "ui",
     "ui framework",
     "vue",
     "vue3"
   ],
-  "homepage": "https://fluentui-vue.nahida.website",
+  "homepage": "https://fluere-vue.nahida.website",
   "license": "MIT",
   "author": "夕云葛城",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Altermoe/fluentui-vue"
+    "url": "https://github.com/Altermoe/fluere-vue"
   },
   "scripts": {
-    "dev": "pnpm --filter @fluentui-vue/docs dev",
-    "docs:dev": "pnpm --filter @fluentui-vue/docs dev",
-    "docs:build": "pnpm --filter @fluentui-vue/docs build",
-    "docs:generate": "pnpm --filter @fluentui-vue/docs generate",
-    "docs:preview": "pnpm --filter @fluentui-vue/docs preview",
+    "dev": "pnpm --filter @fluere-vue/docs dev",
+    "docs:dev": "pnpm --filter @fluere-vue/docs dev",
+    "docs:build": "pnpm --filter @fluere-vue/docs build",
+    "docs:generate": "pnpm --filter @fluere-vue/docs generate",
+    "docs:preview": "pnpm --filter @fluere-vue/docs preview",
     "build": "pnpm -r build",
     "lint": "oxlint --ignore-pattern .dsh --ignore-pattern packages/designs/generated --ignore-pattern packages/designs/data --ignore-pattern packages/icons/generated",
     "lint:fix": "oxlint --fix --ignore-pattern .dsh --ignore-pattern packages/designs/generated --ignore-pattern packages/designs/data --ignore-pattern packages/icons/generated",

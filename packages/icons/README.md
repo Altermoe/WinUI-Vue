@@ -1,4 +1,4 @@
-# @fluentui-vue/icons
+# @fluere-vue/icons
 
 WinUI 3 / **Fluent System Icons** 的 Vue 3 图标库。
 
@@ -12,7 +12,7 @@ WinUI 3 / **Fluent System Icons** 的 Vue 3 图标库。
 ## 安装
 
 ```bash
-pnpm add @fluentui-vue/icons
+pnpm add @fluere-vue/icons
 ```
 
 ## 用法
@@ -21,13 +21,13 @@ pnpm add @fluentui-vue/icons
 
 ```vue
 <script setup lang="ts">
-import { FluentIconAdd20Filled } from '@fluentui-vue/icons'
-import { FluentButton } from '@fluentui-vue/ui'
+import { FluentIconAdd20Filled } from '@fluere-vue/icons'
+import { FluereButton } from '@fluere-vue/ui'
 </script>
 
 <template>
   <!-- 与 WinUI Button + FontIcon 等价 -->
-  <FluentButton :icon="FluentIconAdd20Filled">Add</FluentButton>
+  <FluereButton :icon="FluentIconAdd20Filled">Add</FluereButton>
   <!-- 单独使用 -->
   <FluentIconAdd20Filled class="text-colorBrandForeground1" />
 </template>
@@ -45,13 +45,13 @@ import { FluentButton } from '@fluentui-vue/ui'
 
 ### 元数据
 
-- `import { fluentIconNames } from '@fluentui-vue/icons'` — 全部图标名
-- `import iconsData from '@fluentui-vue/icons/data'` — 元数据注册表（图标名 × 可用尺寸 × 风格，无 path 数据），供图标浏览器/工具使用
+- `import { fluentIconNames } from '@fluere-vue/icons'` — 全部图标名
+- `import iconsData from '@fluere-vue/icons/data'` — 元数据注册表（图标名 × 可用尺寸 × 风格，无 path 数据），供图标浏览器/工具使用
 
 ## 生成管线
 
 ```bash
-pnpm --filter @fluentui-vue/icons sync
+pnpm --filter @fluere-vue/icons sync
 ```
 
 `scripts/sync-icons.mjs` 从本包 devDependency `@fluentui/svg-icons`（或其 `FLUENT_SVG_ICONS_DIR` 指定目录 / pnpm store）解析优化 SVG，抽取 `<path d>` 生成：

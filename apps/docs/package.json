@@ -1,8 +1,8 @@
 {
-  "name": "@fluentui-vue/docs",
+  "name": "@fluere-vue/docs",
   "version": "0.0.1",
   "private": true,
-  "description": "FluentUI-Vue 文档站",
+  "description": "FluereVue 文档站",
   "keywords": [],
   "license": "MIT",
   "author": "夕云葛城",
@@ -23,9 +23,9 @@
     "vue": "catalog:"
   },
   "devDependencies": {
-    "@fluentui-vue/icons": "workspace:*",
-    "@fluentui-vue/themes": "workspace:*",
-    "@fluentui-vue/ui": "workspace:*",
+    "@fluere-vue/icons": "workspace:*",
+    "@fluere-vue/themes": "workspace:*",
+    "@fluere-vue/ui": "workspace:*",
     "@unocss/nuxt": "catalog:",
     "nuxt": "catalog:",
     "unocss": "catalog:",

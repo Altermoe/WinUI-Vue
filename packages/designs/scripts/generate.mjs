@@ -237,7 +237,7 @@ ${themeConsts}
  * - theme.colors 用**精确 token 名**（bg-colorBrandBackground）
  * - theme.spacing / borderRadius / duration 用 fluent-* 短别名（p-fluent-m 等）
  */
-export function presetFluent(): Preset {
+export function presetFluere(): Preset {
   return {
     name: 'fluent2',
     preflights: [
@@ -269,7 +269,7 @@ export function presetFluent(): Preset {
   }
 }
 
-export default presetFluent
+export default presetFluere
 `
 
 writeFileSync(join(outDir, 'preset-fluent.ts'), presetTs)
@@ -282,7 +282,7 @@ const namesTs = `// Generated from data/fluent-tokens.json — do not edit by ha
 // Token 名常量与类型：TS 侧引用 token 名用，杜绝拼写漂移。
 export const tokenNames = ${JSON.stringify(names, null, 2)} as const
 
-export type FluentTokenName = keyof typeof tokenNames
+export type FluereTokenName = keyof typeof tokenNames
 `
 writeFileSync(join(outDir, 'token-names.ts'), namesTs)
 

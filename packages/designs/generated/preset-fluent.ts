@@ -996,7 +996,7 @@ const themeTypography = {
  * - theme.colors 用**精确 token 名**（bg-colorBrandBackground）
  * - theme.spacing / borderRadius / duration 用 fluent-* 短别名（p-fluent-m 等）
  */
-export function presetFluent(): Preset {
+export function presetFluere(): Preset {
   return {
     name: 'fluent2',
     preflights: [
@@ -1028,4 +1028,4 @@ export function presetFluent(): Preset {
   }
 }
 
-export default presetFluent
+export default presetFluere
