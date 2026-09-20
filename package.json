@@ -1,22 +1,28 @@
 {
-  "name": "winui-vue",
+  "name": "fluentui-vue",
   "version": "0.0.1",
-  "description": "Windows 11 设计规范的 Vue3 实现",
-  "homepage": "https://winui-vue.nahida.website",
+  "description": "Fluent Design 2 设计规范的 Vue3 实现",
+  "homepage": "https://fluentui-vue.nahida.website",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Altermoe/WinUI-Vue"
+    "url": "https://github.com/Altermoe/fluentui-vue"
   },
   "scripts": {
-    "dev": "pnpm -C docs run dev",
-    "build:doc": "pnpm -C docs run build",
-    "preview": "pnpm -C docs run preview"
-  },
-  "exports": {
-    ".": {}
+    "dev": "pnpm --filter @fluentui-vue/docs dev",
+    "docs:dev": "pnpm --filter @fluentui-vue/docs dev",
+    "docs:build": "pnpm --filter @fluentui-vue/docs build",
+    "docs:generate": "pnpm --filter @fluentui-vue/docs generate",
+    "docs:preview": "pnpm --filter @fluentui-vue/docs preview",
+    "build": "pnpm -r build",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt --check",
+    "format:fix": "oxfmt --write",
+    "tsc": "pnpm -r tsc",
+    "check": "pnpm lint && pnpm format && pnpm tsc"
   },
   "keywords": [
-    "winui",
+    "fluentui",
     "component library",
     "ui framework",
     "ui",
@@ -25,31 +31,18 @@
   ],
   "author": "夕云葛城",
   "license": "MIT",
-  "devDependencies": {
-    "@antfu/eslint-config": "^0.27.0",
-    "@types/lodash": "^4.14.185",
-    "@types/node": "^16.11.7",
-    "@typescript-eslint/parser": "^5.38.0",
-    "@vitejs/plugin-vue": "^3.1.0",
-    "@vitejs/plugin-vue-jsx": "^2.0.1",
-    "eslint": "^8.24.0",
-    "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-vue": "^9.5.1",
-    "pnpm": "^7.14.1",
-    "prettier": "^2.7.1",
-    "sass": "^1.55.0",
-    "typescript": "^4.8.3",
-    "unplugin-auto-import": "^0.11.2",
-    "vite": "^3.1.3",
-    "vue": "^3.2.39",
-    "vue-eslint-parser": "^9.1.0",
-    "vue-router": "^4.1.6"
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.1.1",
+      "onFail": "download"
+    }
   },
-  "dependencies": {
-    "@flatten-js/core": "^1.3.5",
-    "@vueuse/core": "^9.3.0",
-    "@vueuse/rxjs": "^9.10.0",
-    "lodash": "^4.17.21",
-    "rxjs": "^7.8.0"
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "oxfmt": "0.60.0",
+    "oxlint": "1.75.0",
+    "typescript": "^6.0.3",
+    "vite": "8.1.5"
   }
 }

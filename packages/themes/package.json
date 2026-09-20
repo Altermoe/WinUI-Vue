@@ -1,0 +1,23 @@
+{
+  "name": "@fluentui-vue/themes",
+  "version": "0.0.1",
+  "description": "基于 Fluent Design 2 设计语言的 Light 和 Dark 的 unocss 主题实现",
+  "keywords": [],
+  "license": "MIT",
+  "author": "夕云葛城",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt --check",
+    "format:fix": "oxfmt --write",
+    "tsc": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fluentui/tokens": "catalog:"
+  },
+  "devDependencies": {
+    "unocss": "catalog:"
+  }
+}

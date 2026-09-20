@@ -1,0 +1,25 @@
+{
+  "name": "@fluentui-vue/ui",
+  "version": "0.0.1",
+  "description": "基于 Fluent Design 2 设计语言的 Vue3 组件实现",
+  "main": "index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./preset": "./src/preset.ts"
+  },
+  "scripts": {},
+  "keywords": [],
+  "author": "夕云葛城",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@fluentui-vue/themes": "workspace:*",
+    "@fluentui/svg-icons": "catalog:",
+    "@fluentui/tokens": "catalog:",
+    "reka-ui": "catalog:"
+  },
+  "devDependencies": {
+    "unocss": "catalog:",
+    "vue": "catalog:"
+  }
+}

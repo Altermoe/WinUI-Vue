@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "singleQuote": true,
+  "semi": false,
+  "singleAttributePerLine": true,
+  "insertFinalNewline": true,
+  "quoteProps": "consistent",
+  "sortImports": {
+    "newlinesBetween": false
+  },
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    "build",
+    "stats.html",
+    "*.log",
+    "pnpm-lock.yaml",
+    "package-lock.json",
+    "yarn.lock",
+    ".env.*local",
+    "auto-imports.d.ts",
+    "*.timestamp-*.*",
+    "temp"
+  ]
+}

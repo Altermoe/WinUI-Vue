@@ -1,0 +1,33 @@
+{
+  "name": "@fluentui-vue/docs",
+  "version": "0.0.1",
+  "private": true,
+  "description": "FluentUI-Vue 文档站",
+  "keywords": [],
+  "license": "MIT",
+  "author": "夕云葛城",
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt --check",
+    "format:fix": "oxfmt --write",
+    "tsc": "nuxt typecheck"
+  },
+  "dependencies": {
+    "vue": "catalog:"
+  },
+  "devDependencies": {
+    "@unocss/nuxt": "catalog:",
+    "@fluentui-vue/themes": "workspace:*",
+    "@fluentui-vue/ui": "workspace:*",
+    "nuxt": "catalog:",
+    "unocss": "catalog:",
+    "vue-tsc": "catalog:"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@fluentui-vue/playground",
+  "version": "0.0.1",
+  "private": true,
+  "description": "FluentUI-Vue Playground",
+  "scripts": {},
+  "keywords": [],
+  "author": "夕云葛城",
+  "license": "MIT",
+  "type": "module"
+}

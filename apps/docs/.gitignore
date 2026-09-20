@@ -1,0 +1,17 @@
+# Nuxt dev/build outputs
+.nuxt/
+.output/
+.data/
+.nitro/
+.cache/
+
+# Nuxt types (auto-generated)
+*.tsbuildinfo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Server build output
+dist/

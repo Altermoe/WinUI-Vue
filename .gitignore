@@ -1,14 +1,50 @@
-# 缓存
-node_modules
-dist
+# OS file
 .DS_Store
-auto-import.d.ts
+.thumbs.db
+Microsoft
 
-# 环境变量
-.env.local
-.env.*.local
+# deps
+node_modules
 
-# 依赖锁定
+# build
+dist
+build
+
+# visualizer files
+stats.html
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
+debug.log
+
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# 忽略本地环境变量
+.env.*local
+
+# mock
+.mock
+
+# 自动更新
+auto-imports.d.ts
+
+# 文件补丁
+/patch-edit
+*.timestamp-*.*
+
+# 本地配置
+.vscode/**/*.code-snippets
+.trae/
+
+# 临时文件
+temp

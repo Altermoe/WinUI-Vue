@@ -1,0 +1,11 @@
+{
+  "name": "@fluentui-vue/utils",
+  "version": "0.0.1",
+  "description": "FluentUI-Vue 共享工具函数",
+  "main": "index.ts",
+  "scripts": {},
+  "keywords": [],
+  "author": "夕云葛城",
+  "license": "MIT",
+  "type": "module"
+}
