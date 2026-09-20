@@ -31,7 +31,10 @@
       "@fluentui-vue/hooks": ["./packages/hooks/src/index.ts"],
       "@fluentui-vue/hooks/*": ["./packages/hooks/src/*"],
       "@fluentui-vue/utils": ["./packages/utils/src/index.ts"],
-      "@fluentui-vue/utils/*": ["./packages/utils/src/*"]
+      "@fluentui-vue/utils/*": ["./packages/utils/src/*"],
+      "@fluentui-vue/icons": ["./packages/icons/src/index.ts"],
+      "@fluentui-vue/icons/data": ["./packages/icons/generated/icons.json"],
+      "@fluentui-vue/icons/*": ["./packages/icons/src/*"]
     }
   }
 }
