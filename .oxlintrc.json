@@ -1,13 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "eslint",
-    "typescript",
-    "unicorn",
-    "oxc",
-    "import",
-    "vue"
-  ],
+  "plugins": ["eslint", "typescript", "unicorn", "oxc", "import", "vue"],
   "categories": {
     "correctness": "error",
     "suspicious": "warn",
@@ -81,11 +74,5 @@
     "node": true,
     "vue": true
   },
-  "ignorePatterns": [
-    "**/node_modules/",
-    "**/dist/",
-    "**/build/",
-    "**/.eslintrc*",
-    "*.config.*"
-  ]
+  "ignorePatterns": ["**/node_modules/", "**/dist/", "**/build/", "**/.eslintrc*", "*.config.*"]
 }

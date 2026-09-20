@@ -20,6 +20,9 @@
     ".env.*local",
     "auto-imports.d.ts",
     "*.timestamp-*.*",
-    "temp"
+    "temp",
+    ".dsh",
+    "packages/designs/generated",
+    "packages/designs/data"
   ]
 }
