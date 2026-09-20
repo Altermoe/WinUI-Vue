@@ -2,6 +2,8 @@
 // oxlint-disable-next-line import/no-unassigned-import
 import '@fluentui-vue/designs/tokens.css'
 import FluentButton from './src/button/button.vue'
+import FluentInput from './src/input/input.vue'
 
-export { FluentButton }
+export { FluentButton, FluentInput }
 export type { FluentButtonProps } from './src/button/button.vue'
+export type { FluentInputProps } from './src/input/input.vue'
