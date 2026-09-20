@@ -2,12 +2,12 @@
 import { FluentButton } from '@fluentui-vue/ui'
 
 definePageMeta({
-  layout: false,
+  layout: 'components',
 })
 </script>
 
 <template>
-  <div class="space-y-fluent-xxl p-fluent-xxxl">
+  <div class="space-y-fluent-xxl">
     <h2 class="text-2xl font-semibold text-colorNeutralForeground1">Button 按钮</h2>
     <p class="text-colorNeutralForeground2">按钮组件，用于触发操作。</p>
 
