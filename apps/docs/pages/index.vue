@@ -138,11 +138,6 @@ const ctLinks = [
             <a
               href="#"
               class="text-colorBrandForegroundLink hover:underline"
-              >无样式</a
-            >、
-            <a
-              href="#"
-              class="text-colorBrandForegroundLink hover:underline"
               >可组合</a
             >
             的组件， 以及丰富的
