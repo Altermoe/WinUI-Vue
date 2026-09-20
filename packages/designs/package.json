@@ -1,14 +1,26 @@
 {
   "name": "@fluentui-vue/designs",
   "version": "0.0.1",
-  "description": "Fluent Design 2 设计语言",
-  "main": "index.ts",
-  "scripts": {},
+  "description": "Fluent Design 2 设计语言（唯一事实源：data/fluent-tokens.json）",
   "keywords": [],
-  "author": "夕云葛城",
   "license": "MIT",
+  "author": "夕云葛城",
   "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./data/fluent-tokens.json": "./data/fluent-tokens.json",
+    "./preset-fluent": "./generated/preset-fluent.ts",
+    "./token-names": "./generated/token-names.ts",
+    "./tokens.css": "./generated/tokens.css"
+  },
+  "scripts": {
+    "extract": "node scripts/extract-tokens.mjs",
+    "generate": "node scripts/generate.mjs",
+    "sync": "node scripts/extract-tokens.mjs && node scripts/generate.mjs"
+  },
   "dependencies": {
-    "@fluentui/tokens": "catalog:"
+    "@fluentui/tokens": "catalog:",
+    "unocss": "catalog:"
   }
 }
