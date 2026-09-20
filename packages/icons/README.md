@@ -35,11 +35,11 @@ import { FluentButton } from '@fluentui-vue/ui'
 
 ### 通用属性
 
-| Prop | 说明 |
-| --- | --- |
-| `size` | 渲染尺寸 px，默认等于图标原生设计尺寸（放大建议按 2 的倍数） |
-| `title` | 无障碍标题；提供后渲染 `<title>` 并设 `role="img"` |
-| 其它 attrs | 透传到根 `<svg>`（`class` / `style` / `aria-label` 等） |
+| Prop       | 说明                                                         |
+| ---------- | ------------------------------------------------------------ |
+| `size`     | 渲染尺寸 px，默认等于图标原生设计尺寸（放大建议按 2 的倍数） |
+| `title`    | 无障碍标题；提供后渲染 `<title>` 并设 `role="img"`           |
+| 其它 attrs | 透传到根 `<svg>`（`class` / `style` / `aria-label` 等）      |
 
 > 图标名为「下划线小写」语义名（如 `access_time`），组件名为 `FluentIcon{Name}{Size}{Style}`（PascalCase，如 `FluentIconAccessTime20Filled`）。
 

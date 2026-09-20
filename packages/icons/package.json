@@ -2,7 +2,15 @@
   "name": "@fluentui-vue/icons",
   "version": "0.0.1",
   "description": "WinUI 3 / Fluent System Icons 的 Vue3 图标库（生成自官方 @fluentui/svg-icons，MIT）",
-  "keywords": ["fluent", "icons", "segoe", "fluent-icons", "vue", "vue3", "winui"],
+  "keywords": [
+    "fluent",
+    "fluent-icons",
+    "icons",
+    "segoe",
+    "vue",
+    "vue3",
+    "winui"
+  ],
   "license": "MIT",
   "author": "夕云葛城",
   "type": "module",
