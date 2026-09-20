@@ -1,0 +1,28 @@
+{
+  "name": "@fluentui-vue/icons",
+  "version": "0.0.1",
+  "description": "WinUI 3 / Fluent System Icons 的 Vue3 图标库（生成自官方 @fluentui/svg-icons，MIT）",
+  "keywords": ["fluent", "icons", "segoe", "fluent-icons", "vue", "vue3", "winui"],
+  "license": "MIT",
+  "author": "夕云葛城",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./data": "./generated/icons.json"
+  },
+  "scripts": {
+    "sync": "node scripts/sync-icons.mjs",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt --check",
+    "format:fix": "oxfmt --write",
+    "tsc": "tsc --noEmit"
+  },
+  "dependencies": {
+    "vue": "catalog:"
+  },
+  "devDependencies": {
+    "@fluentui/svg-icons": "catalog:"
+  }
+}

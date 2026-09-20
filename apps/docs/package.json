@@ -23,6 +23,7 @@
     "vue": "catalog:"
   },
   "devDependencies": {
+    "@fluentui-vue/icons": "workspace:*",
     "@fluentui-vue/themes": "workspace:*",
     "@fluentui-vue/ui": "workspace:*",
     "@unocss/nuxt": "catalog:",
