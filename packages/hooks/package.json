@@ -2,10 +2,10 @@
   "name": "@fluentui-vue/hooks",
   "version": "0.0.1",
   "description": "FluentUI-Vue 共享 Hooks",
-  "main": "index.ts",
-  "scripts": {},
   "keywords": [],
-  "author": "夕云葛城",
   "license": "MIT",
-  "type": "module"
+  "author": "夕云葛城",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {}
 }
