@@ -5,23 +5,25 @@ definePageMeta({
 </script>
 
 <template>
-  <div class="space-y-6">
-    <h2 class="text-2xl font-semibold text-gray-800">Input 输入框</h2>
-    <p class="text-gray-600">输入框组件，用于获取用户文本输入。</p>
+  <div class="space-y-fluent-xxl">
+    <h2 class="text-2xl font-semibold text-colorNeutralForeground1">Input 输入框</h2>
+    <p class="text-colorNeutralForeground2">输入框组件，用于获取用户文本输入。</p>
 
-    <section class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-      <h3 class="text-lg font-medium text-gray-800 mb-4">基础用法</h3>
-      <div class="flex flex-col gap-4 max-w-sm">
+    <section
+      class="bg-colorNeutralBackground1 p-fluent-xxl rounded-fluent-xl shadow-2 border border-colorNeutralStroke1"
+    >
+      <h3 class="text-lg font-medium text-colorNeutralForeground1 mb-4">基础用法</h3>
+      <div class="flex flex-col gap-fluent-l max-w-sm">
         <input
           type="text"
           placeholder="请输入内容"
-          class="px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="px-fluent-m py-fluent-s border border-colorNeutralStroke1 rounded-fluent-md bg-colorNeutralBackground1 text-colorNeutralForeground1 placeholder:text-colorNeutralForeground4 focus:outline-none focus:ring-2 focus:ring-colorCompoundBrandStroke"
         />
         <input
           type="text"
           placeholder="禁用状态"
           disabled
-          class="px-3 py-2 border border-gray-200 rounded bg-gray-50 text-gray-400 cursor-not-allowed"
+          class="px-fluent-m py-fluent-s border border-colorNeutralStrokeDisabled rounded-fluent-md bg-colorNeutralBackgroundDisabled text-colorNeutralForegroundDisabled cursor-not-allowed"
         />
       </div>
     </section>

@@ -23,9 +23,9 @@
     "vue": "catalog:"
   },
   "devDependencies": {
-    "@unocss/nuxt": "catalog:",
     "@fluentui-vue/themes": "workspace:*",
     "@fluentui-vue/ui": "workspace:*",
+    "@unocss/nuxt": "catalog:",
     "nuxt": "catalog:",
     "unocss": "catalog:",
     "vue-tsc": "catalog:"
