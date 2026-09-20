@@ -3,7 +3,29 @@
 import '@fluere-vue/designs/tokens.css'
 import FluereButton from './src/button/button.vue'
 import FluereInput from './src/input/input.vue'
+import FluereScrollView from './src/scrollview/scroll-view.vue'
 
-export { FluereButton, FluereInput }
+export { FluereButton, FluereInput, FluereScrollView }
 export type { FluereButtonProps } from './src/button/button.vue'
 export type { FluereInputProps } from './src/input/input.vue'
+export type {
+  FluereScrollViewProps,
+  ScrollingAnchorRequestedEventArgs,
+  ScrollingAnimationMode,
+  ScrollingBringingIntoViewEventArgs,
+  ScrollingChainMode,
+  ScrollingContentOrientation,
+  ScrollingInputKinds,
+  ScrollingInteractionState,
+  ScrollingRailMode,
+  ScrollingScrollAnimationStartingEventArgs,
+  ScrollingScrollBarVisibility,
+  ScrollingScrollCompletedEventArgs,
+  ScrollingScrollMode,
+  ScrollingScrollOptions,
+  ScrollingSnapPointsMode,
+  ScrollingZoomAnimationStartingEventArgs,
+  ScrollingZoomCompletedEventArgs,
+  ScrollingZoomMode,
+  ScrollingZoomOptions,
+} from './src/scrollview/types'

@@ -33,6 +33,7 @@ const componentNavGroups: ComponentNavGroup[] = [
     items: [
       { slug: 'button', name: 'Button', implemented: true },
       { slug: 'input', name: 'Input', implemented: true },
+      { slug: 'scroll-view', name: 'Scroll View', implemented: true },
       { slug: 'icons', name: 'Icons', implemented: true },
     ],
   },

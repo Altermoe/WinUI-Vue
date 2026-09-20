@@ -63,10 +63,11 @@ import { FluereButton } from '@fluere-vue/ui'
 
 ## 组件进度
 
-| 组件           | 对应 WinUI 3 控件     | 状态   |
-| -------------- | --------------------- | ------ |
-| `FluereButton` | Button / ToggleButton | 已完成 |
-| `FluereInput`  | TextBox               | 开发中 |
+| 组件               | 对应 WinUI 3 控件     | 状态   |
+| ------------------ | --------------------- | ------ |
+| `FluereButton`     | Button / ToggleButton | 已完成 |
+| `FluereInput`      | TextBox               | 开发中 |
+| `FluereScrollView` | ScrollView            | 开发中 |
 
 规划中的控件（对照 WinUI Gallery 控件全集，按需裁剪）：
 

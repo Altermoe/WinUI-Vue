@@ -1,0 +1,132 @@
+/* ------------------------------------------------------------------ */
+/* 视觉对齐 WinUI 3 overlay ScrollBar：                                */
+/*  - 拇指 8px 圆角胶囊（radius 3，ScrollBarCornerRadius）              */
+/*  - 滚动条热区 12px（ScrollBarSize）                                  */
+/*  - 拇指颜色 = ControlStrongFillColorDefault                         */
+/*  - 轨道颜色 = AcrylicInAppFillColorDefault（悬停时显现）             */
+/*  - 展开：悬停/滚动后 0.4s 延迟 + 0.167s 过渡                         */
+/*  - 收起：2s 无交互延迟 + 0.167s 过渡                                 */
+/* ------------------------------------------------------------------ */
+
+.fui-scrollview {
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+}
+
+.fui-scrollview:focus-visible {
+  outline: var(--strokeWidthThick) solid var(--colorCompoundBrandStroke);
+  outline-offset: -2px;
+}
+
+/* ---- ScrollPresenter ---- */
+.fui-scrollview__presenter {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.fui-scrollview--panning .fui-scrollview__presenter {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ---- Content（ContentOrientation 约束布局） ---- */
+.fui-scrollview__content {
+  box-sizing: border-box;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+.fui-scrollview__content--vertical {
+  width: 100%;
+}
+.fui-scrollview__content--horizontal {
+  height: 100%;
+}
+.fui-scrollview__content--both {
+  min-width: 100%;
+  min-height: 100%;
+}
+.fui-scrollview__content--none {
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- ScrollBar（overlay） ---- */
+.fui-scrollview__scrollbar {
+  position: absolute;
+  z-index: 1;
+  border-radius: 3px;
+  opacity: 0;
+  transition: opacity 0.167s ease 2s; /* 收起：2s 延迟 */
+}
+.fui-scrollview--bars-visible .fui-scrollview__scrollbar {
+  opacity: 1;
+  transition: opacity 0.167s ease 0.4s; /* 展开：0.4s 延迟 */
+}
+.fui-scrollview--bars-visible.fui-scrollview--bars-immediate .fui-scrollview__scrollbar {
+  transition: opacity 0.167s ease 0s; /* 交互触发：无延迟 */
+}
+
+.fui-scrollview__scrollbar--vertical {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 12px;
+}
+.fui-scrollview__scrollbar--horizontal {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 12px;
+}
+
+/* 悬停滚动条时显现轨道（AcrylicInAppFillColor 近似） */
+.fui-scrollview__scrollbar--vertical:hover {
+  background: var(
+    --fui-scrollview-track,
+    light-dark(rgba(0, 0, 0, 0.09), rgba(255, 255, 255, 0.08))
+  );
+}
+.fui-scrollview__scrollbar--horizontal:hover {
+  background: var(
+    --fui-scrollview-track,
+    light-dark(rgba(0, 0, 0, 0.09), rgba(255, 255, 255, 0.08))
+  );
+}
+
+/* ---- Thumb（8px 胶囊，颜色对齐 ControlStrongFillColorDefault） ---- */
+.fui-scrollview__thumb {
+  position: absolute;
+  background: var(
+    --fui-scrollview-thumb,
+    light-dark(rgba(0, 0, 0, 0.447), rgba(255, 255, 255, 0.545))
+  );
+  border-radius: 3px;
+}
+.fui-scrollview__thumb--vertical {
+  left: 2px;
+  top: 0;
+  width: 8px;
+  height: 30px;
+}
+.fui-scrollview__thumb--horizontal {
+  top: 2px;
+  left: 0;
+  height: 8px;
+  width: 30px;
+}
+
+/* ---- ScrollBarsSeparator（WinUI 中为透明） ---- */
+.fui-scrollview__separator {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  background: transparent;
+}
