@@ -202,7 +202,7 @@ export const makeRectElement = (
 /* rAF 假时钟：逐帧手动驱动，完全确定的时间节点                          */
 /* ------------------------------------------------------------------ */
 
-/** 由测试逐帧驱动的 requestAnimationFrame 假实现 */
+/** 由测试逐帧驱动的 requestAnimationFrame 假实现（支持多个并发回调，便于嵌套组件测试） */
 export interface RafClock {
   now: number
   /** 推进一帧（默认 16ms），调用已注册的回调并返回触发时间戳 */
@@ -214,15 +214,18 @@ export interface RafClock {
 }
 
 export const installRafClock = (): RafClock => {
-  let callback: ((time: number) => void) | null = null
+  const pending = new Map<number, (time: number) => void>()
   let rafId = 1
   const clock: RafClock = {
     now: 0,
     step(deltaMs = 16) {
       clock.now += deltaMs
-      const cb = callback
-      callback = null
-      cb?.(clock.now)
+      // 快照后清空：回调内新注册的 rAF 留到下一帧，与浏览器语义一致
+      const batch = [...pending.values()]
+      pending.clear()
+      for (const cb of batch) {
+        cb(clock.now)
+      }
       return clock.now
     },
     run(totalMs, deltaMs = 16) {
@@ -237,10 +240,14 @@ export const installRafClock = (): RafClock => {
     },
   }
   vi.stubGlobal('requestAnimationFrame', (cb: (time: number) => void) => {
-    callback = cb
-    return rafId++
+    const id = rafId
+    rafId += 1
+    pending.set(id, cb)
+    return id
   })
-  vi.stubGlobal('cancelAnimationFrame', vi.fn())
+  vi.stubGlobal('cancelAnimationFrame', (id: number) => {
+    pending.delete(id)
+  })
   vi.spyOn(performance, 'now').mockImplementation(() => clock.now)
   return clock
 }
