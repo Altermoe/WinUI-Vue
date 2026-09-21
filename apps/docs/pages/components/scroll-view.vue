@@ -55,8 +55,9 @@ const logEvent = (tag: string): void => {
     <h2 class="text-2xl font-semibold text-colorNeutralForeground1">Scroll View 滚动视图</h2>
     <p class="text-colorNeutralForeground2">
       对齐 WinUI 3 <code class="text-colorBrandForeground1">ScrollView</code> 的容器控件：
-      内容超出视口时滚动、平移、缩放，滚动条为 WinUI 3 的 overlay 样式（8px
-      圆角拇指，悬停/滚动后展开，2s 无交互收起）。
+      内容超出视口时滚动、平移、缩放，滚动条为 WinUI 3 的 overlay 样式（2px
+      细滑块，指针进入容器即显示；指针移到滚动条上时滑块加粗为 6px、药丸轨道
+      连同两端步进按钮展开，离开后收起，2s 无交互整体淡出）。
     </p>
 
     <!-- 基础用法（垂直） -->
