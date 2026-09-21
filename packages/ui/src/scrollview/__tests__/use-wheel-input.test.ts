@@ -2,14 +2,16 @@
 /**
  * useWheelInput：
  *  - 滚轮滚动走统一滚动驱动（retarget 缓动），目标增量与 moved/remaining 正确
- *  - 边界时剩余增量链式传递给父级、chainMode=never 时吞掉
+ *  - 滚轮归属：到达极限时吞掉事件（preventDefault）不向外层扩散；该方向不可
+ *    滚动时不占有事件；已被后代接管的事件祖先直接跳过
+ *  - chainMode='always' 保留旧的「剩余增量链给外层」逃生舱
  *  - reduced-motion 下回退为直通写 offset
  *  - ctrl/⌘+滚轮原地缩放（中心为指针位置）
  */
 
 import { describe, expect, it, vi } from 'vitest'
 import { WHEEL_LINE_HEIGHT } from '../constants'
-import { registerScrollChain } from '../scroll-chain'
+import { claimWheelEvent, registerScrollChain } from '../scroll-chain'
 import { useAnimation } from '../use-animation'
 import { useInertia } from '../use-inertia'
 import { useScrollApi } from '../use-scroll-api'
@@ -93,9 +95,33 @@ describe('useWheelInput · 滚轮滚动（统一缓动驱动）', () => {
     unmount()
   })
 
-  it('到达边界且部分消化时，剩余增量链式交给父级', () => {
+  it('到达极限（默认 auto）时吞掉滚轮，且不链给父级', () => {
     const clock = installRafClock()
     const { result, unmount } = mountWheel()
+    const { core, animation, wheel } = result
+    core.extentHeight.value = 1000
+    core.viewportHeight.value = 200 // maxOffset = 800
+    core.offsetY.value = 700
+
+    const parentHandle = { chainScrollBy: vi.fn() }
+    const parentRoot = { parentElement: null }
+    const childRoot = { parentElement: parentRoot } as unknown as HTMLElement
+    registerScrollChain(parentRoot as never, parentHandle)
+    core.setElement('rootEl', childRoot)
+
+    const event = wheelEvent({ deltaY: 200 })
+    wheel.onWheel(event)
+    expect(event.preventDefault).toHaveBeenCalled()
+    expect(animation.getScrollTarget().y).toBe(800) // 本视图消化 100
+    // auto：到极限不向外层扩散（对齐 WinUI 3），剩余 100 被吞掉
+    expect(parentHandle.chainScrollBy).not.toHaveBeenCalled()
+    clock.dispose()
+    unmount()
+  })
+
+  it('chainMode=always 时，剩余增量显式链给父级（逃生舱路径）', () => {
+    const clock = installRafClock()
+    const { result, unmount } = mountWheel({ verticalScrollChainMode: 'always' })
     const { core, animation, wheel } = result
     core.extentHeight.value = 1000
     core.viewportHeight.value = 200 // maxOffset = 800
@@ -127,6 +153,49 @@ describe('useWheelInput · 滚轮滚动（统一缓动驱动）', () => {
     const event = wheelEvent({ deltaY: 120 })
     wheel.onWheel(event)
     expect(event.preventDefault).toHaveBeenCalled()
+    clock.dispose()
+    unmount()
+  })
+
+  it('该方向不可滚动时不占有滚轮：不 preventDefault，交给外层接管', () => {
+    const clock = installRafClock()
+    const { result, unmount } = mountWheel()
+    const { core, wheel } = result
+    core.extentHeight.value = 200
+    core.viewportHeight.value = 200 // 该方向没有可滚动内容
+
+    const event = wheelEvent({ deltaY: 120 })
+    wheel.onWheel(event)
+    expect(event.preventDefault).not.toHaveBeenCalled()
+    clock.dispose()
+    unmount()
+  })
+
+  it('零增量滚轮不占有事件、不 preventDefault', () => {
+    const clock = installRafClock()
+    const { result, unmount } = mountWheel()
+    const { core, wheel } = result
+    core.extentHeight.value = 1000
+    core.viewportHeight.value = 200
+
+    const event = wheelEvent({})
+    wheel.onWheel(event)
+    expect(event.preventDefault).not.toHaveBeenCalled()
+    clock.dispose()
+    unmount()
+  })
+
+  it('已被后代 ScrollView 接管的滚轮事件：祖先直接跳过', () => {
+    const clock = installRafClock()
+    const { result, unmount } = mountWheel()
+    const { core, wheel } = result
+    core.extentHeight.value = 1000
+    core.viewportHeight.value = 200
+
+    const event = wheelEvent({ deltaY: 120 })
+    claimWheelEvent(event) // 模拟更近的后代 ScrollView 已接管
+    wheel.onWheel(event)
+    expect(event.preventDefault).not.toHaveBeenCalled()
     clock.dispose()
     unmount()
   })

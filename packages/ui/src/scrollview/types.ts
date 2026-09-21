@@ -214,10 +214,20 @@ interface FluereScrollViewProps {
   /** 垂直滚动条展示策略 @default 'auto' */
   verticalScrollBarVisibility?: ScrollingScrollBarVisibility
 
-  /** 水平滚动链式传递 @default 'auto' */
+  /**
+   * 水平滚动链式传递 @default 'auto'
+   *
+   * 鼠标滚轮采用与 WinUI 3 对齐的归属模型：指针位于本组件内、且该方向确实可
+   * 滚动时，本次滚轮由本组件独占 —— 无论是否到达滚动极限，都不会滚到外层
+   * ScrollView；只有指针落在不属于任何子滚动容器的元素上时，外层才接管。
+   *  - `auto` / `never`：到滚动极限时吞掉滚轮（等价 overscroll-behavior:
+   *    contain，页面等原生祖先同样不滚动）；
+   *  - `always`：保留旧的链式行为，把本方向未消化的剩余增量显式交给外层。
+   * 本方向没有可滚动内容（或该方向被禁用）时不占有滚轮，冒泡交给外层。
+   */
   horizontalScrollChainMode?: ScrollingChainMode
 
-  /** 垂直滚动链式传递 @default 'auto' */
+  /** 垂直滚动链式传递 @default 'auto'，语义同 horizontalScrollChainMode */
   verticalScrollChainMode?: ScrollingChainMode
 
   /** 水平触控平移导轨 @default 'enabled' */

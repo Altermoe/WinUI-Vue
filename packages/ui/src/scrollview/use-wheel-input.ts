@@ -1,8 +1,16 @@
 /**
- * 滚轮输入：滚动增量应用、ctrl/⌘ 缩放、以及边界处的滚动链式传递。
+ * 滚轮输入：滚动增量应用、ctrl/⌘ 缩放、以及嵌套 ScrollView 的滚轮归属。
  *
- * 本模块同时拥有 scroll chain 的注册表生命周期（根元素 → 处理器），
- * 并暴露外层 ScrollView 可调用的 chainScrollBy 入口。
+ * 归属模型（对齐 WinUI 3；仅针对鼠标滚轮）：指针所在的、在该滚动方向上确实
+ * 可滚动的最近一个 ScrollView 独占本次滚轮 —— 它给事件打上归属标记并
+ * preventDefault，祖先 ScrollView 在 onWheel 开头直接跳过。于是无论内层是否
+ * 到达滚动极限，外层都不会跟着滚动；只有当指针落在不属于任何子滚动容器的
+ * 元素上时，外层才会接管。内层在该方向没有可滚动内容（或方向被禁用）时不
+ * 占有事件，冒泡交给外层，避免滚轮「死区」。触控 / 笔由 setPointerCapture
+ * 天然独占，不受影响。
+ *
+ * 本模块同时拥有 scroll chain 的注册表生命周期（根元素 → 处理器）；仅
+ * scrollChainMode='always' 时保留旧行为：把剩余增量显式交给外层 ScrollView。
  */
 /* oxlint-disable max-statements, max-params, no-ternary, no-magic-numbers, id-length --
  * 滚轮输入属于 FluereScrollView 的复杂交互流程（对齐 WinUI 3 ScrollView）：
@@ -13,9 +21,15 @@
 import { onMounted, onScopeDispose } from 'vue'
 import { WHEEL_LINE_HEIGHT, WHEEL_ZOOM_FACTOR_STEP, WHEEL_ZOOM_STEP_DIVISOR } from './constants'
 import type { ScrollViewCore } from './core'
-import { findParentScroller, registerScrollChain, unregisterScrollChain } from './scroll-chain'
+import {
+  claimWheelEvent,
+  findParentScroller,
+  isWheelEventClaimed,
+  registerScrollChain,
+  unregisterScrollChain,
+} from './scroll-chain'
 import type { ScrollChainHandle } from './scroll-chain'
-import type { ScrollingInputKinds } from './types'
+import type { ScrollingChainMode, ScrollingInputKinds } from './types'
 import type { AnimationEngine } from './use-animation'
 import type { ScrollApi } from './use-scroll-api'
 import type { ScrollBars } from './use-scroll-bars'
@@ -54,13 +68,15 @@ export const useWheelInput = (
     return list.includes('all') || list.includes(kind)
   }
 
-  const shouldChain = (axis: 'horizontal' | 'vertical'): boolean => {
-    const mode =
-      axis === 'horizontal'
-        ? core.props.horizontalScrollChainMode
-        : core.props.verticalScrollChainMode
-    return mode !== 'never'
-  }
+  /** 该轴的滚动链式模式：仅 'always' 保留旧的「剩余增量链给外层」行为 */
+  const chainMode = (axis: 'horizontal' | 'vertical'): ScrollingChainMode =>
+    axis === 'horizontal'
+      ? core.props.horizontalScrollChainMode
+      : core.props.verticalScrollChainMode
+
+  /** 本视图在该方向是否确实可滚动（可滚动即由本视图独占本次滚轮，含到达极限时） */
+  const ownsAxis = (axis: 'horizontal' | 'vertical'): boolean =>
+    axis === 'horizontal' ? canScrollHorizontal() : canScrollVertical()
 
   /** 应用一段滚动增量，返回实际移动量（与传入 delta 同号：正 = 沿增量方向滚动）。
    *
@@ -150,18 +166,18 @@ export const useWheelInput = (
     return { deltaX, deltaY }
   }
 
-  const wheelOwnsDirection = (dominant: 'horizontal' | 'vertical'): boolean => {
-    if (dominant === 'vertical') {
-      return canScrollVertical()
-    }
-    return canScrollHorizontal()
-  }
-
   const onWheel = (event: WheelEvent): void => {
     if (isInputIgnored('mouseWheel')) {
       return
     }
+    // 后代 ScrollView 已接管本次滚轮：祖先一律不响应（不滚动、不改动事件）。
+    // 这是「指针在子滚动容器内时滚轮不扩散到外层」的关键：事件冒泡顺序保证
+    // 最近的 ScrollView 先处理并打标，此处只负责跳过。
+    if (isWheelEventClaimed(event)) {
+      return
+    }
     if (applyWheelZoom(event)) {
+      claimWheelEvent(event)
       return
     }
 
@@ -170,32 +186,40 @@ export const useWheelInput = (
     const canVertical = canScrollVertical()
     let { deltaX } = normalized
     let { deltaY } = normalized
+    if (deltaX === 0 && deltaY === 0) {
+      return
+    }
     // 主轴选择：仅一个方向可滚动时，把增量归一到该方向
     if (canVertical && !canHorizontal && Math.abs(deltaY) >= Math.abs(deltaX)) {
       deltaX = 0
     } else if (canHorizontal && !canVertical && Math.abs(deltaX) > Math.abs(deltaY)) {
       deltaY = 0
     }
-
-    const moved = applyScrollDelta(deltaX, deltaY)
-    const consumed = moved.movedX !== 0 || moved.movedY !== 0
-    if (consumed) {
-      event.preventDefault()
-      chainRemainingDelta(deltaX - moved.movedX, deltaY - moved.movedY)
+    if (deltaX === 0 && deltaY === 0) {
       return
     }
 
-    // 未实际滚动：若方向属于我们但到达边界，链式交给外层；否则交给浏览器原生祖先
+    // 归属判定：只有「该方向确实可滚动」的最近容器才独占本次滚轮。
+    // 不可滚动（或该方向被禁用）则不占有，留给外层接管，避免滚轮死区。
     const dominant = Math.abs(deltaY) >= Math.abs(deltaX) ? 'vertical' : 'horizontal'
-    if (wheelOwnsDirection(dominant) && !shouldChain(dominant)) {
-      event.preventDefault()
+    if (!ownsAxis(dominant)) {
+      return
     }
+
+    // 本视图独占：立即阻止页面等原生祖先滚动，并标记事件让外层 ScrollView 跳过。
+    // 无论是否到达极限都保持独占（对齐 WinUI 3），因此到极限时不会「外溢」。
+    claimWheelEvent(event)
+    event.preventDefault()
+
+    const moved = applyScrollDelta(deltaX, deltaY)
+    // 仅 chainMode='always' 的逃生舱路径把剩余增量显式交给外层
+    chainRemainingDelta(deltaX - moved.movedX, deltaY - moved.movedY)
   }
 
-  /** 把边界处的剩余增量交给外层 ScrollView */
+  /** 把边界处的剩余增量交给外层 ScrollView（仅 chainMode='always'） */
   const chainRemainingDelta = (remainingX: number, remainingY: number): void => {
-    const chainX = shouldChain('horizontal') && remainingX !== 0
-    const chainY = shouldChain('vertical') && remainingY !== 0
+    const chainX = remainingX !== 0 && chainMode('horizontal') === 'always'
+    const chainY = remainingY !== 0 && chainMode('vertical') === 'always'
     if (!chainX && !chainY) {
       return
     }
@@ -209,9 +233,10 @@ export const useWheelInput = (
     }
   }
 
-  /** 外层 ScrollView 调用的链式入口 */
+  /** 外层 ScrollView 调用的链式入口（chainMode='always'），本身仍可继续向上传递 */
   const chainScrollBy = (deltaX: number, deltaY: number): void => {
-    applyScrollDelta(deltaX, deltaY)
+    const moved = applyScrollDelta(deltaX, deltaY)
+    chainRemainingDelta(deltaX - moved.movedX, deltaY - moved.movedY)
   }
 
   const chainHandle: ScrollChainHandle = { chainScrollBy }
