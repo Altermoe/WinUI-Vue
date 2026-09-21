@@ -16,8 +16,21 @@
  */
 import { computed, onScopeDispose, ref, watchEffect } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
-import { BARS_HIDE_DELAY, MIN_THUMB_TRAVEL, THUMB_MIN_LENGTH } from './constants'
+import { BARS_HIDE_DELAY, MIN_OFFSET, MIN_THUMB_TRAVEL, THUMB_MIN_LENGTH } from './constants'
 import type { ScrollViewCore } from './core'
+
+/** 滚动条轴向 */
+type ScrollBarAxis = 'vertical' | 'horizontal'
+
+/**
+ * 滑块行程两端需要让开的步进按钮 band（px）。
+ *
+ * 数值由 CSS 通过 thumb 的 top / left 内缩给出（--fui-scrollview-thumb-travel-inset）。
+ * 几何派生（useScrollBars）与拖拽换算（useScrollbarInput）共用这一读取入口，
+ * 保证「可用轨道长度」在两处一致——否则拖拽会与滑块位置对不上而跳变。
+ */
+const thumbTravelInset = (thumb: HTMLElement, axis: ScrollBarAxis): number =>
+  axis === 'vertical' ? thumb.offsetTop : thumb.offsetLeft
 
 /** 滚动条展示层暴露给其他模块 / 模板的对象 */
 interface ScrollBars {
@@ -121,7 +134,8 @@ const useScrollBars = (core: ScrollViewCore): ScrollBars => {
     barHovered.value = false
   }
 
-  /* ---- 拇指几何（响应式派生） ---- */
+  /* ---- 拇指几何（响应式派生） ----
+   * 可用轨道长度 = 轨道两端各让开一个步进按钮 band，滑块因此不会与按钮重叠。 */
 
   const updateVerticalThumb = (): void => {
     const bar = vBarEl.value
@@ -129,7 +143,10 @@ const useScrollBars = (core: ScrollViewCore): ScrollBars => {
     if (!bar || !thumb || !computedVBarVisible.value) {
       return
     }
-    const trackLength = bar.clientHeight
+    const trackLength = Math.max(
+      MIN_OFFSET,
+      bar.clientHeight - thumbTravelInset(thumb, 'vertical') * 2,
+    )
     const length = thumbLength(trackLength, viewportHeight.value, scrollableHeight.value)
     const maxTravel = Math.max(MIN_THUMB_TRAVEL, trackLength - length)
     const ratio = scrollableHeight.value > 0 ? offsetY.value / scrollableHeight.value : 0
@@ -143,7 +160,10 @@ const useScrollBars = (core: ScrollViewCore): ScrollBars => {
     if (!bar || !thumb || !computedHBarVisible.value) {
       return
     }
-    const trackLength = bar.clientWidth
+    const trackLength = Math.max(
+      MIN_OFFSET,
+      bar.clientWidth - thumbTravelInset(thumb, 'horizontal') * 2,
+    )
     const length = thumbLength(trackLength, viewportWidth.value, scrollableWidth.value)
     const maxTravel = Math.max(MIN_THUMB_TRAVEL, trackLength - length)
     const ratio = scrollableWidth.value > 0 ? offsetX.value / scrollableWidth.value : 0
@@ -179,4 +199,4 @@ const useScrollBars = (core: ScrollViewCore): ScrollBars => {
   }
 }
 
-export { useScrollBars, type ScrollBars }
+export { thumbTravelInset, useScrollBars, type ScrollBarAxis, type ScrollBars }

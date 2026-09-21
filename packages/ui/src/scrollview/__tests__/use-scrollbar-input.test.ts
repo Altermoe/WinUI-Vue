@@ -15,15 +15,25 @@ import { useScrollbarInput } from '../use-scrollbar-input'
 import { installRafClock, makeEngine, makeRectElement, scoped } from './helpers'
 
 /** 竖向滚动条 / 拇指的最小假元素 */
+/** 两端步进按钮 band：CSS 通过 thumb 的 top / left 内缩给出（12px） */
+const TRAVEL_INSET = 12
+
 const makeVBar = (): Record<string, unknown> =>
   makeRectElement(
     { left: 0, top: 0, width: 12, height: 200 },
     { setPointerCapture: vi.fn(), releasePointerCapture: vi.fn() },
   )
-const makeVThumb = (): Record<string, unknown> =>
+/** 竖向滑块假元素：契约与真实 DOM 一致——顶部内缩一个按钮 band */
+const makeVThumb = (top = TRAVEL_INSET, height = 40): Record<string, unknown> =>
   makeRectElement(
-    { left: 0, top: 0, width: 8, height: 40 },
-    { offsetHeight: 40, offsetWidth: 8, contains: () => false },
+    { left: 0, top, width: 6, height },
+    {
+      offsetHeight: height,
+      offsetWidth: 6,
+      offsetTop: TRAVEL_INSET,
+      offsetLeft: TRAVEL_INSET,
+      contains: () => false,
+    },
   )
 
 const makeScrollbar = () => {
@@ -69,19 +79,19 @@ describe('useScrollbarInput · 拇指拖拽', () => {
     core.setElement('vBarEl', bar)
     core.setElement('vThumbEl', thumb)
 
-    // 按下（拇指顶部在 track 0 处，抓取点 offset=40）
-    const down = pointerDownOn(thumb, { clientY: 40 })
+    // 按下滑块中部（滑块顶部在 band 内缩 12 处，中点 32）→ 抓取点相对滑块起点 20
+    const down = pointerDownOn(thumb, { clientY: 32 })
     scrollbar.onVBarPointerDown(down)
     expect(bar.setPointerCapture).toHaveBeenCalledWith(1)
     expect(bars.thumbDragging.value).toBe(true)
     expect(core.interactionState.value).toBe('interaction')
 
-    // 移动到 clientY=80：ratio=(80-40)/(200-40)=0.25 → offset=0.25*800=200
+    // 可用行程 = 200 - 2*12 = 176；拖动行程 = 100-20-12 = 68 → ratio = 0.5 → offset = 400
     scrollbar.onThumbPointerMove({
       pointerId: 1,
-      clientY: 80,
+      clientY: 100,
     } as unknown as PointerEvent)
-    expect(core.offsetY.value).toBe(200)
+    expect(core.offsetY.value).toBe(400)
     expect(core.events.viewChanged).toHaveBeenCalled()
 
     // 抬起
@@ -89,6 +99,40 @@ describe('useScrollbarInput · 拇指拖拽', () => {
     expect(bar.releasePointerCapture).toHaveBeenCalledWith(1)
     expect(bars.thumbDragging.value).toBe(false)
     expect(core.interactionState.value).toBe('idle')
+    clock.dispose()
+    dispose()
+  })
+
+  it('按住滑块后再原地移动不会跳变（行程内缩与滑块位置一致）', () => {
+    const clock = installRafClock()
+    const { core, scrollbar, dispose } = makeScrollbar()
+    core.extentHeight.value = 1000
+    core.viewportHeight.value = 200 // scrollable = 800
+    core.offsetY.value = 400 // ratio 0.5 → 滑块位于 12 + 0.5*140.8 = 82.4（长度 35.2）
+    core.setElement('vBarEl', makeVBar())
+    core.setElement('vThumbEl', makeVThumb(82.4, 35.2))
+
+    scrollbar.onVBarPointerDown(pointerDownOn(core.vThumbEl.value, { clientY: 92.4 }))
+    scrollbar.onThumbPointerMove({ pointerId: 1, clientY: 92.4 } as unknown as PointerEvent)
+    expect(core.offsetY.value).toBe(400)
+    clock.dispose()
+    dispose()
+  })
+
+  it('命中对象不是滑块元素时，只要落在滑块范围内仍进入拖拽（不翻页）', () => {
+    const clock = installRafClock()
+    const { core, bars, api, scrollbar, dispose } = makeScrollbar()
+    const scrollBy = vi.spyOn(api, 'scrollBy')
+    core.extentHeight.value = 1000
+    core.viewportHeight.value = 200
+    core.setElement('vBarEl', makeVBar())
+    core.setElement('vThumbEl', makeVThumb())
+
+    // target 传轨道：模拟命中测试落到轨道而非滑块元素（滑块上有伪元素 / 与按钮相邻）
+    // 滑块纵向范围 [12, 52]，50 在其末端附近 → 应当拖拽而不是翻页
+    scrollbar.onVBarPointerDown(pointerDownOn(core.vBarEl.value, { clientY: 50 }))
+    expect(scrollBy).not.toHaveBeenCalled()
+    expect(bars.thumbDragging.value).toBe(true)
     clock.dispose()
     dispose()
   })
@@ -123,11 +167,11 @@ describe('useScrollbarInput · 轨道翻页', () => {
     core.setElement('vBarEl', makeVBar())
     core.setElement('vThumbEl', makeVThumb())
 
-    // 拇指中点 = 0 + 40/2 = 20；点击 100（下方）→ +page
+    // 滑块纵向范围 [12, 52]（顶部内缩 band 12）；点击 100（下方）→ +page
     scrollbar.onVBarPointerDown(pointerDownOn(core.vBarEl.value, { clientY: 100 }))
     expect(scrollBy).toHaveBeenCalledWith(0, 160)
 
-    // 点击 10（上方）→ -page
+    // 点击 10（滑块上沿之上，落在上端按钮 band 内）→ -page
     scrollbar.onVBarPointerDown(pointerDownOn(core.vBarEl.value, { clientY: 10 }))
     expect(scrollBy).toHaveBeenCalledWith(0, -160)
     clock.dispose()

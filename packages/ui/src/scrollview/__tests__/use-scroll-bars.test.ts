@@ -15,40 +15,77 @@ const makeBars = () => {
   return { core, bars, dispose }
 }
 
+/** 两端步进按钮 band：CSS 通过 thumb 的 top / left 内缩给出（12px） */
+const TRAVEL_INSET = 12
+
+/** 从 inline style 读取 px 数值 */
+const px = (value: string | undefined): number => Number.parseFloat(value ?? '')
+
+/** 从 inline transform 中取出行程值（px） */
+const travelOf = (transform: string | undefined): number =>
+  px((transform ?? '').slice('translateY('.length, -2))
+
+/** 竖向轨道假元素：trackLength 200，可用行程 200 - 2 * 12 = 176 */
+const setVerticalThumb = (core: ReturnType<typeof makeCore>): Record<string, string> => {
+  const vThumb = {
+    style: {} as Record<string, string>,
+    offsetHeight: 0,
+    offsetWidth: 0,
+    offsetTop: TRAVEL_INSET,
+    offsetLeft: TRAVEL_INSET,
+  }
+  core.setElement('vBarEl', { clientHeight: 200 })
+  core.setElement('vThumbEl', vThumb)
+  return vThumb.style
+}
+
 describe('useScrollBars · 拇指几何', () => {
   it('拇指长度按可滚动比例缩放且有最小长度，位移按 offset 比例', async () => {
     const { core, dispose } = makeBars()
-    const vBar = { clientHeight: 200 }
-    const vThumb = { style: {} as Record<string, string>, offsetHeight: 0, offsetWidth: 0 }
-    core.setElement('vBarEl', vBar)
-    core.setElement('vThumbEl', vThumb)
+    const style = setVerticalThumb(core)
 
     core.extentHeight.value = 1000
     core.viewportHeight.value = 200 // scrollable = 800
     core.offsetY.value = 0
     await nextTick()
-    // length = max(30, 200 * 200/1000) = 40; maxTravel = 160
-    expect(vThumb.style.height).toBe('40px')
-    expect(vThumb.style.transform).toBe('translateY(0px)')
+    // 可用行程 176：length = max(30, 176 * 200/1000) = 35.2；maxTravel = 140.8
+    expect(style.height).toBe('35.2px')
+    expect(style.transform).toBe('translateY(0px)')
 
-    core.offsetY.value = 400 // ratio 0.5 → 0.5 * 160
+    core.offsetY.value = 400 // ratio 0.5 → 0.5 * 140.8
     await nextTick()
-    expect(vThumb.style.transform).toBe('translateY(80px)')
+    expect(style.transform).toBe('translateY(70.4px)')
     dispose()
   })
 
   it('可滚动量很大时拇指取最小长度', async () => {
     const { core, dispose } = makeBars()
-    const vBar = { clientHeight: 200 }
-    const vThumb = { style: {} as Record<string, string>, offsetHeight: 0, offsetWidth: 0 }
-    core.setElement('vBarEl', vBar)
-    core.setElement('vThumbEl', vThumb)
+    const style = setVerticalThumb(core)
 
     core.extentHeight.value = 2000
-    core.viewportHeight.value = 200 // scrollable = 1800 → ratio = 0.1 → 200*0.1 = 20 < 30
+    core.viewportHeight.value = 200 // scrollable = 1800 → ratio = 0.1 → 176*0.1 = 17.6 < 30
     core.offsetY.value = 0
     await nextTick()
-    expect(vThumb.style.height).toBe('30px') // 保底 THUMB_MIN_LENGTH
+    expect(style.height).toBe('30px') // 保底 THUMB_MIN_LENGTH
+    dispose()
+  })
+
+  it('滚到两端时拇指始终让开按钮 band，不与端点按钮重叠', async () => {
+    const { core, dispose } = makeBars()
+    const style = setVerticalThumb(core)
+
+    core.extentHeight.value = 1000
+    core.viewportHeight.value = 200 // scrollable = 800
+    core.offsetY.value = 0
+    await nextTick()
+    const length = px(style.height)
+    // 起点：行程为 0，滑块上边缘正是 band 内缩处（按钮下沿）
+    expect(travelOf(style.transform)).toBe(0)
+
+    core.offsetY.value = 800 // ratio 1 → 走完可用行程
+    await nextTick()
+    // 终点：滑块下边缘 = 轨道长度 - band 内缩（200 - 12）
+    expect(TRAVEL_INSET + travelOf(style.transform) + length).toBe(200 - TRAVEL_INSET)
     dispose()
   })
 })

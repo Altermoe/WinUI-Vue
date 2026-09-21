@@ -2,7 +2,9 @@
  * 滚动条输入：拖拽拇指定位 / 点击轨道翻页 / 两端步进按钮（可长按连续滚动）。
  *
  * 拇指几何的视觉渲染在 use-scroll-bars 中响应式维护；本模块只负责交互：
- * 拖拽期间把指针位置换算为目标 offset 并提交视图；步进按钮沿所在轴按
+ * 按下时按「几何位置」判定命中对象（滑块 → 拖拽，端点按钮 → 步进，其余 →
+ * 翻页），不依赖 event.target 的绘制层级判定，避免滑块伪元素 / 相邻按钮导致的
+ * 误判；拖拽期间把指针位置换算为目标 offset 并提交视图。步进按钮沿所在轴按
  * SCROLLBAR_STEP 逐步滚动，长按超过 SCROLLBAR_REPEAT_DELAY 后进入连续步进。
  */
 /* oxlint-disable max-statements, max-params, no-ternary, no-magic-numbers --
@@ -23,10 +25,8 @@ import type { ScrollViewCore } from './core'
 import type { AnimationEngine } from './use-animation'
 import type { InertiaEngine } from './use-inertia'
 import type { ScrollApi } from './use-scroll-api'
-import type { ScrollBars } from './use-scroll-bars'
-
-/** 滚动条轴向 */
-type ScrollAxis = 'vertical' | 'horizontal'
+import { thumbTravelInset } from './use-scroll-bars'
+import type { ScrollBarAxis, ScrollBars } from './use-scroll-bars'
 
 /** 步进方向：-1 减小偏移（向上 / 向左），+1 增大偏移（向下 / 向右） */
 type StepDirection = -1 | 1
@@ -39,11 +39,11 @@ interface ScrollbarInput {
   /** 滚动条命中区抬起 / 取消 / 失去捕获：结束拇指拖拽与步进按钮长按 */
   onBarPointerUp: (event: PointerEvent) => void
   /** 轨道两端步进按钮按下：先步进一次，再启动长按连续滚动 */
-  onStepPointerDown: (axis: ScrollAxis, direction: StepDirection, event: PointerEvent) => void
+  onStepPointerDown: (axis: ScrollBarAxis, direction: StepDirection, event: PointerEvent) => void
 }
 
 interface ThumbDragState {
-  axis: ScrollAxis
+  axis: ScrollBarAxis
   pointerId: number
   grabOffset: number
 }
@@ -90,23 +90,24 @@ const useScrollbarInput = (
     if (scrollableHeight.value <= 0) {
       return
     }
-    const thumb = vThumbEl.value
-    if (!thumb) {
-      return
-    }
-    if (event.target === thumb || thumb.contains(event.target as Node)) {
-      startThumbDrag(event, 'vertical')
-      return
-    }
-    event.preventDefault()
     const bar = vBarEl.value
-    if (!bar) {
+    const thumb = vThumbEl.value
+    if (!bar || !thumb) {
       return
     }
     const rect = bar.getBoundingClientRect()
     const thumbRect = thumb.getBoundingClientRect()
     const clickY = event.clientY - rect.top
-    const thumbMid = thumbRect.top - rect.top + thumbRect.height / 2
+    const thumbStart = thumbRect.top - rect.top
+    // 按几何命中判定滑块，而不是 event.target：滑块本体含伪元素、两端按钮与它相邻，
+    // 依赖绘制层级的命中测试容易把「按住滑块」误判成轨道翻页。滑块命中区取整个
+    // 滚动条宽度（只比较纵向位置），与 WinUI 的拇指热区一致。
+    if (clickY >= thumbStart && clickY <= thumbStart + thumbRect.height) {
+      startThumbDrag(event, 'vertical')
+      return
+    }
+    event.preventDefault()
+    const thumbMid = thumbStart + thumbRect.height / 2
     const page = Math.max(PAGE_SCROLL_MARGIN, viewportHeight.value - PAGE_SCROLL_MARGIN)
     // 默认 animationMode 'auto'：轨道翻页带动画（decelerate 缓动）
     api.scrollBy(0, clickY < thumbMid ? -page : page)
@@ -119,29 +120,27 @@ const useScrollbarInput = (
     if (scrollableWidth.value <= 0) {
       return
     }
-    const thumb = hThumbEl.value
-    if (!thumb) {
-      return
-    }
-    if (event.target === thumb || thumb.contains(event.target as Node)) {
-      startThumbDrag(event, 'horizontal')
-      return
-    }
-    event.preventDefault()
     const bar = hBarEl.value
-    if (!bar) {
+    const thumb = hThumbEl.value
+    if (!bar || !thumb) {
       return
     }
     const rect = bar.getBoundingClientRect()
     const thumbRect = thumb.getBoundingClientRect()
     const clickX = event.clientX - rect.left
-    const thumbMid = thumbRect.left - rect.left + thumbRect.width / 2
+    const thumbStart = thumbRect.left - rect.left
+    if (clickX >= thumbStart && clickX <= thumbStart + thumbRect.width) {
+      startThumbDrag(event, 'horizontal')
+      return
+    }
+    event.preventDefault()
+    const thumbMid = thumbStart + thumbRect.width / 2
     const page = Math.max(PAGE_SCROLL_MARGIN, viewportWidth.value - PAGE_SCROLL_MARGIN)
     // 默认 animationMode 'auto'：轨道翻页带动画（decelerate 缓动）
     api.scrollBy(clickX < thumbMid ? -page : page, 0)
   }
 
-  const startThumbDrag = (event: PointerEvent, axis: ScrollAxis): void => {
+  const startThumbDrag = (event: PointerEvent, axis: ScrollBarAxis): void => {
     const bar = axis === 'vertical' ? vBarEl.value : hBarEl.value
     const thumb = axis === 'vertical' ? vThumbEl.value : hThumbEl.value
     if (!bar || !thumb) {
@@ -172,11 +171,14 @@ const useScrollbarInput = (
       return
     }
     const rect = bar.getBoundingClientRect()
-    const trackLength = axis === 'vertical' ? rect.height : rect.width
+    const inset = thumbTravelInset(thumb, axis)
+    const trackLength = (axis === 'vertical' ? rect.height : rect.width) - inset * 2
     const thumbLengthValue = axis === 'vertical' ? thumb.offsetHeight : thumb.offsetWidth
     const maxTravel = Math.max(MIN_THUMB_TRAVEL, trackLength - thumbLengthValue)
     const pointer = axis === 'vertical' ? event.clientY - rect.top : event.clientX - rect.left
-    const ratio = Math.min(Math.max(0, (pointer - thumbDrag.grabOffset) / maxTravel), 1)
+    // 抓取点相对滑块起点，而滑块起点本身含两端按钮 band 的内缩，
+    // 因此换算行程比例前要先减掉内缩，否则按住滑块时会发生跳变。
+    const ratio = Math.min(Math.max(0, (pointer - thumbDrag.grabOffset - inset) / maxTravel), 1)
     const scrollable = axis === 'vertical' ? scrollableHeight.value : scrollableWidth.value
     const target = ratio * scrollable
     if (axis === 'vertical') {
@@ -207,7 +209,7 @@ const useScrollbarInput = (
   /* ---- 轨道两端步进按钮 ---- */
 
   /** 单次步进：仅沿按钮所在轴移动 SCROLLBAR_STEP，带边界钳制与 reduced-motion 直通 */
-  const stepScroll = (axis: ScrollAxis, direction: StepDirection): void => {
+  const stepScroll = (axis: ScrollBarAxis, direction: StepDirection): void => {
     const delta = direction * SCROLLBAR_STEP
     const scrollable = axis === 'vertical' ? scrollableHeight.value : scrollableWidth.value
     if (scrollable <= 0) {
@@ -253,7 +255,7 @@ const useScrollbarInput = (
   }
 
   const onStepPointerDown = (
-    axis: ScrollAxis,
+    axis: ScrollBarAxis,
     direction: StepDirection,
     event: PointerEvent,
   ): void => {

@@ -6,11 +6,12 @@
 /*  - 展开态滑块与轨道边缘保持 3px 间隙；收起 / 展开共用同一「外边缘      */
 /*    内缩」，缩放锚点固定在外边缘，因此展开前后滑块右（下）边缘到边界的   */
 /*    距离稳定（不会随轨道展开而漂移）                                   */
-/*  - 轨道为药丸形，两端各有圆角三角形步进按钮（长按可连续滚动）           */
+/*  - 轨道为药丸形，两端各有圆角三角形步进按钮（长按可连续滚动）；       */
+/*    滑块行程两端内缩一个按钮 band，滚到两端不会压住按钮               */
 /*  - 颜色取 Fluent 2 语义 token，就近映射 WinUI 的                     */
 /*    ControlFillColorDefault 复合值（#f9f9f9 / #2c2c2c）：             */
 /*      track = colorNeutralBackground8（#fcfcfc / #292929）            */
-/*      thumb = colorNeutralForeground3（#616161 / #adadad 强填充）      */
+/*      thumb = colorNeutralForeground1（#242424 / #ffffff 高对比反色）  */
 /*  - 展开 / 收起只改 opacity / transform（合成层属性），不触发回流与重排 */
 /*  - 进入用 decelerate、退出用 accelerate（Fluent 动效约定）            */
 /* ------------------------------------------------------------------ */
@@ -29,6 +30,9 @@
   --fui-scrollview-thumb-size-collapsed: 2;
   /* 展开态滑块到轨道边缘的间隙，收起态沿用同一外边缘内缩 */
   --fui-scrollview-thumb-gap: 3px;
+  /* 两端步进按钮占用的 band：滑块行程两端都内缩该值，避免滚到两端时与按钮重叠。
+     该值同时是 useScrollBars / useScrollbarInput 读取的「行程内缩」（thumb 的 top/left）。 */
+  --fui-scrollview-thumb-travel-inset: var(--fui-scrollview-bar-size);
   --fui-scrollview-thumb-scale-collapsed: calc(
     var(--fui-scrollview-thumb-size-collapsed) / var(--fui-scrollview-thumb-size)
   );
@@ -248,8 +252,9 @@
 }
 
 /* ---- Thumb（滑块） ----
- * 外边缘（右 / 下）位置固定，厚度变化由伪元素缩放实现：
- * 收起 2px 与展开 6px 的外边缘重合，因此展开前后边缘距离稳定。 */
+ * 两端让开步进按钮 band（top / left 内缩）后再定位，因此滚到两端也不会与按钮重叠；
+ * 厚度变化由伪元素缩放实现：收起 2px 与展开 6px 的外边缘重合，
+ * 展开前后右（下）边缘到边界的距离保持稳定。 */
 .fui-scrollview__thumb {
   position: absolute;
   z-index: 2;
@@ -276,7 +281,7 @@
 }
 
 .fui-scrollview__thumb--vertical {
-  top: 0;
+  top: var(--fui-scrollview-thumb-travel-inset);
   right: var(--fui-scrollview-thumb-gap);
   width: calc(var(--fui-scrollview-thumb-size) * 1px);
 }
@@ -287,7 +292,7 @@
 
 .fui-scrollview__thumb--horizontal {
   bottom: var(--fui-scrollview-thumb-gap);
-  left: 0;
+  left: var(--fui-scrollview-thumb-travel-inset);
   height: calc(var(--fui-scrollview-thumb-size) * 1px);
 }
 .fui-scrollview__thumb--horizontal::before {
