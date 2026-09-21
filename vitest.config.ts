@@ -34,6 +34,8 @@ export default defineConfig({
         new URL('./packages/icons/generated/icons.json', import.meta.url),
       ),
       '@fluere-vue/icons': fileURLToPath(new URL('./packages/icons/src/index.ts', import.meta.url)),
+      '@fluere-vue/hooks': fileURLToPath(new URL('./packages/hooks/src/index.ts', import.meta.url)),
+      '@fluere-vue/utils': fileURLToPath(new URL('./packages/utils/src/index.ts', import.meta.url)),
       '@fluere-vue/themes': fileURLToPath(
         new URL('./packages/themes/src/index.ts', import.meta.url),
       ),
