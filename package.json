@@ -25,6 +25,9 @@
     "docs:generate": "pnpm --filter @fluere-vue/docs generate",
     "docs:preview": "pnpm --filter @fluere-vue/docs preview",
     "build": "pnpm -r build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "lint": "oxlint --ignore-pattern .dsh --ignore-pattern packages/designs/generated --ignore-pattern packages/designs/data --ignore-pattern packages/icons/generated",
     "lint:fix": "oxlint --fix --ignore-pattern .dsh --ignore-pattern packages/designs/generated --ignore-pattern packages/designs/data --ignore-pattern packages/icons/generated",
     "format": "oxfmt --check",
@@ -34,10 +37,15 @@
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
+    "@vitejs/plugin-vue": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "@vue/test-utils": "catalog:",
+    "jsdom": "catalog:",
     "oxfmt": "0.60.0",
     "oxlint": "1.75.0",
     "typescript": "^6.0.3",
-    "vite": "8.1.5"
+    "vite": "8.1.5",
+    "vitest": "catalog:"
   },
   "devEngines": {
     "packageManager": {

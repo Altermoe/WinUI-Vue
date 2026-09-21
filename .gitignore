@@ -10,6 +10,9 @@ node_modules
 dist
 build
 
+# test coverage
+coverage
+
 # visualizer files
 stats.html
 
