@@ -6,6 +6,9 @@
   "license": "MIT",
   "author": "夕云葛城",
   "type": "module",
-  "main": "index.ts",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {}
 }
