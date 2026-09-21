@@ -1,11 +1,18 @@
 /* ------------------------------------------------------------------ */
-/* 视觉对齐 WinUI 3 overlay ScrollBar：                                */
-/*  - 拇指 8px 圆角胶囊（radius 3，ScrollBarCornerRadius）              */
-/*  - 滚动条热区 12px（ScrollBarSize）                                  */
-/*  - 拇指颜色 = ControlStrongFillColorDefault                         */
-/*  - 轨道颜色 = AcrylicInAppFillColorDefault（悬停时显现）             */
-/*  - 展开：指针进入后立即（无延迟）+ 0.167s 过渡                       */
-/*  - 收起：2s 无交互延迟（JS）+ 0.167s 过渡                            */
+/* 视觉对齐 WinUI 3 overlay ScrollBar                                   */
+/*                                                                     */
+/*  - 命中区 / 轨道宽度 12px（ScrollBarSize）                            */
+/*  - 滑块厚度：收起 2px → 展开 6px（ScrollBarThumbThickness）           */
+/*  - 展开态滑块与轨道边缘保持 3px 间隙；收起 / 展开共用同一「外边缘      */
+/*    内缩」，缩放锚点固定在外边缘，因此展开前后滑块右（下）边缘到边界的   */
+/*    距离稳定（不会随轨道展开而漂移）                                   */
+/*  - 轨道为药丸形，两端各有圆角三角形步进按钮（长按可连续滚动）           */
+/*  - 颜色取 Fluent 2 语义 token，就近映射 WinUI 的                     */
+/*    ControlFillColorDefault 复合值（#f9f9f9 / #2c2c2c）：             */
+/*      track = colorNeutralBackground8（#fcfcfc / #292929）            */
+/*      thumb = colorNeutralForeground3（#616161 / #adadad 强填充）      */
+/*  - 展开 / 收起只改 opacity / transform（合成层属性），不触发回流与重排 */
+/*  - 进入用 decelerate、退出用 accelerate（Fluent 动效约定）            */
 /* ------------------------------------------------------------------ */
 
 .fui-scrollview {
@@ -14,6 +21,31 @@
   box-sizing: border-box;
   min-width: 0;
   min-height: 0;
+
+  /* ---- 滚动条几何（组件级可覆写） ---- */
+  --fui-scrollview-bar-size: 12px;
+  /* 厚度用无单位数值定义，便于同时派生 px 尺寸与「收起 / 展开」缩放比 */
+  --fui-scrollview-thumb-size: 6;
+  --fui-scrollview-thumb-size-collapsed: 2;
+  /* 展开态滑块到轨道边缘的间隙，收起态沿用同一外边缘内缩 */
+  --fui-scrollview-thumb-gap: 3px;
+  --fui-scrollview-thumb-scale-collapsed: calc(
+    var(--fui-scrollview-thumb-size-collapsed) / var(--fui-scrollview-thumb-size)
+  );
+  /* 轨道药丸沿厚度方向展开的起始比例 */
+  --fui-scrollview-track-scale-collapsed: 0.5;
+
+  /* ---- 颜色（语义 token，可在组件外就地覆写） ---- */
+  --fui-scrollview-track-fill: var(--colorNeutralBackground8);
+  --fui-scrollview-thumb-fill: var(--colorNeutralForeground3);
+  --fui-scrollview-step-fill: var(--colorSubtleBackground);
+  --fui-scrollview-step-fill-hover: var(--colorSubtleBackgroundHover);
+  --fui-scrollview-step-fill-pressed: var(--colorSubtleBackgroundPressed);
+
+  /* ---- 动效 ---- */
+  --fui-scrollview-expand-duration: var(--durationFast);
+  --fui-scrollview-enter-curve: var(--curveDecelerateMid);
+  --fui-scrollview-exit-curve: var(--curveAccelerateMin);
 }
 
 .fui-scrollview:focus-visible {
@@ -55,75 +87,221 @@
   height: 100%;
 }
 
-/* ---- ScrollBar（overlay） ---- */
+/* ---- ScrollBar（overlay 命中区） ----
+ * 未显示时不拦截内容交互；显示后由指针进入命中区触发轨道展开。 */
 .fui-scrollview__scrollbar {
   position: absolute;
   z-index: 1;
-  border-radius: 3px;
-  opacity: 0;
-  transition: opacity 0.167s ease 0s; /* 收起：由 JS 在 BARS_HIDE_DELAY 后清除标志，随即淡出 */
+  pointer-events: none;
+
+  /* 当前生效的展开状态：由 --bars-expanded 覆盖，派生值变化即驱动过渡 */
+  --fui-scrollview-motion-curve: var(--fui-scrollview-exit-curve);
+  --fui-scrollview-thumb-scale: var(--fui-scrollview-thumb-scale-collapsed);
+  --fui-scrollview-track-scale: var(--fui-scrollview-track-scale-collapsed);
 }
+
 .fui-scrollview--bars-visible .fui-scrollview__scrollbar {
-  opacity: 1;
-  transition: opacity 0.167s ease 0s; /* 展开：进入后立即淡入 */
+  pointer-events: auto;
+}
+
+.fui-scrollview--bars-expanded .fui-scrollview__scrollbar {
+  --fui-scrollview-motion-curve: var(--fui-scrollview-enter-curve);
+  --fui-scrollview-thumb-scale: 1;
+  --fui-scrollview-track-scale: 1;
 }
 
 .fui-scrollview__scrollbar--vertical {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 12px;
+  width: var(--fui-scrollview-bar-size);
 }
 .fui-scrollview__scrollbar--horizontal {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 12px;
+  height: var(--fui-scrollview-bar-size);
 }
 
-/* 悬停滚动条时显现轨道（AcrylicInAppFillColor 近似） */
-.fui-scrollview__scrollbar--vertical:hover {
-  background: var(
-    --fui-scrollview-track,
-    light-dark(rgba(0, 0, 0, 0.09), rgba(255, 255, 255, 0.08))
-  );
+/* 双轴同时滚动：各自让出角落，避免两条轨道两端的箭头在角落重叠 */
+.fui-scrollview--both-bars .fui-scrollview__scrollbar--vertical {
+  bottom: var(--fui-scrollview-bar-size);
 }
-.fui-scrollview__scrollbar--horizontal:hover {
-  background: var(
-    --fui-scrollview-track,
-    light-dark(rgba(0, 0, 0, 0.09), rgba(255, 255, 255, 0.08))
-  );
+.fui-scrollview--both-bars .fui-scrollview__scrollbar--horizontal {
+  right: var(--fui-scrollview-bar-size);
 }
 
-/* ---- Thumb（8px 胶囊，颜色对齐 ControlStrongFillColorDefault） ---- */
+/* ---- Track（药丸背景 + 两端步进按钮） ---- */
+.fui-scrollview__track {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity var(--fui-scrollview-expand-duration) var(--fui-scrollview-motion-curve);
+}
+
+.fui-scrollview--bars-expanded .fui-scrollview__track {
+  opacity: 1;
+}
+
+/* 药丸背景放在伪元素上：只缩放它，两端箭头不会被压扁 */
+.fui-scrollview__track::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--fui-scrollview-track-fill);
+  border-radius: var(--borderRadiusCircular);
+  transition: transform var(--fui-scrollview-expand-duration) var(--fui-scrollview-motion-curve);
+}
+.fui-scrollview__scrollbar--vertical .fui-scrollview__track::before {
+  transform: scaleX(var(--fui-scrollview-track-scale));
+  transform-origin: right center;
+}
+.fui-scrollview__scrollbar--horizontal .fui-scrollview__track::before {
+  transform: scaleY(var(--fui-scrollview-track-scale));
+  transform-origin: center bottom;
+}
+
+/* ---- Track 两端步进按钮 ---- */
+.fui-scrollview__track-button {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--borderRadiusCircular);
+  background: var(--fui-scrollview-step-fill);
+  color: var(--fui-scrollview-thumb-fill);
+  cursor: default;
+  opacity: 0;
+  /* 轨道收起时不响应命中，避免点到「看不见」的按钮 */
+  pointer-events: none;
+  transition: opacity var(--fui-scrollview-expand-duration) var(--fui-scrollview-motion-curve);
+}
+
+.fui-scrollview--bars-expanded .fui-scrollview__track-button {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.fui-scrollview__track-button:hover {
+  background: var(--fui-scrollview-step-fill-hover);
+}
+.fui-scrollview__track-button:active {
+  background: var(--fui-scrollview-step-fill-pressed);
+}
+
+.fui-scrollview__scrollbar--vertical .fui-scrollview__track-button {
+  left: 0;
+  right: 0;
+  height: var(--fui-scrollview-bar-size);
+}
+.fui-scrollview__scrollbar--vertical .fui-scrollview__track-button--decrement {
+  top: 0;
+}
+.fui-scrollview__scrollbar--vertical .fui-scrollview__track-button--increment {
+  bottom: 0;
+}
+
+.fui-scrollview__scrollbar--horizontal .fui-scrollview__track-button {
+  top: 0;
+  bottom: 0;
+  width: var(--fui-scrollview-bar-size);
+}
+.fui-scrollview__scrollbar--horizontal .fui-scrollview__track-button--decrement {
+  left: 0;
+}
+.fui-scrollview__scrollbar--horizontal .fui-scrollview__track-button--increment {
+  right: 0;
+}
+
+/* 圆角三角形：填充 + round linejoin 让三个角圆润 */
+.fui-scrollview__track-arrow {
+  width: 8px;
+  height: 5px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+/* 默认箭头朝上（decrement）；其余方向由旋转得到 */
+.fui-scrollview__scrollbar--vertical
+  .fui-scrollview__track-button--increment
+  .fui-scrollview__track-arrow {
+  transform: rotate(180deg);
+}
+.fui-scrollview__scrollbar--horizontal
+  .fui-scrollview__track-button--decrement
+  .fui-scrollview__track-arrow {
+  transform: rotate(-90deg);
+}
+.fui-scrollview__scrollbar--horizontal
+  .fui-scrollview__track-button--increment
+  .fui-scrollview__track-arrow {
+  transform: rotate(90deg);
+}
+
+/* ---- Thumb（滑块） ----
+ * 外边缘（右 / 下）位置固定，厚度变化由伪元素缩放实现：
+ * 收起 2px 与展开 6px 的外边缘重合，因此展开前后边缘距离稳定。 */
 .fui-scrollview__thumb {
   position: absolute;
-  background: var(
-    --fui-scrollview-thumb,
-    light-dark(rgba(0, 0, 0, 0.447), rgba(255, 255, 255, 0.545))
-  );
-  border-radius: 3px;
-}
-.fui-scrollview__thumb--vertical {
-  left: 2px;
-  top: 0;
-  width: 8px;
-  height: 30px;
-}
-.fui-scrollview__thumb--horizontal {
-  top: 2px;
-  left: 0;
-  height: 8px;
-  width: 30px;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity var(--fui-scrollview-expand-duration) var(--curveLinear);
 }
 
-/* ---- ScrollBarsSeparator（WinUI 中为透明） ---- */
+.fui-scrollview--bars-visible .fui-scrollview__thumb {
+  opacity: 1;
+}
+
+/* 交互 / 悬停触发时立即显示（无展开延迟），收起时淡出 */
+.fui-scrollview--bars-immediate .fui-scrollview__thumb {
+  transition-duration: 0s;
+}
+
+.fui-scrollview__thumb::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--fui-scrollview-thumb-fill);
+  border-radius: var(--borderRadiusCircular);
+  transition: transform var(--fui-scrollview-expand-duration) var(--fui-scrollview-motion-curve);
+}
+
+.fui-scrollview__thumb--vertical {
+  top: 0;
+  right: var(--fui-scrollview-thumb-gap);
+  width: calc(var(--fui-scrollview-thumb-size) * 1px);
+}
+.fui-scrollview__thumb--vertical::before {
+  transform: scaleX(var(--fui-scrollview-thumb-scale));
+  transform-origin: right center;
+}
+
+.fui-scrollview__thumb--horizontal {
+  bottom: var(--fui-scrollview-thumb-gap);
+  left: 0;
+  height: calc(var(--fui-scrollview-thumb-size) * 1px);
+}
+.fui-scrollview__thumb--horizontal::before {
+  transform: scaleY(var(--fui-scrollview-thumb-scale));
+  transform-origin: center bottom;
+}
+
+/* ---- ScrollBarsSeparator（WinUI 中为透明角落） ---- */
 .fui-scrollview__separator {
   position: absolute;
   right: 0;
   bottom: 0;
   z-index: 1;
-  width: 12px;
-  height: 12px;
-  background: transparent;
+  width: var(--fui-scrollview-bar-size);
+  height: var(--fui-scrollview-bar-size);
+  pointer-events: none;
 }

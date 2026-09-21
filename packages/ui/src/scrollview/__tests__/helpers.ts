@@ -13,7 +13,7 @@ import type { Mock } from 'vitest'
  *  - rAF 假时钟：手动驱动 requestAnimationFrame，让动画测试能精确断言到
  *    任意时间节点（不受 vitest 假计时器的帧边界影响）
  */
-import { defineComponent, effectScope, ref } from 'vue'
+import { computed, defineComponent, effectScope, ref } from 'vue'
 import { createScrollViewCore } from '../core'
 import type { ScrollViewCore } from '../core'
 import type { ScrollViewEvents } from '../events'
@@ -101,10 +101,13 @@ export const makeBars = (): ScrollBars =>
     hovering: ref(false),
     panningActive: ref(false),
     thumbDragging: ref(false),
+    trackExpanded: computed(() => false),
     showBars: vi.fn(),
     scheduleHide: vi.fn(),
     onPointerEnterViewport: vi.fn(),
     onPointerLeaveViewport: vi.fn(),
+    onBarPointerEnter: vi.fn(),
+    onBarPointerLeave: vi.fn(),
   }) as unknown as ScrollBars
 
 /* ------------------------------------------------------------------ */

@@ -89,4 +89,45 @@ describe('useScrollBars · 展开 / 收起时机', () => {
     expect(bars.barsVisible.value).toBe(true)
     dispose()
   })
+
+  it('收起时复位「立即显示」标志，避免下次显示丢失过渡语义', () => {
+    vi.useFakeTimers()
+    const { bars, dispose } = makeBars()
+
+    bars.onPointerEnterViewport()
+    expect(bars.barsImmediate.value).toBe(true)
+
+    bars.onPointerLeaveViewport()
+    vi.advanceTimersByTime(BARS_HIDE_DELAY)
+    expect(bars.barsVisible.value).toBe(false)
+    expect(bars.barsImmediate.value).toBe(false)
+    dispose()
+  })
+})
+
+describe('useScrollBars · 轨道展开', () => {
+  it('指针进入滚动条命中区才展开轨道，离开即收起', () => {
+    const { bars, dispose } = makeBars()
+
+    // 仅在滚动容器内：滑块显示，但轨道保持收起
+    bars.onPointerEnterViewport()
+    expect(bars.barsVisible.value).toBe(true)
+    expect(bars.trackExpanded.value).toBe(false)
+
+    bars.onBarPointerEnter()
+    expect(bars.trackExpanded.value).toBe(true)
+
+    bars.onBarPointerLeave()
+    expect(bars.trackExpanded.value).toBe(false)
+    dispose()
+  })
+
+  it('拖拽滑块期间保持轨道展开', () => {
+    const { bars, dispose } = makeBars()
+
+    bars.onPointerEnterViewport()
+    bars.thumbDragging.value = true
+    expect(bars.trackExpanded.value).toBe(true)
+    dispose()
+  })
 })

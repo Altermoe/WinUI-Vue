@@ -1,6 +1,11 @@
 /**
  * 滚动条展示逻辑：展开 / 收起时机（对齐 WinUI 时长与延迟）与拇指几何。
  *
+ * 两个相互独立的可见性层级：
+ *  - barsVisible：指针位于滚动容器内 / 发生滚动交互 → 显示「细滑块」，轨道保持透明；
+ *  - trackExpanded：指针进入滚动条命中区（或正在拖拽滑块）→ 轨道连同两端步进
+ *    按钮展开显示，离开后收起。两者都由 CSS 过渡驱动，JS 只切换状态标志。
+ *
  * 拇指长度 / 位移是视图状态的纯派生值，这里用 watchEffect 响应式维护，
  * 任何 offset / zoom / 尺寸变化后自动刷新，core.applyView 不再关心拇指。
  */
@@ -9,8 +14,8 @@
  * 已由 constants.ts 命名常量覆盖主体，余下为结构边界值；工厂函数按职责
  * 组合计时 / 显示 / 拇指更新多段逻辑，属组件状态机的结构性豁免。
  */
-import { onScopeDispose, ref, watchEffect } from 'vue'
-import type { Ref } from 'vue'
+import { computed, onScopeDispose, ref, watchEffect } from 'vue'
+import type { ComputedRef, Ref } from 'vue'
 import { BARS_HIDE_DELAY, MIN_THUMB_TRAVEL, THUMB_MIN_LENGTH } from './constants'
 import type { ScrollViewCore } from './core'
 
@@ -23,12 +28,17 @@ interface ScrollBars {
   panningActive: Ref<boolean>
   /** 拇指拖拽进行中（由滚动条输入模块写入） */
   thumbDragging: Ref<boolean>
+  /** 轨道展开态：指针位于滚动条命中区，或正在拖拽滑块 */
+  trackExpanded: ComputedRef<boolean>
   /** 立即显示滚动条（interaction 触发，无展开延迟） */
   showBars: (immediate: boolean) => void
   /** 在 2s 无交互后收起滚动条 */
   scheduleHide: () => void
   onPointerEnterViewport: () => void
   onPointerLeaveViewport: () => void
+  /** 指针进入 / 离开滚动条命中区（决定轨道展开） */
+  onBarPointerEnter: () => void
+  onBarPointerLeave: () => void
 }
 
 /** 拇指长度：按可滚动比例缩放，保底 THUMB_MIN_LENGTH */
@@ -59,7 +69,12 @@ const useScrollBars = (core: ScrollViewCore): ScrollBars => {
   const hovering = ref(false)
   const panningActive = ref(false)
   const thumbDragging = ref(false)
+  /** 指针是否位于滚动条命中区（轨道展开的悬停条件） */
+  const barHovered = ref(false)
   let hideTimer: ReturnType<typeof setTimeout> | undefined = undefined
+
+  /** 拖拽滑块期间保持轨道展开，避免指针移出命中区时轨道闪烁 */
+  const trackExpanded = computed(() => barHovered.value || thumbDragging.value)
 
   const clearHideTimer = (): void => {
     if (hideTimer !== undefined) {
@@ -79,6 +94,8 @@ const useScrollBars = (core: ScrollViewCore): ScrollBars => {
     hideTimer = globalThis.setTimeout(() => {
       if (!hovering.value && !panningActive.value && !thumbDragging.value) {
         barsVisible.value = false
+        barsImmediate.value = false
+        barHovered.value = false
       }
     }, BARS_HIDE_DELAY)
   }
@@ -92,7 +109,16 @@ const useScrollBars = (core: ScrollViewCore): ScrollBars => {
 
   const onPointerLeaveViewport = (): void => {
     hovering.value = false
+    barHovered.value = false
     scheduleHide()
+  }
+
+  const onBarPointerEnter = (): void => {
+    barHovered.value = true
+  }
+
+  const onBarPointerLeave = (): void => {
+    barHovered.value = false
   }
 
   /* ---- 拇指几何（响应式派生） ---- */
@@ -143,10 +169,13 @@ const useScrollBars = (core: ScrollViewCore): ScrollBars => {
     hovering,
     panningActive,
     thumbDragging,
+    trackExpanded,
     showBars,
     scheduleHide,
     onPointerEnterViewport,
     onPointerLeaveViewport,
+    onBarPointerEnter,
+    onBarPointerLeave,
   }
 }
 

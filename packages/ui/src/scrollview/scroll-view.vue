@@ -17,12 +17,13 @@
  *  - use-wheel-input.ts        滚轮与滚动链式传递
  *  - use-pointer-input.ts      触控 / 笔平移（含手势分发）
  *  - use-pinch-input.ts        双指捏合缩放
- *  - use-scrollbar-input.ts    滚动条拖拽与轨道翻页
+ *  - use-scrollbar-input.ts    滚动条拖拽 / 轨道翻页 / 两端步进按钮
  *  - use-keyboard-input.ts     键盘方向键滚动
  *
  * Props 类型定义见 ./types.ts（对外由 @fluere-vue/ui 重新导出）。
  */
 
+import { computed } from 'vue'
 import { createScrollViewCore } from './core'
 import { createScrollViewEvents } from './events'
 import type { FluereScrollViewProps, ScrollViewEmits } from './types'
@@ -36,7 +37,29 @@ import { usePointerInput } from './use-pointer-input'
 import { useScrollApi } from './use-scroll-api'
 import { useScrollBars } from './use-scroll-bars'
 import { useScrollbarInput } from './use-scrollbar-input'
+import type { StepDirection } from './use-scrollbar-input'
 import { useWheelInput } from './use-wheel-input'
+
+/* ------------------------------------------------------------------ */
+/* 轨道两端步进按钮描述（key 决定箭头朝向，direction 为偏移增量方向）    */
+/* ------------------------------------------------------------------ */
+
+interface TrackStep {
+  key: 'decrement' | 'increment'
+  direction: StepDirection
+  /** 步进按钮的可访问名称 */
+  label: string
+}
+
+const VERTICAL_TRACK_STEPS: readonly TrackStep[] = [
+  { key: 'decrement', direction: -1, label: 'Scroll up' },
+  { key: 'increment', direction: 1, label: 'Scroll down' },
+]
+
+const HORIZONTAL_TRACK_STEPS: readonly TrackStep[] = [
+  { key: 'decrement', direction: -1, label: 'Scroll left' },
+  { key: 'increment', direction: 1, label: 'Scroll right' },
+]
 
 /* ------------------------------------------------------------------ */
 /* Props / Emits                                                       */
@@ -100,9 +123,15 @@ const {
   barsVisible,
   barsImmediate,
   panningActive,
+  trackExpanded,
   onPointerEnterViewport,
   onPointerLeaveViewport,
+  onBarPointerEnter,
+  onBarPointerLeave,
 } = bars
+
+/** 双轴滚动条同时可见：两条轨道需各自让出角落，避免两端箭头相互重叠 */
+const bothBarsVisible = computed(() => computedHBarVisible.value && computedVBarVisible.value)
 
 /* ------------------------------------------------------------------ */
 /* 对外暴露：只读状态 getter + 程序化方法                                */
@@ -160,8 +189,10 @@ defineExpose({
     class="fui-scrollview"
     :class="{
       'fui-scrollview--bars-visible': barsVisible,
+      'fui-scrollview--bars-expanded': trackExpanded,
       'fui-scrollview--bars-immediate': barsImmediate,
       'fui-scrollview--panning': panningActive,
+      'fui-scrollview--both-bars': bothBarsVisible,
     }"
     :style="rootStyle"
     :tabindex="props.tabIndex"
@@ -187,36 +218,84 @@ defineExpose({
       </div>
     </div>
 
+    <!-- 横向滚动条：轨道（药丸 + 两端步进按钮）在下，滑块在上 -->
     <div
       v-if="computedHBarVisible"
       ref="hBarEl"
       class="fui-scrollview__scrollbar fui-scrollview__scrollbar--horizontal"
+      @pointerenter="onBarPointerEnter"
+      @pointerleave="onBarPointerLeave"
       @pointerdown="scrollbar.onHBarPointerDown"
       @pointermove="scrollbar.onThumbPointerMove"
-      @pointerup="scrollbar.onThumbPointerUp"
-      @pointercancel="scrollbar.onThumbPointerUp"
+      @pointerup="scrollbar.onBarPointerUp"
+      @pointercancel="scrollbar.onBarPointerUp"
+      @lostpointercapture="scrollbar.onBarPointerUp"
     >
+      <div class="fui-scrollview__track">
+        <button
+          v-for="step in HORIZONTAL_TRACK_STEPS"
+          :key="step.key"
+          type="button"
+          tabindex="-1"
+          class="fui-scrollview__track-button"
+          :class="`fui-scrollview__track-button--${step.key}`"
+          :aria-label="step.label"
+          @pointerdown="scrollbar.onStepPointerDown('horizontal', step.direction, $event)"
+        >
+          <svg
+            class="fui-scrollview__track-arrow"
+            viewBox="0 0 8 5"
+            aria-hidden="true"
+          >
+            <path d="M1 3.7 4 0.9 7 3.7Z" />
+          </svg>
+        </button>
+      </div>
       <div
         ref="hThumbEl"
         class="fui-scrollview__thumb fui-scrollview__thumb--horizontal"
       />
     </div>
+    <!-- 纵向滚动条：结构与横向一致，仅轴向不同 -->
     <div
       v-if="computedVBarVisible"
       ref="vBarEl"
       class="fui-scrollview__scrollbar fui-scrollview__scrollbar--vertical"
+      @pointerenter="onBarPointerEnter"
+      @pointerleave="onBarPointerLeave"
       @pointerdown="scrollbar.onVBarPointerDown"
       @pointermove="scrollbar.onThumbPointerMove"
-      @pointerup="scrollbar.onThumbPointerUp"
-      @pointercancel="scrollbar.onThumbPointerUp"
+      @pointerup="scrollbar.onBarPointerUp"
+      @pointercancel="scrollbar.onBarPointerUp"
+      @lostpointercapture="scrollbar.onBarPointerUp"
     >
+      <div class="fui-scrollview__track">
+        <button
+          v-for="step in VERTICAL_TRACK_STEPS"
+          :key="step.key"
+          type="button"
+          tabindex="-1"
+          class="fui-scrollview__track-button"
+          :class="`fui-scrollview__track-button--${step.key}`"
+          :aria-label="step.label"
+          @pointerdown="scrollbar.onStepPointerDown('vertical', step.direction, $event)"
+        >
+          <svg
+            class="fui-scrollview__track-arrow"
+            viewBox="0 0 8 5"
+            aria-hidden="true"
+          >
+            <path d="M1 3.7 4 0.9 7 3.7Z" />
+          </svg>
+        </button>
+      </div>
       <div
         ref="vThumbEl"
         class="fui-scrollview__thumb fui-scrollview__thumb--vertical"
       />
     </div>
     <div
-      v-if="computedHBarVisible && computedVBarVisible"
+      v-if="bothBarsVisible"
       class="fui-scrollview__separator"
     />
   </div>
