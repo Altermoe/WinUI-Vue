@@ -11,10 +11,11 @@
  * 含 prefers-reduced-motion 响应：resolveAnimationMode 在 auto 模式下据此
  * 决定是否禁用动画，供程序化 API / 输入模块消费。
  */
-/* oxlint-disable max-statements, max-params, no-magic-numbers, no-ternary, id-length --
+/* oxlint-disable max-statements, max-params, no-magic-numbers, no-ternary, id-length, capitalized-comments --
  * 动画状态机属于 FluereScrollView 的复杂交互流程（对齐 WinUI 3 ScrollView）：
  * 结构性的 0/1 字面量（贝塞尔系数、进度边界）与 Vector2 风格 { x, y }
- * 分量名属 API 对齐需要，强行套用结构风格规则会把单帧流程拆成碎片。
+ * 分量名属 API 对齐需要；SSR 探测注释以 API 名（matchMedia）开头，
+ * 强行套用结构风格规则会把单帧流程拆成碎片。
  */
 import { onScopeDispose, ref } from 'vue'
 import {
@@ -135,12 +136,18 @@ const useAnimation = (core: ScrollViewCore, bars: ScrollBars): AnimationEngine =
   const reducedMotion = ref(false)
   let reducedMotionQuery: MediaQueryList | undefined = undefined
 
-  reducedMotionQuery = globalThis.matchMedia('(prefers-reduced-motion: reduce)')
-  reducedMotion.value = reducedMotionQuery.matches
+  // matchMedia 是浏览器专属 API，SSR（Node 运行时）不存在。组件 setup 阶段若
+  // 直接调用会在服务端渲染时抛错（导致整页 500），故先探测其存在性，仅在
+  // 可用时建立媒体查询监听；服务端缺省视为「无 reduced-motion 偏好」（动画
+  // 保持启用）。
   const reducedMotionHandler = (event: MediaQueryListEvent): void => {
     reducedMotion.value = event.matches
   }
-  reducedMotionQuery.addEventListener('change', reducedMotionHandler)
+  if (typeof globalThis.matchMedia === 'function') {
+    reducedMotionQuery = globalThis.matchMedia('(prefers-reduced-motion: reduce)')
+    reducedMotion.value = reducedMotionQuery.matches
+    reducedMotionQuery.addEventListener('change', reducedMotionHandler)
+  }
 
   const resolveAnimationMode = (
     mode: ScrollingAnimationMode | undefined,
@@ -372,4 +379,4 @@ const useAnimation = (core: ScrollViewCore, bars: ScrollBars): AnimationEngine =
   }
 }
 
-export { useAnimation, type AnimationEngine }
+export { useAnimation, decelerateEase, type AnimationEngine }
