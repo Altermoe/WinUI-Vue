@@ -1,3 +1,4 @@
+import { useReducedMotion } from '@fluere-vue/hooks'
 /**
  * 动画引擎：rAF 驱动的滚动 / 缩放动画。
  *
@@ -17,7 +18,7 @@
  * 分量名属 API 对齐需要；SSR 探测注释以 API 名（matchMedia）开头，
  * 强行套用结构风格规则会把单帧流程拆成碎片。
  */
-import { onScopeDispose, ref } from 'vue'
+import { onScopeDispose } from 'vue'
 import {
   DECELERATE_P0_X,
   DECELERATE_P0_Y,
@@ -131,23 +132,11 @@ const decelerateEase = (progress: number): number => {
 const useAnimation = (core: ScrollViewCore, bars: ScrollBars): AnimationEngine => {
   const { offsetX, offsetY, zoomFactor, clampX, clampY, applyView, commitView, setState } = core
 
-  /* ---- 动画偏好（reduced motion） ---- */
+  /* ---- 动画偏好（reduced motion） ----
+   * SSR 安全：matchMedia 能力探测与监听生命周期统一收敛到
+   * @fluere-vue/hooks 的 useReducedMotion，服务端恒为 false（动画保持启用）。 */
 
-  const reducedMotion = ref(false)
-  let reducedMotionQuery: MediaQueryList | undefined = undefined
-
-  // matchMedia 是浏览器专属 API，SSR（Node 运行时）不存在。组件 setup 阶段若
-  // 直接调用会在服务端渲染时抛错（导致整页 500），故先探测其存在性，仅在
-  // 可用时建立媒体查询监听；服务端缺省视为「无 reduced-motion 偏好」（动画
-  // 保持启用）。
-  const reducedMotionHandler = (event: MediaQueryListEvent): void => {
-    reducedMotion.value = event.matches
-  }
-  if (typeof globalThis.matchMedia === 'function') {
-    reducedMotionQuery = globalThis.matchMedia('(prefers-reduced-motion: reduce)')
-    reducedMotion.value = reducedMotionQuery.matches
-    reducedMotionQuery.addEventListener('change', reducedMotionHandler)
-  }
+  const reducedMotion = useReducedMotion()
 
   const resolveAnimationMode = (
     mode: ScrollingAnimationMode | undefined,
@@ -367,7 +356,6 @@ const useAnimation = (core: ScrollViewCore, bars: ScrollBars): AnimationEngine =
     }
     zoomAnimation = undefined
     zoomRaf = undefined
-    reducedMotionQuery?.removeEventListener('change', reducedMotionHandler)
   })
 
   return {
