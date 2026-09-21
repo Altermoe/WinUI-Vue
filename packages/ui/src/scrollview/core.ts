@@ -5,12 +5,12 @@
  * 其余 composable 通过它共享 offset / zoom / 尺寸 / 钳制 / 提交等基础设施，
  * 避免把同一批 ref 与函数在多个模块间重复传参。
  */
-/* oxlint-disable max-statements, no-ternary, no-magic-numbers, id-length --
+/* oxlint-disable max-statements, no-ternary, no-magic-numbers, id-length, no-null --
  * core 属于 FluereScrollView 的视图状态机（对齐 WinUI 3 ScrollView）：
  * 结构性的 0/1 字面量（偏移边界、初始缩放）与 Vector2 风格的 { x, y }
- * 分量名属 API 对齐需要，强行套用结构风格规则会损害可读性。
+ * 分量名属 API 对齐需要；模板引用以 null 初始化，强行套用结构风格规则会损害可读性。
  */
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, ref, shallowRef } from 'vue'
 import type { ComputedRef, Ref, ShallowRef } from 'vue'
 import { INITIAL_ZOOM_FACTOR, MIN_OFFSET } from './constants'
 import type { ScrollViewEvents } from './events'
@@ -78,13 +78,14 @@ const createScrollViewCore = (
   props: ResolvedScrollViewProps,
   events: ScrollViewEvents,
 ): ScrollViewCore => {
-  const rootEl = useTemplateRef<HTMLDivElement>('rootEl')
-  const viewportEl = useTemplateRef<HTMLDivElement>('viewportEl')
-  const contentEl = useTemplateRef<HTMLDivElement>('contentEl')
-  const vBarEl = useTemplateRef<HTMLDivElement>('vBarEl')
-  const vThumbEl = useTemplateRef<HTMLDivElement>('vThumbEl')
-  const hBarEl = useTemplateRef<HTMLDivElement>('hBarEl')
-  const hThumbEl = useTemplateRef<HTMLDivElement>('hThumbEl')
+  /* 模板引用（组件内由 ref="..." 绑定；测试可注入假元素） */
+  const rootEl = shallowRef<HTMLDivElement | null>(null)
+  const viewportEl = shallowRef<HTMLDivElement | null>(null)
+  const contentEl = shallowRef<HTMLDivElement | null>(null)
+  const vBarEl = shallowRef<HTMLDivElement | null>(null)
+  const vThumbEl = shallowRef<HTMLDivElement | null>(null)
+  const hBarEl = shallowRef<HTMLDivElement | null>(null)
+  const hThumbEl = shallowRef<HTMLDivElement | null>(null)
 
   const offsetX = ref(MIN_OFFSET)
   const offsetY = ref(MIN_OFFSET)
