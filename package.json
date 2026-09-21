@@ -30,6 +30,7 @@
     "test:coverage": "vitest run --coverage",
     "lint": "oxlint --ignore-pattern .dsh --ignore-pattern packages/designs/generated --ignore-pattern packages/designs/data --ignore-pattern packages/icons/generated",
     "lint:fix": "oxlint --fix --ignore-pattern .dsh --ignore-pattern packages/designs/generated --ignore-pattern packages/designs/data --ignore-pattern packages/icons/generated",
+    "lint:ssr": "bash scripts/lint-ssr.sh",
     "format": "oxfmt --check",
     "format:fix": "oxfmt --write",
     "tsc": "pnpm -r tsc",
