@@ -12,6 +12,9 @@ const HORIZONTAL_CARD_COUNT = 10
 const BOTH_DIRECTION_ITEM_COUNT = 30
 const GRID_CELL_COUNT = 64
 const BAR_ROW_COUNT = 12
+const NESTED_OUTER_ROW_COUNT = 4
+const NESTED_OUTER_TAIL_COUNT = 6
+const NESTED_INNER_ROW_COUNT = 10
 const SCROLL_STEP = 120
 const ZOOM_STEP = 0.25
 const EVENT_LOG_MAX = 5
@@ -126,6 +129,67 @@ const logEvent = (tag: string): void => {
               class="h-28 rounded-fluent-md border border-colorNeutralStroke2 bg-colorNeutralBackground2 flex items-center justify-center text-colorNeutralForeground3"
             >
               {{ index }}
+            </div>
+          </div>
+        </FluereScrollView>
+      </div>
+    </section>
+
+    <!-- 嵌套滚动（滚轮归属） -->
+    <section
+      class="bg-colorNeutralBackground1 p-fluent-xxl rounded-fluent-xl shadow-2 border border-colorNeutralStroke1"
+    >
+      <h3 class="text-lg font-medium text-colorNeutralForeground1 mb-4">嵌套滚动</h3>
+      <p class="text-sm text-colorNeutralForeground3 mb-4">
+        内层 ScrollView 位于外层内容之中。<strong>鼠标滚轮归属</strong>对齐 WinUI 3：
+        指针停在内层上时由内层独占滚轮，即使内层已滚到极限，外层也不会跟着滚动；
+        把指针移到内层之外的外层内容上，滚轮才交给外层（触控 / 笔由指针捕获独占）。
+      </p>
+      <div class="h-96">
+        <FluereScrollView class="h-full">
+          <div class="space-y-fluent-l p-fluent-l">
+            <div
+              v-for="index in NESTED_OUTER_ROW_COUNT"
+              :key="`nested-outer-${index}`"
+              class="rounded-fluent-lg border border-colorNeutralStroke2 bg-colorNeutralBackground2 px-fluent-l py-fluent-m text-colorNeutralForeground2"
+            >
+              外层内容 {{ index }} · 指针在此处滚轮才会滚动外层
+            </div>
+
+            <div class="h-40">
+              <FluereScrollView class="h-full">
+                <div class="space-y-fluent-s p-fluent-m">
+                  <div
+                    v-for="index in NESTED_INNER_ROW_COUNT"
+                    :key="`nested-inner-a-${index}`"
+                    class="h-8 rounded-fluent-md border border-colorNeutralStroke2 bg-colorNeutralBackground2 px-fluent-s flex items-center text-xs text-colorNeutralForeground3"
+                  >
+                    内层 A · 第 {{ index }} 行（滚到底后外层不动）
+                  </div>
+                </div>
+              </FluereScrollView>
+            </div>
+
+            <div class="h-40">
+              <FluereScrollView class="h-full">
+                <div class="space-y-fluent-s p-fluent-m">
+                  <div
+                    v-for="index in NESTED_INNER_ROW_COUNT"
+                    :key="`nested-inner-b-${index}`"
+                    class="h-8 rounded-fluent-md border border-colorNeutralStroke2 bg-colorNeutralBackground2 px-fluent-s flex items-center text-xs text-colorNeutralForeground3"
+                  >
+                    内层 B · 第 {{ index }} 行（滚到底后外层不动）
+                  </div>
+                </div>
+              </FluereScrollView>
+            </div>
+
+            <div
+              v-for="index in NESTED_OUTER_TAIL_COUNT"
+              :key="`nested-outer-tail-${index}`"
+              class="rounded-fluent-lg border border-colorNeutralStroke2 bg-colorNeutralBackground2 px-fluent-l py-fluent-m text-colorNeutralForeground2"
+            >
+              外层尾部内容 {{ index }}
             </div>
           </div>
         </FluereScrollView>
