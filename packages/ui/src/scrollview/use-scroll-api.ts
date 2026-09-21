@@ -101,7 +101,7 @@ const useScrollApi = (
       endPosition: { x: toX, y: toY },
       correlationId: id,
     })
-    animation.animateOffsetTo(toX, toY, id)
+    animation.animateScrollTo(toX, toY, id)
     return id
   }
 

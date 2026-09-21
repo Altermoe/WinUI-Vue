@@ -37,7 +37,7 @@ const refreshReadout = (): void => {
     `extent = (${current.extentWidth.toFixed(WHOLE_DECIMALS)}, ${current.extentHeight.toFixed(WHOLE_DECIMALS)})`,
     `viewport = (${current.viewportWidth.toFixed(WHOLE_DECIMALS)}, ${current.viewportHeight.toFixed(WHOLE_DECIMALS)})`,
     `state = ${current.state}`,
-  ].join('　')
+  ].join(' ')
 }
 
 /* 事件计数 */

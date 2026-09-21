@@ -11,7 +11,7 @@
  */
 import { onScopeDispose, ref, watchEffect } from 'vue'
 import type { Ref } from 'vue'
-import { BARS_HIDE_DELAY, BARS_HOVER_DELAY, MIN_THUMB_TRAVEL, THUMB_MIN_LENGTH } from './constants'
+import { BARS_HIDE_DELAY, MIN_THUMB_TRAVEL, THUMB_MIN_LENGTH } from './constants'
 import type { ScrollViewCore } from './core'
 
 /** 滚动条展示层暴露给其他模块 / 模板的对象 */
@@ -60,7 +60,6 @@ const useScrollBars = (core: ScrollViewCore): ScrollBars => {
   const panningActive = ref(false)
   const thumbDragging = ref(false)
   let hideTimer: ReturnType<typeof setTimeout> | undefined = undefined
-  let hoverTimer: ReturnType<typeof setTimeout> | undefined = undefined
 
   const clearHideTimer = (): void => {
     if (hideTimer !== undefined) {
@@ -86,27 +85,13 @@ const useScrollBars = (core: ScrollViewCore): ScrollBars => {
 
   const onPointerEnterViewport = (): void => {
     hovering.value = true
+    // 进入滚动容器立即显示（无展开延迟），淡入由 CSS 过渡完成
     clearHideTimer()
-    if (barsVisible.value) {
-      return
-    }
-    if (hoverTimer !== undefined) {
-      globalThis.clearTimeout(hoverTimer)
-    }
-    hoverTimer = globalThis.setTimeout(() => {
-      if (hovering.value) {
-        barsVisible.value = true
-        barsImmediate.value = false
-      }
-    }, BARS_HOVER_DELAY)
+    showBars(true)
   }
 
   const onPointerLeaveViewport = (): void => {
     hovering.value = false
-    if (hoverTimer !== undefined) {
-      globalThis.clearTimeout(hoverTimer)
-      hoverTimer = undefined
-    }
     scheduleHide()
   }
 
@@ -150,9 +135,6 @@ const useScrollBars = (core: ScrollViewCore): ScrollBars => {
 
   onScopeDispose(() => {
     clearHideTimer()
-    if (hoverTimer !== undefined) {
-      globalThis.clearTimeout(hoverTimer)
-    }
   })
 
   return {

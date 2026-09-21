@@ -57,25 +57,25 @@ const useKeyboardInput = (core: ScrollViewCore, api: ScrollApi): KeyboardInput =
 
   const scrollForNavigationKey = (event: KeyboardEvent, key: string): void => {
     const steps = keyboardStep()
-    const instant = { animationMode: 'disabled' } as const
+    // 默认 animationMode 'auto'：键盘滚动带动画（decelerate 缓动）
     if (key === 'ArrowUp') {
-      api.scrollBy(0, -steps.stepY, instant)
+      api.scrollBy(0, -steps.stepY)
     } else if (key === 'ArrowDown') {
-      api.scrollBy(0, steps.stepY, instant)
+      api.scrollBy(0, steps.stepY)
     } else if (key === 'ArrowLeft') {
-      api.scrollBy(-steps.stepX, 0, instant)
+      api.scrollBy(-steps.stepX, 0)
     } else if (key === 'ArrowRight') {
-      api.scrollBy(steps.stepX, 0, instant)
+      api.scrollBy(steps.stepX, 0)
     } else if (key === 'PageUp') {
-      api.scrollBy(0, -steps.pageY, instant)
+      api.scrollBy(0, -steps.pageY)
     } else if (key === 'PageDown') {
-      api.scrollBy(0, steps.pageY, instant)
+      api.scrollBy(0, steps.pageY)
     } else if (key === 'Home') {
-      api.scrollTo(0, 0, instant)
+      api.scrollTo(0, 0)
     } else if (key === 'End') {
-      api.scrollTo(scrollableWidth.value, scrollableHeight.value, instant)
+      api.scrollTo(scrollableWidth.value, scrollableHeight.value)
     } else if (key === 'Space') {
-      api.scrollBy(0, event.shiftKey ? -steps.pageY : steps.pageY, instant)
+      api.scrollBy(0, event.shiftKey ? -steps.pageY : steps.pageY)
     }
   }
 

@@ -144,16 +144,18 @@ const useAnchor = (core: ScrollViewCore): AnchorController => {
     const elementRect = anchorElement.getBoundingClientRect()
     let changed = false
     if (anchorRef.screenY !== undefined && !Number.isNaN(core.props.verticalAnchorRatio)) {
-      const contentY = (elementRect.top - viewportRect.top - offsetY.value) / zoomFactor.value
-      const target = clampY(anchorRef.screenY - zoomFactor.value * contentY)
+      // 内容坐标约定：元素屏幕位置 = contentCoord * zoom - offset，
+      // 维持锚点元素屏幕位置不变即 target = contentCoord * zoom - screenY
+      const contentY = (elementRect.top - viewportRect.top + offsetY.value) / zoomFactor.value
+      const target = clampY(zoomFactor.value * contentY - anchorRef.screenY)
       if (target !== offsetY.value) {
         offsetY.value = target
         changed = true
       }
     }
     if (anchorRef.screenX !== undefined && !Number.isNaN(core.props.horizontalAnchorRatio)) {
-      const contentX = (elementRect.left - viewportRect.left - offsetX.value) / zoomFactor.value
-      const target = clampX(anchorRef.screenX - zoomFactor.value * contentX)
+      const contentX = (elementRect.left - viewportRect.left + offsetX.value) / zoomFactor.value
+      const target = clampX(zoomFactor.value * contentX - anchorRef.screenX)
       if (target !== offsetX.value) {
         offsetX.value = target
         changed = true

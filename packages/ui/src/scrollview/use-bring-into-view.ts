@@ -43,32 +43,33 @@ const useBringIntoView = (
     }
     const viewportRect = viewport.getBoundingClientRect()
     const elementRect = element.getBoundingClientRect()
-    const contentX = (elementRect.left - viewportRect.left - offsetX.value) / zoom
-    const contentY = (elementRect.top - viewportRect.top - offsetY.value) / zoom
+    // 内容坐标约定：元素屏幕位置 = contentCoord * zoom - offset
+    const contentX = (elementRect.left - viewportRect.left + offsetX.value) / zoom
+    const contentY = (elementRect.top - viewportRect.top + offsetY.value) / zoom
     const contentWidth = elementRect.width / zoom
     const contentHeight = elementRect.height / zoom
 
     let targetX = offsetX.value
     let targetY = offsetY.value
     if (contentWidth > viewportWidth.value - margin * 2) {
-      targetX = margin - zoom * contentX
-    } else if (offsetX.value + zoom * contentX < margin) {
-      targetX = margin - zoom * contentX
+      targetX = zoom * contentX - margin
+    } else if (zoom * contentX - offsetX.value < margin) {
+      targetX = zoom * contentX - margin
     } else if (
-      offsetX.value + zoom * contentX + zoom * contentWidth >
+      zoom * contentX - offsetX.value + zoom * contentWidth >
       viewportWidth.value - margin
     ) {
-      targetX = viewportWidth.value - margin - zoom * contentX - zoom * contentWidth
+      targetX = zoom * contentX + zoom * contentWidth - viewportWidth.value + margin
     }
     if (contentHeight > viewportHeight.value - margin * 2) {
-      targetY = margin - zoom * contentY
-    } else if (offsetY.value + zoom * contentY < margin) {
-      targetY = margin - zoom * contentY
+      targetY = zoom * contentY - margin
+    } else if (zoom * contentY - offsetY.value < margin) {
+      targetY = zoom * contentY - margin
     } else if (
-      offsetY.value + zoom * contentY + zoom * contentHeight >
+      zoom * contentY - offsetY.value + zoom * contentHeight >
       viewportHeight.value - margin
     ) {
-      targetY = viewportHeight.value - margin - zoom * contentY - zoom * contentHeight
+      targetY = zoom * contentY + zoom * contentHeight - viewportHeight.value + margin
     }
     return { targetX: clampX(targetX), targetY: clampY(targetY) }
   }
@@ -102,7 +103,7 @@ const useBringIntoView = (
       endPosition: { x: target.targetX, y: target.targetY },
       correlationId: id,
     })
-    animation.animateOffsetTo(target.targetX, target.targetY, id)
+    animation.animateScrollTo(target.targetX, target.targetY, id)
     return id
   }
 

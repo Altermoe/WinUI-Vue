@@ -144,11 +144,16 @@ const createScrollViewCore = (
     props.background ? { background: props.background } : undefined,
   )
 
-  /** 应用当前视图到内容元素（拇指位置由 useScrollBars 的 watchEffect 响应式更新） */
+  /** 应用当前视图到内容元素（拇指位置由 useScrollBars 的 watchEffect 响应式更新）。
+   *
+   * offsetX/offsetY 采用「内容坐标」约定（对齐 WinUI HorizontalOffset /
+   * VerticalOffset）：它们是视口原点在内容空间的坐标，offset 增大表示看到
+   * 更靠右 / 更靠下的内容，因此内容元素需沿负方向平移。
+   */
   const applyView = (): void => {
     const content = contentEl.value
     if (content) {
-      content.style.transform = `translate3d(${offsetX.value}px, ${offsetY.value}px, 0) scale(${zoomFactor.value})`
+      content.style.transform = `translate3d(${-offsetX.value}px, ${-offsetY.value}px, 0) scale(${zoomFactor.value})`
     }
   }
 

@@ -4,7 +4,7 @@
  * 本模块同时拥有 scroll chain 的注册表生命周期（根元素 → 处理器），
  * 并暴露外层 ScrollView 可调用的 chainScrollBy 入口。
  */
-/* oxlint-disable max-statements, no-ternary, no-magic-numbers, id-length --
+/* oxlint-disable max-statements, max-params, no-ternary, no-magic-numbers, id-length --
  * 滚轮输入属于 FluereScrollView 的复杂交互流程（对齐 WinUI 3 ScrollView）：
  * 归一化 / 主轴选择的结构性 0/1/2 字面量（deltaMode 与主轴判定）与 Vector2
  * 风格的 { x, y } 分量名属 API 对齐需要，强行套用结构风格规则会把单次
@@ -16,6 +16,7 @@ import type { ScrollViewCore } from './core'
 import { findParentScroller, registerScrollChain, unregisterScrollChain } from './scroll-chain'
 import type { ScrollChainHandle } from './scroll-chain'
 import type { ScrollingInputKinds } from './types'
+import type { AnimationEngine } from './use-animation'
 import type { ScrollApi } from './use-scroll-api'
 import type { ScrollBars } from './use-scroll-bars'
 
@@ -30,6 +31,7 @@ export const useWheelInput = (
   core: ScrollViewCore,
   bars: ScrollBars,
   api: ScrollApi,
+  animation: AnimationEngine,
 ): WheelInput => {
   const {
     rootEl,
@@ -60,22 +62,50 @@ export const useWheelInput = (
     return mode !== 'never'
   }
 
-  /** 应用一段滚动增量，返回实际移动量 */
+  /** 应用一段滚动增量，返回实际移动量（与传入 delta 同号：正 = 沿增量方向滚动）。
+   *
+   * 缓动模式下以「目标偏移增量」计量，交由统一滚动驱动动画化执行（retarget
+   * 平滑续接，与键盘 / 翻页 / scrollTo 共用同一套缓动逻辑）；prefers-reduced-motion
+   * 等禁用动画时直接写 offset（直通）。 */
   const applyScrollDelta = (deltaX: number, deltaY: number): { movedX: number; movedY: number } => {
     let movedX = 0
     let movedY = 0
-    if (canScrollHorizontal() && deltaX !== 0) {
-      const before = offsetX.value
-      offsetX.value = clampX(offsetX.value + deltaX)
-      movedX = offsetX.value - before
-    }
-    if (canScrollVertical() && deltaY !== 0) {
-      const before = offsetY.value
-      offsetY.value = clampY(offsetY.value + deltaY)
-      movedY = offsetY.value - before
+    if (animation.resolveAnimationMode('auto') === 'disabled') {
+      // 直通（reduced-motion）：直接写 offset
+      if (canScrollHorizontal() && deltaX !== 0) {
+        const before = offsetX.value
+        // 内容坐标约定：滚轮向右/下（delta>0）→ 看到更靠右/下的内容 → offset 增大
+        offsetX.value = clampX(offsetX.value + deltaX)
+        movedX = offsetX.value - before
+      }
+      if (canScrollVertical() && deltaY !== 0) {
+        const before = offsetY.value
+        offsetY.value = clampY(offsetY.value + deltaY)
+        movedY = offsetY.value - before
+      }
+      if (movedX !== 0 || movedY !== 0) {
+        commitView()
+      }
+    } else {
+      // 缓动：以目标偏移增量驱动统一滚动动画
+      const target = animation.getScrollTarget()
+      let nextX = target.x
+      let nextY = target.y
+      if (canScrollHorizontal() && deltaX !== 0) {
+        const before = target.x
+        nextX = clampX(before + deltaX)
+        movedX = nextX - before
+      }
+      if (canScrollVertical() && deltaY !== 0) {
+        const before = target.y
+        nextY = clampY(before + deltaY)
+        movedY = nextY - before
+      }
+      if (movedX !== 0 || movedY !== 0) {
+        animation.animateScrollTo(nextX, nextY, core.nextId(), true)
+      }
     }
     if (movedX !== 0 || movedY !== 0) {
-      commitView()
       bars.showBars(true)
     }
     return { movedX, movedY }
@@ -97,7 +127,9 @@ export const useWheelInput = (
     const centerX = event.clientX - rect.left
     const centerY = event.clientY - rect.top
     const factor = WHEEL_ZOOM_FACTOR_STEP ** (-event.deltaY / WHEEL_ZOOM_STEP_DIVISOR)
-    api.zoomBy(factor - 1, { x: centerX, y: centerY }, { animationMode: 'disabled' })
+    // 默认 animationMode 'auto'：带动画的原地缩放（缩放中心为指针），
+    // 缩放过程中 scaleAboutCenter + clamp 保证不脱离视口
+    api.zoomBy(factor - 1, { x: centerX, y: centerY })
     return true
   }
 

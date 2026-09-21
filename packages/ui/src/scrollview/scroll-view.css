@@ -4,8 +4,8 @@
 /*  - 滚动条热区 12px（ScrollBarSize）                                  */
 /*  - 拇指颜色 = ControlStrongFillColorDefault                         */
 /*  - 轨道颜色 = AcrylicInAppFillColorDefault（悬停时显现）             */
-/*  - 展开：悬停/滚动后 0.4s 延迟 + 0.167s 过渡                         */
-/*  - 收起：2s 无交互延迟 + 0.167s 过渡                                 */
+/*  - 展开：指针进入后立即（无延迟）+ 0.167s 过渡                       */
+/*  - 收起：2s 无交互延迟（JS）+ 0.167s 过渡                            */
 /* ------------------------------------------------------------------ */
 
 .fui-scrollview {
@@ -61,14 +61,11 @@
   z-index: 1;
   border-radius: 3px;
   opacity: 0;
-  transition: opacity 0.167s ease 2s; /* 收起：2s 延迟 */
+  transition: opacity 0.167s ease 0s; /* 收起：由 JS 在 BARS_HIDE_DELAY 后清除标志，随即淡出 */
 }
 .fui-scrollview--bars-visible .fui-scrollview__scrollbar {
   opacity: 1;
-  transition: opacity 0.167s ease 0.4s; /* 展开：0.4s 延迟 */
-}
-.fui-scrollview--bars-visible.fui-scrollview--bars-immediate .fui-scrollview__scrollbar {
-  transition: opacity 0.167s ease 0s; /* 交互触发：无延迟 */
+  transition: opacity 0.167s ease 0s; /* 展开：进入后立即淡入 */
 }
 
 .fui-scrollview__scrollbar--vertical {

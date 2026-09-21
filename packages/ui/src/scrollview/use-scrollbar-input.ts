@@ -81,7 +81,8 @@ const useScrollbarInput = (
     const clickY = event.clientY - rect.top
     const thumbMid = thumbRect.top - rect.top + thumbRect.height / 2
     const page = Math.max(PAGE_SCROLL_MARGIN, viewportHeight.value - PAGE_SCROLL_MARGIN)
-    api.scrollBy(0, clickY < thumbMid ? -page : page, { animationMode: 'disabled' })
+    // 默认 animationMode 'auto'：轨道翻页带动画（decelerate 缓动）
+    api.scrollBy(0, clickY < thumbMid ? -page : page)
   }
 
   const onHBarPointerDown = (event: PointerEvent): void => {
@@ -109,7 +110,8 @@ const useScrollbarInput = (
     const clickX = event.clientX - rect.left
     const thumbMid = thumbRect.left - rect.left + thumbRect.width / 2
     const page = Math.max(PAGE_SCROLL_MARGIN, viewportWidth.value - PAGE_SCROLL_MARGIN)
-    api.scrollBy(clickX < thumbMid ? -page : page, 0, { animationMode: 'disabled' })
+    // 默认 animationMode 'auto'：轨道翻页带动画（decelerate 缓动）
+    api.scrollBy(clickX < thumbMid ? -page : page, 0)
   }
 
   const startThumbDrag = (event: PointerEvent, axis: 'vertical' | 'horizontal'): void => {

@@ -172,8 +172,9 @@ const usePointerInput = (
     if (movedX === 0 && movedY === 0) {
       return
     }
-    offsetX.value = clampX(offsetX.value + movedX)
-    offsetY.value = clampY(offsetY.value + movedY)
+    // 内容坐标约定：手指向下（deltaY>0）时内容跟随下移 = offset 减小
+    offsetX.value = clampX(offsetX.value - movedX)
+    offsetY.value = clampY(offsetY.value - movedY)
     commitView()
   }
 
@@ -231,8 +232,10 @@ const usePointerInput = (
     if (!applyInertia) {
       return
     }
-    const velocityX = canScrollHorizontal() ? current.vx * MS_PER_SECOND : 0
-    const velocityY = canScrollVertical() ? current.vy * MS_PER_SECOND : 0
+    // 内容坐标约定：vx/vy 为手指速度（向下为正），而 offset 随手指反向变化，
+    // 故惯性速度取负，使松手后内容沿手指方向继续滑行
+    const velocityX = canScrollHorizontal() ? -current.vx * MS_PER_SECOND : 0
+    const velocityY = canScrollVertical() ? -current.vy * MS_PER_SECOND : 0
     if (Math.hypot(velocityX, velocityY) > INERTIA_SPEED_THRESHOLD) {
       inertia.startInertia({
         velocityX,
