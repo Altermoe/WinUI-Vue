@@ -1,5 +1,27 @@
+import { createRequire } from 'node:module'
+import { dirname } from 'node:path'
 import { presetFluere } from '@fluere-vue/themes'
 import { presetWind4, type Preset } from 'unocss'
+
+/**
+ * 判断某条 optimizeDeps.include 条目是否能被逐级解析为真实模块。
+ * 形如 "@nuxt/content > @nuxtjs/mdc > remark-gfm" 的深层条目，
+ * 在 pnpm 的隔离布局下无法解析（@nuxt/content 内部缺少对 @nuxtjs/mdc 的链接）。
+ * 若任一跳转失败则视为无法解析。
+ */
+function resolveOptimizeDepsEntry(id: string, rootDir: string) {
+  const requireFrom = createRequire(`${rootDir}/nuxt.config.ts`)
+  let baseDir = rootDir
+  for (const part of id.split('>').map((s) => s.trim())) {
+    try {
+      // 先按包主入口解析，取所在目录作为下一跳的搜索起点
+      baseDir = dirname(requireFrom.resolve(part, { paths: [baseDir] }))
+    } catch {
+      return false
+    }
+  }
+  return true
+}
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -22,6 +44,27 @@ export default defineNuxtConfig({
     },
   },
   css: ['~/assets/content-code.css'],
+  vite: {
+    plugins: [
+      {
+        name: 'prune-unresolvable-optimize-deps',
+        config(config) {
+          // 某些 Nuxt 模块（如 @nuxt/content）注入的 optimizeDeps.include 深层
+          // 条目（如 "@nuxt/content > @nuxtjs/mdc > remark-gfm"）在 pnpm 隔离
+          // 布局下无法解析，会触发 NUXT_B7002 启动警告。Vite 的 config 钩子在
+          // 所有模块合并到最终配置之后触发，这里把无法解析的条目过滤掉
+          // （仅影响 dev 预打包提示，不影响运行正确性）。
+          const include = config.optimizeDeps?.include
+          if (!Array.isArray(include)) return
+          return {
+            optimizeDeps: {
+              include: include.filter((id) => resolveOptimizeDepsEntry(id, process.cwd())),
+            },
+          }
+        },
+      },
+    ],
+  },
   unocss: {
     presets: [presetWind4(), presetFluere() as Preset],
     content: {
