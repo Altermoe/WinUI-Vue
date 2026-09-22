@@ -84,19 +84,23 @@ describe('FluereScrollView · 滚动条装配', () => {
 /** 嵌套悬挂测试基座：父 ScrollView 内放两个子 ScrollView + 空白区 */
 const NESTED_HARNESS = defineComponent({
   render() {
-    return h(FluereScrollView, { verticalScrollBarVisibility: 'visible' }, {
-      default: () => [
-        h('div', { class: 'filler' }),
-        h(FluereScrollView, {
-          verticalScrollBarVisibility: 'visible',
-          'data-test': 'child-a',
-        }),
-        h(FluereScrollView, {
-          verticalScrollBarVisibility: 'visible',
-          'data-test': 'child-b',
-        }),
-      ],
-    })
+    return h(
+      FluereScrollView,
+      { verticalScrollBarVisibility: 'visible' },
+      {
+        default: () => [
+          h('div', { class: 'filler' }),
+          h(FluereScrollView, {
+            'verticalScrollBarVisibility': 'visible',
+            'data-test': 'child-a',
+          }),
+          h(FluereScrollView, {
+            'verticalScrollBarVisibility': 'visible',
+            'data-test': 'child-b',
+          }),
+        ],
+      },
+    )
   },
 })
 

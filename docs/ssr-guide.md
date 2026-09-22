@@ -19,12 +19,12 @@ Vue SSR 应用里，**同一份组件代码会在服务端（Node）与浏览器
 
 ## 3. 浏览器 API 风险分级
 
-| 等级 | 位置 | 风险 | 处理 |
-| --- | --- | --- | --- |
-| 🔴 A | `setup()` 顶层直接访问 | **SSR 直接崩溃**（500） | 移到 `onMounted` / 事件回调，或能力探测 + 默认值 |
+| 等级 | 位置                                         | 风险                              | 处理                                                                                  |
+| ---- | -------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------- |
+| 🔴 A | `setup()` 顶层直接访问                       | **SSR 直接崩溃**（500）           | 移到 `onMounted` / 事件回调，或能力探测 + 默认值                                      |
 | 🟠 B | `setup()` 加守卫访问、读到的值**渲染进模板** | **水合不匹配**（警告 + 行为异常） | 挂载后再写入（`v-if="mounted"`）、`<ClientOnly>`、或 `useState` / `useHydration` 同步 |
-| 🟢 C | `onMounted` / 事件回调内访问 | 安全 | 直接写，注意 `onScopeDispose` 清理 |
-| ⚪ D | 仅作为 TS 类型引用（`HTMLElement` 等） | 安全 | 无需处理 |
+| 🟢 C | `onMounted` / 事件回调内访问                 | 安全                              | 直接写，注意 `onScopeDispose` 清理                                                    |
+| ⚪ D | 仅作为 TS 类型引用（`HTMLElement` 等）       | 安全                              | 无需处理                                                                              |
 
 ## 4. 分级应对手段
 
@@ -48,7 +48,9 @@ const reducedMotion = useReducedMotion() // SSR 恒 false，浏览器按系统�
 
 ```ts
 const mounted = ref(false)
-onMounted(() => { mounted.value = true })
+onMounted(() => {
+  mounted.value = true
+})
 // 模板：<div v-if="mounted">{{ realValue }}</div>
 ```
 
@@ -67,17 +69,17 @@ Nuxt 的 [`<ClientOnly>`](https://nuxt.com/docs/3.x/api/components/client-only) 
 
 ### `@fluere-vue/utils`（能力探测，调用时求值）
 
-| 导出 | 含义 |
-| --- | --- |
-| `isClient` / `isServer` | 平台环境判断（导入时求值，环境不随运行变化） |
+| 导出                                                                                                                             | 含义                                                  |
+| -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `isClient` / `isServer`                                                                                                          | 平台环境判断（导入时求值，环境不随运行变化）          |
 | `hasMatchMedia()` / `hasResizeObserver()` / `hasMutationObserver()` / `hasIntersectionObserver()` / `hasRequestAnimationFrame()` | 具体能力是否存在（**调用时求值**，测试可运行时 stub） |
 
 ### `@fluere-vue/hooks`（SSR 安全 composable）
 
-| 导出 | 行为 |
-| --- | --- |
+| 导出                   | 行为                                                                        |
+| ---------------------- | --------------------------------------------------------------------------- |
 | `useMediaQuery(query)` | SSR 返回 `false` 默认；浏览器立即读初始值 + `change` 监听，作用域销毁时清理 |
-| `useReducedMotion()` | `useMediaQuery('(prefers-reduced-motion: reduce)')` 的封装 |
+| `useReducedMotion()`   | `useMediaQuery('(prefers-reduced-motion: reduce)')` 的封装                  |
 
 新增依赖客户端能力时，**优先扩展这两个包**，而不是在组件里手搓探测。
 
@@ -118,11 +120,11 @@ grep -rnE "^\s+(window|document|navigator)\.|new ResizeObserver|globalThis\.matc
 
 ## 9. 反例 ↔ 正确写法
 
-| ❌ 反例（SSR 崩溃） | ✅ 正确 |
-| --- | --- |
-| `const w = ref(window.innerWidth)` | `const w = ref(0); onMounted(() => w.value = window.innerWidth)` |
-| `document.title = '…'`（setup） | `useHead` / `onMounted` |
-| `const m = globalThis.matchMedia(q)` | `useMediaQuery(q)` |
-| `new ResizeObserver(...)`（setup） | `onMounted(() => { obs = new ResizeObserver(...) })` |
-| 模块顶层 `let x = localStorage.getItem('k')` | 函数内 + 能力探测 + 默认值 |
-| 用 `Math.random()` 生成 a11y id | Vue 的 `useId()`（SSR 安全） |
+| ❌ 反例（SSR 崩溃）                          | ✅ 正确                                                          |
+| -------------------------------------------- | ---------------------------------------------------------------- |
+| `const w = ref(window.innerWidth)`           | `const w = ref(0); onMounted(() => w.value = window.innerWidth)` |
+| `document.title = '…'`（setup）              | `useHead` / `onMounted`                                          |
+| `const m = globalThis.matchMedia(q)`         | `useMediaQuery(q)`                                               |
+| `new ResizeObserver(...)`（setup）           | `onMounted(() => { obs = new ResizeObserver(...) })`             |
+| 模块顶层 `let x = localStorage.getItem('k')` | 函数内 + 能力探测 + 默认值                                       |
+| 用 `Math.random()` 生成 a11y id              | Vue 的 `useId()`（SSR 安全）                                     |
