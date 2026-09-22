@@ -7,10 +7,21 @@
  *    伪元素不进入 textContent，因此“复制”默认拿到的是纯净源码，不含行号。
  */
 
-/* ---- 深色模式：切换 Shiki 双主题（跟随系统） ---- */
+/* ---- 深色模式：切换 Shiki 双主题 ---- */
+/* 手动切换（顶层导航按钮）：html 上 data-color-mode="dark"，优先于系统偏好。 */
+html[data-color-mode='dark'] .shiki,
+html[data-color-mode='dark'] .shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+/* 无手动覆盖时，跟随系统深色偏好。 */
 @media (prefers-color-scheme: dark) {
-  .shiki,
-  .shiki span {
+  html:not([data-color-mode]) .shiki,
+  html:not([data-color-mode]) .shiki span {
     color: var(--shiki-dark) !important;
     background-color: var(--shiki-dark-bg) !important;
     font-style: var(--shiki-dark-font-style) !important;

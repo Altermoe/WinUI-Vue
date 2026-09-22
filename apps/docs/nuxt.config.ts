@@ -43,6 +43,15 @@ export default defineNuxtConfig({
       },
       title: 'FluereVue',
       link: [{ rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+      // 首帧前按已保存偏好（或系统偏好）写入 <html>，避免明暗切换闪烁。
+      // 与 composables/useColorMode.ts 保持同一套取值规则。
+      script: [
+        {
+          innerHTML:
+            "(function(){try{var k='fluere-docs-color-mode';var s=localStorage.getItem(k);var m=(s==='dark'||s==='light')?s:(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var el=document.documentElement;el.style.colorScheme=m;el.dataset.colorMode=m;}catch(e){}})();",
+          tagPosition: 'head',
+        },
+      ],
     },
   },
 })

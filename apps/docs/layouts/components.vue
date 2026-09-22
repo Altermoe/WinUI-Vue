@@ -51,6 +51,7 @@ const isActive = (slug: string) => route.path === `/components/${slug}`
           >
             GitHub
           </a>
+          <ThemeToggle />
         </div>
       </div>
     </header>
