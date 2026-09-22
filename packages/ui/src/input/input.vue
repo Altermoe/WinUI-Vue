@@ -18,8 +18,8 @@
  * - hover     PointerOver 只换填充（ControlFillColorSecondary），描边保持不变
  * - focus     Focused 底边换强调色并加粗到 2px（TextControlBorderThemeThicknessFocused = 1,1,1,2），
  *             其余三边仍是 ControlStrokeColorDefault —— 即「底部高亮」，不是四面描边。
- *             Web 侧不改 border-width（避免重排挤压内容），改用常驻的零偏移 inset 阴影
- *             在底边叠出那 1px，并给高亮加缓动
+ *             Web 侧不改 border-width（避免重排挤压内容）：底边 1px 描边 + 合成背景里的
+ *             1px 高亮带拼成 2px，高亮带两端呈「刀形」（上平下弧）
  * - invalid   库扩展（WinUI TextBox 无内建错误态）：status danger 描边 + aria-invalid
  * - disabled  ControlFillColorDisabled 填充 + 四边同色的 ControlStrokeColorDefaultBrush
  */
@@ -113,8 +113,8 @@ defineOptions({
 /*   TextControlBorderThemeThickness         1（四边 1px）              */
 /*   TextControlBorderThemeThicknessFocused  1,1,1,2（只加粗底边）      */
 /*       Web 侧不跟着改 border-width（会重排并挤压内容），四边宽度全程 */
-/*       保持 1px：底边由「1px 描边 + 常驻零偏移 inset 阴影补的 1px」   */
-/*       拼成 2px，focus 只改阴影偏移与颜色，纯 paint、可缓动           */
+/*       保持 1px：底边由「1px 底描边 + 合成背景里的 1px 高亮带」拼成  */
+/*       2px。高亮带两端是「刀形」（上平下弧），与 WinUI 底边一致       */
 /*   ControlFillColorDefault / Secondary / InputActive / Disabled       */
 /*       分别对应 rest / hover / focus / disabled 的填充                */
 /*       （WinUI 用半透明填充给 Mica 透底；Web 侧落到不透明的           */
@@ -124,34 +124,56 @@ defineOptions({
 /*   ControlStrokeColorDefault       #0F000000（6% 黑）                 */
 /*     → colorNeutralStrokeAlpha     rgba(0,0,0,.05)（5% 黑）/ 白 10%   */
 /*   ControlStrongStrokeColorDefault #72000000（45% 黑）                */
-/*     → colorNeutralStrokeAccessible #616161（偏重，但同为「重描边」） */
+/*     → colorNeutralStroke1 #d1d1d1（偏轻，取 Fluent 的控件描边档）    */
 /*   focus 底边 SystemAccentColorDark1（Light）/ Light2（Dark）         */
 /*     → colorCompoundBrandStroke（库品牌色，随 BrandVariants 走）      */
 /* ------------------------------------------------------------------ */
 
-/* ---- Base：抬升描边（顶/左/右浅、底边重） ---- */
+/* 高亮色是渐变里的颜色停靠点，而 background-image 本身不可过渡；
+   注册成 <color> 后，--fui-input-highlight-background 才能参与缓动 */
+@property --fui-input-highlight-background {
+  syntax: '<color>';
+  inherits: false;
+  initial-value: transparent;
+}
+
+/* ---- Base：抬升描边（顶/左/右浅、底边重）+ 底部高亮带 ---- */
 .fui-input {
+  /* 两个语义背景变量，换色只需覆写这两个（用更高优先级选择器，如 .my-field .fui-input）：
+     - --fui-input-background           真正的背景色
+     - --fui-input-highlight-background 用于显示高亮的背景色（rest 为 transparent） */
+  --fui-input-background: var(--colorNeutralBackground1);
+  --fui-input-highlight-background: transparent;
+  /* --fui-input-highlight-background: var(--colorCompoundBrandStroke); */
+
   box-sizing: border-box;
   width: 100%;
   font-family: var(--fontFamilyBase);
   color: var(--colorNeutralForeground1);
-  background-color: var(--colorNeutralBackground1);
-  /* BackgroundSizing="InnerBorderEdge"：填充止于描边内侧，
-     半透明描边叠在父级底上（否则 CSS 会把描边叠在自己的填充上） */
-  background-clip: padding-box;
+  /* 合成背景 = 背景色 + 底部 1px 高亮带，与 1px 底描边拼成 WinUI focus 的 2px。
+     渐变沿水平方向铺开，高亮带两端因此是「刀形」：上沿是直线，下沿随圆角收进去。
+     （inset 阴影会沿 padding box 圆角把两端往上翘，呈月牙形，故不用） */
+  background: var(--fui-input-background)
+    linear-gradient(
+      to bottom,
+      transparent,
+      transparent calc(100% - var(--strokeWidthThin)),
+      var(--fui-input-highlight-background) calc(100% - var(--strokeWidthThin)),
+      var(--fui-input-highlight-background)
+    );
+  background-repeat: no-repeat;
+  /* BackgroundSizing="InnerBorderEdge"：填充止于描边内侧 —— 高亮带正好贴在底描边上方，
+     半透明描边也叠在父级底上。background 简写会把 background-clip 重置回 border-box，
+     故这条必须写在 background 之后 */
+  /* background-clip: padding-box; */
   border: var(--strokeWidthThin) solid var(--colorNeutralStrokeAlpha);
   border-bottom-color: var(--colorNeutralStroke1);
   border-radius: var(--borderRadiusMedium);
   outline: none;
-  /* 高亮层：底边常驻再叠 1px，与 1px 底描边合成 WinUI focus 的 2px。
-     零偏移 inset 阴影不可见，且 box-shadow 不参与布局 —— focus 只改偏移与颜色，
-     既不重排、不挤压内容，也不需要伪元素 / 额外 DOM。
-     顶/左/右描边始终 1px，四边宽度全程不变。 */
-  box-shadow: inset 0 0 0 0 var(--colorCompoundBrandStroke);
   transition:
     background-color var(--durationFast) var(--curveEasyEase),
     border-color var(--durationNormal) var(--curveDecelerateMid),
-    box-shadow var(--durationNormal) var(--curveDecelerateMid);
+    --fui-input-highlight-background var(--durationNormal) var(--curveDecelerateMid);
 }
 
 /* ---- 尺寸（Fluent 高度 24/32/40） ---- */
@@ -174,7 +196,7 @@ defineOptions({
   line-height: var(--lineHeightBase400);
 }
 
-/* ---- 外观：underline 只留底边（库扩展；底边同样用「重描边」色） ---- */
+/* ---- 外观：underline 只留底边（库扩展；底边用控件描边档 colorNeutralStroke1） ---- */
 .fui-input--underline {
   border: none;
   border-bottom: var(--strokeWidthThin) solid var(--colorNeutralStroke1);
@@ -198,37 +220,35 @@ defineOptions({
    只把填充换成 ControlFillColorSecondary。
    用 :not(:focus-visible) 还原 WinUI 的 VisualState 优先级：Focused 压过 PointerOver */
 .fui-input:hover:not(:disabled):not(:focus-visible) {
-  background-color: var(--colorNeutralBackground1Hover);
+  --fui-input-background: var(--colorNeutralBackground1Hover);
 }
 
 /* ---- 状态：focus（Focused）—— 只有底边高亮 ---- */
-/* 底边由「1px 描边 + 1px 高亮层」拼成 2px，四边宽度不变：
-   不动 border-width，故无重排、无内容挤压；高亮层是 paint-only 的 inset 阴影。
-   border-color 与 box-shadow 走 durationNormal + curveDecelerateMid 缓动 */
+/* 只换两个颜色：底描边 + 合成背景里的高亮带同时变强调色，拼成 2px。
+   四边 border-width 全程不变，故无重排、不挤压内容；
+   border-color 与高亮带色都走 durationNormal + curveDecelerateMid 缓动 */
 .fui-input:focus-visible {
+  --fui-input-highlight-background: var(--colorCompoundBrandStroke);
   border-color: var(--colorNeutralStrokeAlpha);
   border-bottom-color: var(--colorCompoundBrandStroke);
-  box-shadow: inset 0 calc(-1 * var(--strokeWidthThin)) 0 0 var(--colorCompoundBrandStroke);
 }
 
 /* ---- 状态：invalid（库扩展：WinUI TextBox 无内建错误态，走 status danger） ---- */
 .fui-input--invalid,
 .fui-input--underline.fui-input--invalid {
   border-color: var(--colorStatusDangerBorder2);
-  box-shadow: inset 0 0 0 0 var(--colorStatusDangerBorder2);
 }
 .fui-input--invalid:focus-visible {
+  --fui-input-highlight-background: var(--colorStatusDangerBorder2);
   border-color: var(--colorStatusDangerBorder2);
-  box-shadow: inset 0 calc(-1 * var(--strokeWidthThin)) 0 0 var(--colorStatusDangerBorder2);
 }
 
 /* ---- 状态：disabled ---- */
-/* 禁用态换成单色 ControlStrokeColorDefaultBrush：四边同色、没有抬升描边与高亮层 */
+/* 禁用态换成单色 ControlStrokeColorDefaultBrush：四边同色、没有抬升描边与高亮 */
 .fui-input:disabled {
-  background-color: var(--colorNeutralBackgroundDisabled);
+  --fui-input-background: var(--colorNeutralBackgroundDisabled);
   color: var(--colorNeutralForegroundDisabled);
   border-color: var(--colorNeutralStrokeDisabled);
-  box-shadow: none;
   cursor: not-allowed;
 }
 .fui-input:disabled::placeholder {

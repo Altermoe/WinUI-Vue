@@ -69,31 +69,54 @@ describe('FluereInput 渲染契约', () => {
 describe('FluereInput 状态样式（WinUI 3 TextBox 契约）', () => {
   const rules = readStyleRules()
 
-  it('rest：顶/左/右浅描边，底边重描边（TextControlElevationBorderBrush）', () => {
+  it('rest：顶/左/右浅描边，底边控件描边（TextControlElevationBorderBrush）', () => {
     const base = rules.get('.fui-input') ?? ''
     expect(base).toContain('border: var(--strokeWidthThin) solid var(--colorNeutralStrokeAlpha)')
-    expect(base).toContain('border-bottom-color: var(--colorNeutralStrokeAccessible)')
+    expect(base).toContain('border-bottom-color: var(--colorNeutralStroke1)')
   })
 
-  it('高亮层常驻且零偏移：不占布局，只在 focus 时改偏移', () => {
+  it('背景色拆成两个语义变量：真实背景 / 高亮背景', () => {
     const base = rules.get('.fui-input') ?? ''
-    expect(base).toContain('box-shadow: inset 0 0 0 0 var(--colorCompoundBrandStroke)')
-    expect(base).toContain('box-shadow var(--durationNormal) var(--curveDecelerateMid)')
+    expect(base).toContain('--fui-input-background: var(--colorNeutralBackground1)')
+    expect(base).toContain('--fui-input-highlight-background: transparent')
+    // 合成背景 = 背景色 + 底部 1px 高亮带（同一层里色值在前、渐变在后）
+    expect(base).toContain('var(--fui-input-background) linear-gradient(')
+    expect(base).toContain('background-clip: padding-box')
   })
 
-  it('hover：只换填充，描边不动；Focused 优先于 PointerOver', () => {
+  it('高亮带「刀形」：渐变沿水平方向，只有最底 1px 是强调色', () => {
+    const base = rules.get('.fui-input') ?? ''
+    expect(base).toContain('transparent calc(100% - var(--strokeWidthThin))')
+    expect(base).toContain(
+      'var(--fui-input-highlight-background) calc(100% - var(--strokeWidthThin))',
+    )
+    // 不允许再用 inset 阴影：它会沿圆角在两端上翘成月牙形
+    expect(base).not.toContain('box-shadow')
+  })
+
+  it('高亮色注册为 <color> 并参与缓动（渐变停靠点本身不可过渡）', () => {
+    const property = rules.get('@property --fui-input-highlight-background') ?? ''
+    expect(property).toContain("syntax: '<color>'")
+    expect(property).toContain('inherits: false')
+    expect(property).toContain('initial-value: transparent')
+
+    const base = rules.get('.fui-input') ?? ''
+    expect(base).toContain(
+      '--fui-input-highlight-background var(--durationNormal) var(--curveDecelerateMid)',
+    )
+  })
+
+  it('hover：只换背景变量，描边不动；Focused 优先于 PointerOver', () => {
     const hover = rules.get('.fui-input:hover:not(:disabled):not(:focus-visible)') ?? ''
-    expect(hover).toContain('background-color: var(--colorNeutralBackground1Hover)')
+    expect(hover).toContain('--fui-input-background: var(--colorNeutralBackground1Hover)')
     expect(hover).not.toContain('border')
   })
 
-  it('focus：底边高亮 2px 由阴影叠出，四边宽度不变（无重排）', () => {
+  it('focus：只换高亮色与底描边色，四边宽度不变（无重排）', () => {
     const focus = rules.get('.fui-input:focus-visible') ?? ''
+    expect(focus).toContain('--fui-input-highlight-background: var(--colorCompoundBrandStroke)')
     expect(focus).toContain('border-color: var(--colorNeutralStrokeAlpha)')
     expect(focus).toContain('border-bottom-color: var(--colorCompoundBrandStroke)')
-    expect(focus).toContain(
-      'box-shadow: inset 0 calc(-1 * var(--strokeWidthThin)) 0 0 var(--colorCompoundBrandStroke)',
-    )
     // 不许靠改 border-width 加粗：那会重排并挤压输入内容
     expect(focus).not.toContain('border-bottom-width')
     expect(focus).not.toContain('border-bottom:')
@@ -101,15 +124,17 @@ describe('FluereInput 状态样式（WinUI 3 TextBox 契约）', () => {
 
   it('disabled：四边同色描边 + 禁用填充（ControlStrokeColorDefaultBrush）', () => {
     const disabled = rules.get('.fui-input:disabled') ?? ''
+    expect(disabled).toContain('--fui-input-background: var(--colorNeutralBackgroundDisabled)')
     expect(disabled).toContain('border-color: var(--colorNeutralStrokeDisabled)')
-    expect(disabled).toContain('background-color: var(--colorNeutralBackgroundDisabled)')
     expect(disabled).toContain('color: var(--colorNeutralForegroundDisabled)')
-    expect(disabled).toContain('box-shadow: none')
   })
 
-  it('invalid：danger 描边（库扩展状态）', () => {
+  it('invalid：danger 描边，聚焦时高亮同样走 danger（库扩展状态）', () => {
     expect(rules.get('.fui-input--invalid') ?? '').toContain(
       'border-color: var(--colorStatusDangerBorder2)',
+    )
+    expect(rules.get('.fui-input--invalid:focus-visible') ?? '').toContain(
+      '--fui-input-highlight-background: var(--colorStatusDangerBorder2)',
     )
   })
 })
