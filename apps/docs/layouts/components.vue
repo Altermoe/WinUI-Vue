@@ -137,7 +137,7 @@ const isActive = (slug: string) => route.path === `/components/${slug}`
                   </NuxtLink>
                   <span
                     v-else
-                    class="flex items-center gap-2 px-3 py-1.5 rounded-fluent-md text-sm text-colorNeutralForeground3"
+                    class="flex items-center gap-2 px-3 py-1.5 rounded-fluent-md text-sm text-colorNeutralForeground3 opacity-50"
                   >
                     {{ item.name }}
                     <span
