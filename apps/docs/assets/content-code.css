@@ -1,0 +1,39 @@
+/*
+ * @nuxt/content (Shiki) 代码块增强：
+ * 1) 亮/暗双主题：@nuxt/content 配置 highlight.theme = { default, dark }，
+ *    会输出 --shiki-dark-* 变量，默认仅在下层 .shiki 上携带 default 色。
+ *    此处在系统深色模式下切换到 dark 配色，无需额外引入 color-mode 模块。
+ * 2) 行号：Shiki 为每一行生成 <span class="line">，用 CSS 计数器渲染行号，
+ *    伪元素不进入 textContent，因此“复制”默认拿到的是纯净源码，不含行号。
+ */
+
+/* ---- 深色模式：切换 Shiki 双主题（跟随系统） ---- */
+@media (prefers-color-scheme: dark) {
+  .shiki,
+  .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+  }
+}
+
+/* ---- 行号 ---- */
+.demo-block__code pre.shiki,
+.demo-block__code :is(pre.shiki, pre.shiki code) {
+  counter-reset: shiki-line;
+}
+.demo-block__code pre.shiki .line {
+  display: block;
+  counter-increment: shiki-line;
+}
+.demo-block__code pre.shiki .line::before {
+  content: counter(shiki-line);
+  display: inline-block;
+  width: 2.25rem;
+  margin-right: 1rem;
+  color: var(--colorNeutralForeground3);
+  text-align: right;
+  user-select: none;
+}
