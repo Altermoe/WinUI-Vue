@@ -43,6 +43,8 @@ FluereVue 想抹平这层距离。
 
 ## 快速开始
 
+> 提示：尚未发布，敬请期待
+
 ```bash
 pnpm add @fluere-vue/ui
 ```
@@ -69,13 +71,15 @@ import { FluereButton } from '@fluere-vue/ui'
 | `FluereInput`      | TextBox               | 开发中 |
 | `FluereScrollView` | ScrollView            | 开发中 |
 
-规划中的控件（对照 WinUI Gallery 控件全集，按需裁剪）：
+### 0.1.0-rc.1 组件清单
 
-- **基础输入**：CheckBox、RadioButton、ComboBox、NumberBox、Slider、ToggleSwitch、RatingControl、CalendarDatePicker、TimePicker
-- **按钮族**：SplitButton、DropDownButton、RepeatButton、CommandBar / AppBar
-- **反馈**：ProgressRing、ProgressBar、InfoBar、ToolTip、Flyout、ContentDialog、Badge
-- **导航与容器**：NavigationView、TabView、TreeView、ListView / GridView、MenuBar、ContextMenu、Expander、BreadcrumbBar
-- **数据与头像**：Persona / Avatar、DataGrid
+实施顺序与验收标准见 [docs/todo.md](./docs/todo.md)。
+
+- **Wave 1 · 核心表单**：Checkbox、ToggleSwitch、RadioButton / RadioGroup、Slider、NumberBox、Combobox
+- **Wave 2 · 反馈与状态**：ProgressRing、ProgressBar、InfoBar、Badge
+- **Wave 3 · 弹层与微交互**：Tooltip、ContentDialog（含共享弹层原语）
+- **Wave 4 · 高级交互**：ToggleButton / ToggleGroup、Avatar / Persona、DropDownButton
+- **rc.1 不做**（推给 0.2）：NavigationView、ListView / GridView / DataGrid、TreeView、CalendarDatePicker / TimePicker、MenuBar 完整版、RatingControl、CommandBar
 
 ## 我们怎么做还原
 
