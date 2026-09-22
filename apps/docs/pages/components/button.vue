@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import {
+  FluentIconAdd20Regular,
+  FluentIconEdit20Regular,
+  FluentIconSearch20Regular,
+  FluentIconSettings20Regular,
+  FluentIconShare20Regular,
+} from '@fluere-vue/icons'
 import { FluereButton } from '@fluere-vue/ui'
 
 definePageMeta({
@@ -136,20 +143,35 @@ definePageMeta({
         <FluereButton
           appearance="primary"
           size="small"
+          :icon="FluentIconAdd20Regular"
         >
           Small
         </FluereButton>
         <FluereButton
           appearance="primary"
           size="medium"
+          :icon="FluentIconAdd20Regular"
         >
           Medium
         </FluereButton>
         <FluereButton
           appearance="primary"
           size="large"
+          :icon="FluentIconAdd20Regular"
         >
           Large
+        </FluereButton>
+        <FluereButton
+          appearance="secondary"
+          :icon="FluentIconSearch20Regular"
+        >
+          Search
+        </FluereButton>
+        <FluereButton
+          appearance="outline"
+          :icon="FluentIconSettings20Regular"
+        >
+          Settings
         </FluereButton>
       </div>
     </section>
@@ -163,14 +185,23 @@ definePageMeta({
         <FluereButton
           appearance="primary"
           icon-position="after"
+          :icon="FluentIconAdd20Regular"
         >
           Add
         </FluereButton>
         <FluereButton
           appearance="secondary"
           icon-position="after"
+          :icon="FluentIconShare20Regular"
         >
-          Add
+          Share
+        </FluereButton>
+        <FluereButton
+          appearance="outline"
+          icon-position="after"
+          :icon="FluentIconSearch20Regular"
+        >
+          Search
         </FluereButton>
       </div>
     </section>
@@ -185,31 +216,37 @@ definePageMeta({
           appearance="primary"
           size="small"
           icon-only
+          :icon="FluentIconAdd20Regular"
         />
         <FluereButton
           appearance="primary"
           size="medium"
           icon-only
+          :icon="FluentIconEdit20Regular"
         />
         <FluereButton
           appearance="primary"
           size="large"
           icon-only
+          :icon="FluentIconSearch20Regular"
         />
         <FluereButton
           appearance="secondary"
           size="small"
           icon-only
+          :icon="FluentIconSettings20Regular"
         />
         <FluereButton
           appearance="secondary"
           size="medium"
           icon-only
+          :icon="FluentIconShare20Regular"
         />
         <FluereButton
           appearance="secondary"
           size="large"
           icon-only
+          :icon="FluentIconEdit20Regular"
         />
       </div>
     </section>
