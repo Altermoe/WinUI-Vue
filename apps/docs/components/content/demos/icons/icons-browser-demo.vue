@@ -3,16 +3,15 @@ import type { FluentIconStyle } from '@fluere-vue/icons'
 // oxlint-disable-next-line import/no-namespace -- 按 exportName 动态查组件，命名导入无法枚举 1.9w+ 图标
 import * as icons from '@fluere-vue/icons'
 import iconsData from '@fluere-vue/icons/data'
-import { computed, ref } from 'vue'
+import { FluereButton, FluereInput } from '@fluere-vue/ui'
+import { computed, ref, watch } from 'vue'
 import type { Component } from 'vue'
 
-const PAGE_SIZE = 600
+const PAGE_SIZE = 40
 const COPY_RESET_MS = 1200
+/** 图标瓦片统一渲染尺寸（保持正方形，令网格整齐） */
+const ICON_TILE_SIZE = 24
 const FILTER_STYLES: FluentIconStyle[] = ['regular', 'filled']
-const ACTIVE_FILTER_CLS =
-  'border-colorCompoundBrandStroke bg-colorBrandBackground text-colorNeutralForegroundOnBrand'
-const IDLE_FILTER_CLS =
-  'border-colorNeutralStroke2 bg-colorNeutralBackground1 text-colorNeutralForeground1 hover:bg-colorNeutralBackground1Hover'
 
 interface IconCombo {
   name: string
@@ -27,7 +26,7 @@ const allSizes = iconsData.sizes
 const keyword = ref('')
 const sizeFilter = ref<number | 'all'>('all')
 const styleFilter = ref<FluentIconStyle | 'all'>('all')
-const visibleCount = ref(PAGE_SIZE)
+const currentPage = ref(1)
 const copiedName = ref<string | undefined>(undefined)
 
 const pascalCase = (name: string): string =>
@@ -72,9 +71,21 @@ const combos = computed<IconCombo[]>(() => {
   return list
 })
 
-const visibleCombos = computed<IconCombo[]>(() =>
-  combos.value.filter((_combo, index) => index < visibleCount.value),
-)
+const visibleCombos = computed<IconCombo[]>(() => {
+  const start = (currentPage.value - 1) * PAGE_SIZE
+  return combos.value.slice(start, start + PAGE_SIZE)
+})
+
+const totalPages = computed<number>(() => Math.max(1, Math.ceil(combos.value.length / PAGE_SIZE)))
+
+const goToPage = (page: number): void => {
+  currentPage.value = Math.min(Math.max(1, page), totalPages.value)
+}
+
+// 关键词/筛选变化后回到第一页，避免停留在空页
+watch([keyword, sizeFilter, styleFilter, combos], () => {
+  currentPage.value = 1
+})
 
 const iconComponents = icons as unknown as Record<string, Component | undefined>
 
@@ -114,69 +125,53 @@ const copyName = async (exportName: string): Promise<void> => {
 <template>
   <div>
     <div class="flex gap-fluent-m items-center flex-wrap mb-fluent-l">
-      <input
+      <FluereInput
         v-model="keyword"
         type="search"
         placeholder="搜索图标名，如 access_time"
-        class="px-fluent-m py-fluent-s rounded-fluent-md border border-colorNeutralStroke2 bg-colorNeutralBackground1 text-colorNeutralForeground1 placeholder-colorNeutralForeground4 outline-none focus:border-colorCompoundBrandStroke"
+        class="max-w-sm"
       />
       <div class="flex gap-fluent-xs flex-wrap items-center">
-        <button
+        <FluereButton
           v-for="size in allSizes"
           :key="size"
-          type="button"
-          class="px-fluent-m py-fluent-xs rounded-fluent-md border text-sm transition-colors"
-          :class="{
-            [ACTIVE_FILTER_CLS]: sizeFilter === size,
-            [IDLE_FILTER_CLS]: sizeFilter !== size,
-          }"
+          appearance="outline"
+          :selected="sizeFilter === size"
           @click="toggleSizeFilter(size)"
         >
           {{ size }}
-        </button>
-        <button
-          type="button"
-          class="px-fluent-m py-fluent-xs rounded-fluent-md border text-sm transition-colors"
-          :class="{
-            [ACTIVE_FILTER_CLS]: sizeFilter === 'all',
-            [IDLE_FILTER_CLS]: sizeFilter !== 'all',
-          }"
+        </FluereButton>
+        <FluereButton
+          appearance="outline"
+          :selected="sizeFilter === 'all'"
           @click="sizeFilter = 'all'"
         >
           全部尺寸
-        </button>
+        </FluereButton>
       </div>
       <div class="flex gap-fluent-xs flex-wrap items-center">
-        <button
+        <FluereButton
           v-for="style in FILTER_STYLES"
           :key="style"
-          type="button"
-          class="px-fluent-m py-fluent-xs rounded-fluent-md border text-sm transition-colors"
-          :class="{
-            [ACTIVE_FILTER_CLS]: styleFilter === style,
-            [IDLE_FILTER_CLS]: styleFilter !== style,
-          }"
+          appearance="outline"
+          :selected="styleFilter === style"
           @click="toggleStyleFilter(style)"
         >
           {{ style }}
-        </button>
-        <button
-          type="button"
-          class="px-fluent-m py-fluent-xs rounded-fluent-md border text-sm transition-colors"
-          :class="{
-            [ACTIVE_FILTER_CLS]: styleFilter === 'all',
-            [IDLE_FILTER_CLS]: styleFilter !== 'all',
-          }"
+        </FluereButton>
+        <FluereButton
+          appearance="outline"
+          :selected="styleFilter === 'all'"
           @click="styleFilter = 'all'"
         >
           全部风格
-        </button>
+        </FluereButton>
       </div>
     </div>
 
     <p class="text-colorNeutralForeground2 text-sm mb-fluent-l">
-      共 {{ combos.length }} 个图标，点击任意图标复制组件名（当前渲染
-      {{ visibleCombos.length }} 个）。
+      共 {{ combos.length }} 个图标，每页 {{ PAGE_SIZE }} 个，当前渲染
+      {{ visibleCombos.length }} 个。
     </p>
 
     <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-fluent-s">
@@ -184,12 +179,13 @@ const copyName = async (exportName: string): Promise<void> => {
         v-for="combo in visibleCombos"
         :key="combo.exportName"
         type="button"
-        class="flex flex-col items-center gap-fluent-xs p-fluent-m rounded-fluent-md border border-colorNeutralStroke2 bg-colorNeutralBackground1 hover:bg-colorNeutralBackground1Hover transition-colors"
+        class="flex flex-col items-center justify-center gap-fluent-xs p-fluent-m rounded-fluent-md border border-colorNeutralStroke2 bg-colorNeutralBackground1 hover:bg-colorNeutralBackground1Hover transition-colors"
         :title="combo.exportName"
         @click="copyName(combo.exportName)"
       >
         <component
           :is="getIconComponent(combo.exportName)"
+          :size="ICON_TILE_SIZE"
           class="text-colorNeutralForeground1"
         />
         <span class="w-full text-center text-xs text-colorNeutralForeground2 truncate">{{
@@ -198,15 +194,26 @@ const copyName = async (exportName: string): Promise<void> => {
       </button>
     </div>
 
-    <div class="mt-fluent-l flex items-center gap-fluent-m">
-      <button
-        v-if="visibleCombos.length < combos.length"
-        type="button"
-        class="px-fluent-l py-fluent-s rounded-fluent-md border border-colorNeutralStroke2 text-colorNeutralForeground1 hover:bg-colorNeutralBackground1Hover transition-colors"
-        @click="visibleCount += PAGE_SIZE"
-      >
-        加载更多
-      </button>
+    <div class="mt-fluent-l flex items-center gap-fluent-m flex-wrap">
+      <nav class="flex items-center gap-fluent-xs" aria-label="分页">
+        <FluereButton
+          appearance="outline"
+          :disabled="currentPage <= 1"
+          @click="goToPage(currentPage - 1)"
+        >
+          上一页
+        </FluereButton>
+        <span class="text-sm text-colorNeutralForeground2">
+          {{ currentPage }} / {{ totalPages }}
+        </span>
+        <FluereButton
+          appearance="outline"
+          :disabled="currentPage >= totalPages"
+          @click="goToPage(currentPage + 1)"
+        >
+          下一页
+        </FluereButton>
+      </nav>
       <span
         v-if="copiedName"
         class="text-sm text-colorBrandForeground1"
