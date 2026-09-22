@@ -81,7 +81,8 @@ describe('FluereInput 状态样式（WinUI 3 TextBox 契约）', () => {
     expect(base).toContain('--fui-input-highlight-background: transparent')
     // 合成背景 = 背景色 + 底部 1px 高亮带（同一层里色值在前、渐变在后）
     expect(base).toContain('var(--fui-input-background) linear-gradient(')
-    expect(base).toContain('background-clip: padding-box')
+    // 渐变高亮带替代了 inset 阴影，背景简写把 clip 重置回默认值，不再出现 padding-box
+    expect(base).not.toContain('background-clip: padding-box')
   })
 
   it('高亮带「刀形」：渐变沿水平方向，只有最底 1px 是强调色', () => {

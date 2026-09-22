@@ -152,17 +152,17 @@ describe('FluereCheckbox 状态样式（WinUI 3 CheckBox 契约）', () => {
     )
   })
 
-  it('字形出现动效：自左向右缓动画入（left-center 原点 + translateX/scaleX 渐显）', () => {
+  it('字形出现动效：clip-path 自右向左裁切渐显（字形滑入 + crop-Reveal）', () => {
     const glyph = rules.get('.fui-checkbox__glyph') ?? ''
-    expect(glyph).toContain('transform-origin: left center')
+    expect(glyph).toContain('transform: translate(2%, 0)')
     expect(glyph).toContain(
-      'animation: fui-checkbox-glyph-in var(--durationNormal) var(--curveDecelerateMid) both',
+      'animation: fui-checkbox-glyph-in var(--durationUltraSlow) var(--curveDecelerateMid) both',
     )
 
     // @keyframes 内部的多层花括号会被 readStyleRules 摊平，这里直接从源码断言关键帧内容
     const keyframes =
       /@keyframes\s+fui-checkbox-glyph-in\s*\{([\s\S]*?)\}\s*\}/.exec(checkboxSfc)?.[1] ?? ''
-    expect(keyframes).toContain('translateX(-30%) scaleX(0)')
-    expect(keyframes).toContain('opacity: 0')
+    expect(keyframes).toContain('clip-path: inset(0 100% 0 0)')
+    expect(keyframes).toContain('clip-path: inset(0 0 0 0)')
   })
 })
