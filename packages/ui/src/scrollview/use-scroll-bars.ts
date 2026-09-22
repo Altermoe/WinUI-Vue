@@ -32,6 +32,16 @@ type ScrollBarAxis = 'vertical' | 'horizontal'
 const thumbTravelInset = (thumb: HTMLElement, axis: ScrollBarAxis): number =>
   axis === 'vertical' ? thumb.offsetTop : thumb.offsetLeft
 
+/**
+ * 指针命中最内层 ScrollView 的根元素：
+ * - element 属于某个 ScrollView（含自身），返回该根元素；
+ * - 否则返回 undefined。
+ * 用「最内层 ScrollView」作为 hover 的唯一权威，祖先 / 同级据此让位，
+ * 从而在嵌套 ScrollView 下只有指针真正所在的视图进入 hover 态。
+ */
+const innermostScrollView = (target: EventTarget | null): Element | undefined =>
+  target instanceof Element ? (target.closest('.fui-scrollview') ?? undefined) : undefined
+
 /** 滚动条展示层暴露给其他模块 / 模板的对象 */
 interface ScrollBars {
   barsVisible: Ref<boolean>
@@ -47,8 +57,12 @@ interface ScrollBars {
   showBars: (immediate: boolean) => void
   /** 在 2s 无交互后收起滚动条 */
   scheduleHide: () => void
-  onPointerEnterViewport: () => void
-  onPointerLeaveViewport: () => void
+  /**
+   * 指针划过本视图（由冒泡的 pointerover 驱动）。内部按「指针命中的最内层
+   * ScrollView」判定：只有最内层进入 hover，祖先 / 同级自动让位，实现嵌套隔离。
+   */
+  onPointerOverViewport: (event: PointerEvent) => void
+  onPointerOutViewport: (event: PointerEvent) => void
   /** 指针进入 / 离开滚动条命中区（决定轨道展开） */
   onBarPointerEnter: () => void
   onBarPointerLeave: () => void
@@ -63,6 +77,7 @@ const thumbLength = (track: number, viewport: number, scrollable: number): numbe
 
 const useScrollBars = (core: ScrollViewCore): ScrollBars => {
   const {
+    rootEl,
     vBarEl,
     vThumbEl,
     hBarEl,
@@ -113,17 +128,58 @@ const useScrollBars = (core: ScrollViewCore): ScrollBars => {
     }, BARS_HIDE_DELAY)
   }
 
-  const onPointerEnterViewport = (): void => {
+  /**
+   * 指针位于本视图自身区域（含自身滚动条）→ 立即显示滚动条
+   */
+  const hoverViewport = (): void => {
     hovering.value = true
-    // 进入滚动容器立即显示（无展开延迟），淡入由 CSS 过渡完成
     clearHideTimer()
     showBars(true)
   }
 
-  const onPointerLeaveViewport = (): void => {
+  /**
+   * 指针离开本视图的自身区域：
+   * - immediate = true：指针已被更深层嵌套 ScrollView 接管 → 立即让位隐藏，
+   *   避免父级滚动条悬在子级之上；
+   * - immediate = false：指针真正离开本视图 → 走收起延时（对齐 WinUI）。
+   */
+  const releaseHoverViewport = (immediate: boolean): void => {
     hovering.value = false
     barHovered.value = false
-    scheduleHide()
+    if (immediate) {
+      clearHideTimer()
+      barsVisible.value = false
+      barsImmediate.value = false
+    } else {
+      scheduleHide()
+    }
+  }
+
+  const onPointerOverViewport = (event: PointerEvent): void => {
+    // 事件冒泡：target 是本视图子树内任意元素，最近的自带 fui-scrollview
+    // 类的祖先即「指针命中的最内层 ScrollView」。
+    if (innermostScrollView(event.target) === rootEl.value) {
+      hoverViewport()
+    } else {
+      // 指针落在更深的嵌套 ScrollView 上 → 本视图让位
+      releaseHoverViewport(true)
+    }
+  }
+
+  const onPointerOutViewport = (event: PointerEvent): void => {
+    const target = rootEl.value
+    const inner = innermostScrollView(event.relatedTarget)
+    if (inner === target) {
+      // 指针仍在自身区域内（含自身滚动条）→ 保持悬停
+      return
+    }
+    if (inner instanceof Element && target?.contains(inner)) {
+      // 指针移入自身的嵌套子级 ScrollView → 立即让位
+      releaseHoverViewport(true)
+      return
+    }
+    // 指针真正离开本视图 → 走收起延时
+    releaseHoverViewport(false)
   }
 
   const onBarPointerEnter = (): void => {
@@ -192,8 +248,8 @@ const useScrollBars = (core: ScrollViewCore): ScrollBars => {
     trackExpanded,
     showBars,
     scheduleHide,
-    onPointerEnterViewport,
-    onPointerLeaveViewport,
+    onPointerOverViewport,
+    onPointerOutViewport,
     onBarPointerEnter,
     onBarPointerLeave,
   }

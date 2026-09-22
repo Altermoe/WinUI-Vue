@@ -124,8 +124,8 @@ const {
   barsImmediate,
   panningActive,
   trackExpanded,
-  onPointerEnterViewport,
-  onPointerLeaveViewport,
+  onPointerOverViewport,
+  onPointerOutViewport,
   onBarPointerEnter,
   onBarPointerLeave,
 } = bars
@@ -198,8 +198,8 @@ defineExpose({
     :tabindex="props.tabIndex"
     @wheel="wheel.onWheel"
     @keydown="keyboard.onKeyDown"
-    @pointerenter="onPointerEnterViewport"
-    @pointerleave="onPointerLeaveViewport"
+    @pointerover="onPointerOverViewport"
+    @pointerout="onPointerOutViewport"
   >
     <div
       ref="viewportEl"
