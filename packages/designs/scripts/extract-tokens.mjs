@@ -1,5 +1,5 @@
-import { mkdirSync, writeFileSync } from 'node:fs'
 /* oxlint-disable import/no-nodejs-modules, id-length, no-magic-numbers, prefer-named-capture-group, curly, no-null, no-continue, prefer-template, capitalized-comments, no-ternary -- 一次性 token 抽取/生成工具脚本，Node 内建模块为有意使用 */
+import { mkdirSync, writeFileSync } from 'node:fs'
 /**
  * 从官方 @fluentui/tokens 重新抽取完整 token 集，重建 data/fluent-tokens.json（唯一事实源）。
  *
