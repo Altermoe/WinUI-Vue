@@ -195,7 +195,10 @@ const copyName = async (exportName: string): Promise<void> => {
     </div>
 
     <div class="mt-fluent-l flex items-center gap-fluent-m flex-wrap">
-      <nav class="flex items-center gap-fluent-xs" aria-label="分页">
+      <nav
+        class="flex items-center gap-fluent-xs"
+        aria-label="分页"
+      >
         <FluereButton
           appearance="outline"
           :disabled="currentPage <= 1"
