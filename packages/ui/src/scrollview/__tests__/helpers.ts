@@ -104,8 +104,8 @@ export const makeBars = (): ScrollBars =>
     trackExpanded: computed(() => false),
     showBars: vi.fn(),
     scheduleHide: vi.fn(),
-    onPointerEnterViewport: vi.fn(),
-    onPointerLeaveViewport: vi.fn(),
+    onPointerOverViewport: vi.fn(),
+    onPointerOutViewport: vi.fn(),
     onBarPointerEnter: vi.fn(),
     onBarPointerLeave: vi.fn(),
   }) as unknown as ScrollBars

@@ -15,6 +15,31 @@ const makeBars = () => {
   return { core, bars, dispose }
 }
 
+/**
+ * 建立悬停判定所需的 DOM：root 上带有 fui-scrollview 类（closest 归属依据），
+ * child 是 root 子节点（指针落在自身区域）。返回可直接传入 onPointerOver /
+ * onPointerOut 的 PointerEvent 构造器。
+ */
+const makeHoverRoot = (core: ReturnType<typeof makeCore>) => {
+  const root = document.createElement('div')
+  root.className = 'fui-scrollview'
+  const child = document.createElement('span')
+  root.appendChild(child)
+  core.setElement('rootEl', root)
+
+  const over = (target: EventTarget = child): PointerEvent => {
+    const event = new PointerEvent('pointerover', { bubbles: true })
+    Object.defineProperty(event, 'target', { value: target, configurable: true })
+    return event
+  }
+  const out = (related: EventTarget | null = null): PointerEvent => {
+    const event = new PointerEvent('pointerout', { bubbles: true })
+    Object.defineProperty(event, 'relatedTarget', { value: related, configurable: true })
+    return event
+  }
+  return { root, child, over, out }
+}
+
 /** 两端步进按钮 band：CSS 通过 thumb 的 top / left 内缩给出（12px） */
 const TRAVEL_INSET = 12
 
@@ -97,9 +122,10 @@ describe('useScrollBars · 展开 / 收起时机', () => {
 
   it('指针进入立即显示（无延迟），退出后 BARS_HIDE_DELAY 收起', () => {
     vi.useFakeTimers()
-    const { bars, dispose } = makeBars()
+    const { core, bars, dispose } = makeBars()
+    const { over, out } = makeHoverRoot(core)
 
-    bars.onPointerEnterViewport()
+    bars.onPointerOverViewport(over())
     expect(bars.barsVisible.value).toBe(true)
     expect(bars.barsImmediate.value).toBe(true)
 
@@ -107,8 +133,8 @@ describe('useScrollBars · 展开 / 收起时机', () => {
     vi.advanceTimersByTime(BARS_HIDE_DELAY)
     expect(bars.barsVisible.value).toBe(true)
 
-    // 退出后延迟收起
-    bars.onPointerLeaveViewport()
+    // 退出（relatedTarget 离开本视图）后延迟收起
+    bars.onPointerOutViewport(out())
     vi.advanceTimersByTime(BARS_HIDE_DELAY - 1)
     expect(bars.barsVisible.value).toBe(true)
     vi.advanceTimersByTime(1)
@@ -118,10 +144,11 @@ describe('useScrollBars · 展开 / 收起时机', () => {
 
   it('平移进行中不收起', () => {
     vi.useFakeTimers()
-    const { bars, dispose } = makeBars()
+    const { core, bars, dispose } = makeBars()
+    const { over, out } = makeHoverRoot(core)
     bars.panningActive.value = true
-    bars.onPointerEnterViewport()
-    bars.onPointerLeaveViewport()
+    bars.onPointerOverViewport(over())
+    bars.onPointerOutViewport(out())
     vi.advanceTimersByTime(BARS_HIDE_DELAY * 2)
     expect(bars.barsVisible.value).toBe(true)
     dispose()
@@ -129,25 +156,64 @@ describe('useScrollBars · 展开 / 收起时机', () => {
 
   it('收起时复位「立即显示」标志，避免下次显示丢失过渡语义', () => {
     vi.useFakeTimers()
-    const { bars, dispose } = makeBars()
+    const { core, bars, dispose } = makeBars()
+    const { over, out } = makeHoverRoot(core)
 
-    bars.onPointerEnterViewport()
+    bars.onPointerOverViewport(over())
     expect(bars.barsImmediate.value).toBe(true)
 
-    bars.onPointerLeaveViewport()
+    bars.onPointerOutViewport(out())
     vi.advanceTimersByTime(BARS_HIDE_DELAY)
     expect(bars.barsVisible.value).toBe(false)
     expect(bars.barsImmediate.value).toBe(false)
+    dispose()
+  })
+
+  it('指针移入自身区域内更深层嵌套子级时立即让位隐藏', () => {
+    const { core, bars, dispose } = makeBars()
+    const { root, over } = makeHoverRoot(core)
+
+    // 先落在自身区域 → 显示
+    bars.onPointerOverViewport(over())
+    expect(bars.barsVisible.value).toBe(true)
+
+    // 指针命中深度为 2 的嵌套 ScrollView 根 → 本视图立即让位，不走收起延时
+    const nestedRoot = document.createElement('div')
+    nestedRoot.className = 'fui-scrollview'
+    root.appendChild(nestedRoot)
+    bars.onPointerOverViewport(over(nestedRoot))
+    expect(bars.barsVisible.value).toBe(false)
+    dispose()
+  })
+
+  it('指针在本视图自身区域内部移动（如进入自身滚动条）不丢失悬停', () => {
+    const { core, bars, dispose } = makeBars()
+    const { root, child, over, out } = makeHoverRoot(core)
+
+    bars.onPointerOverViewport(over())
+    expect(bars.barsVisible.value).toBe(true)
+
+    // 从 content 移到自身滚动条：relatedTarget 仍归属本视图 → 保持显示
+    const ownScrollbar = document.createElement('div')
+    root.appendChild(ownScrollbar)
+    bars.onPointerOutViewport(out(ownScrollbar))
+    expect(bars.barsVisible.value).toBe(true)
+    expect(bars.hovering.value).toBe(true)
+
+    // 之后指针在自身区域内滑动（over 仍命中本视图）
+    bars.onPointerOverViewport(over(child))
+    expect(bars.barsVisible.value).toBe(true)
     dispose()
   })
 })
 
 describe('useScrollBars · 轨道展开', () => {
   it('指针进入滚动条命中区才展开轨道，离开即收起', () => {
-    const { bars, dispose } = makeBars()
+    const { core, bars, dispose } = makeBars()
+    const { over } = makeHoverRoot(core)
 
     // 仅在滚动容器内：滑块显示，但轨道保持收起
-    bars.onPointerEnterViewport()
+    bars.onPointerOverViewport(over())
     expect(bars.barsVisible.value).toBe(true)
     expect(bars.trackExpanded.value).toBe(false)
 
@@ -160,9 +226,10 @@ describe('useScrollBars · 轨道展开', () => {
   })
 
   it('拖拽滑块期间保持轨道展开', () => {
-    const { bars, dispose } = makeBars()
+    const { core, bars, dispose } = makeBars()
+    const { over } = makeHoverRoot(core)
 
-    bars.onPointerEnterViewport()
+    bars.onPointerOverViewport(over())
     bars.thumbDragging.value = true
     expect(bars.trackExpanded.value).toBe(true)
     dispose()

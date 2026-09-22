@@ -9,6 +9,7 @@
  */
 import { mount } from '@vue/test-utils'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
+import { defineComponent, h } from 'vue'
 import FluereScrollView from '../scroll-view.vue'
 
 /** jsdom 无 ResizeObserver：测量层只依赖其回调，空实现替身即可 */
@@ -53,7 +54,7 @@ describe('FluereScrollView · 滚动条装配', () => {
     expect(root.classes()).not.toContain('fui-scrollview--bars-visible')
     expect(root.classes()).not.toContain('fui-scrollview--bars-expanded')
 
-    await root.trigger('pointerenter')
+    await root.trigger('pointerover')
     expect(root.classes()).toContain('fui-scrollview--bars-visible')
     expect(root.classes()).not.toContain('fui-scrollview--bars-expanded')
 
@@ -76,6 +77,61 @@ describe('FluereScrollView · 滚动条装配', () => {
     })
     expect(wrapper.get('.fui-scrollview').classes()).toContain('fui-scrollview--both-bars')
     expect(wrapper.find('.fui-scrollview__separator').exists()).toBe(true)
+    wrapper.unmount()
+  })
+})
+
+/** 嵌套悬挂测试基座：父 ScrollView 内放两个子 ScrollView + 空白区 */
+const NESTED_HARNESS = defineComponent({
+  render() {
+    return h(FluereScrollView, { verticalScrollBarVisibility: 'visible' }, {
+      default: () => [
+        h('div', { class: 'filler' }),
+        h(FluereScrollView, {
+          verticalScrollBarVisibility: 'visible',
+          'data-test': 'child-a',
+        }),
+        h(FluereScrollView, {
+          verticalScrollBarVisibility: 'visible',
+          'data-test': 'child-b',
+        }),
+      ],
+    })
+  },
+})
+
+describe('FluereScrollView · 嵌套悬停隔离', () => {
+  it('hover 父级自身区域时，子级不会进入 hover 态', async () => {
+    const wrapper = mount(NESTED_HARNESS)
+    const parent = wrapper.get('.fui-scrollview')
+    const childA = wrapper.get('[data-test="child-a"]')
+    const childB = wrapper.get('[data-test="child-b"]')
+
+    expect(parent.classes()).not.toContain('fui-scrollview--bars-visible')
+    expect(childA.classes()).not.toContain('fui-scrollview--bars-visible')
+    expect(childB.classes()).not.toContain('fui-scrollview--bars-visible')
+
+    // 指针落在父级自身空白区（非任意子级上）
+    await wrapper.get('.filler').trigger('pointerover')
+
+    expect(parent.classes()).toContain('fui-scrollview--bars-visible')
+    expect(childA.classes()).not.toContain('fui-scrollview--bars-visible')
+    expect(childB.classes()).not.toContain('fui-scrollview--bars-visible')
+    wrapper.unmount()
+  })
+
+  it('hover 子级时，父级与同级都不会进入 hover 态', async () => {
+    const wrapper = mount(NESTED_HARNESS)
+    const parent = wrapper.get('.fui-scrollview')
+    const childA = wrapper.get('[data-test="child-a"]')
+    const childB = wrapper.get('[data-test="child-b"]')
+
+    // 指针落在子级 A 上：事件冒泡至父级根，父级应让位、同级 B 不受影响
+    await childA.trigger('pointerover')
+
+    expect(childA.classes()).toContain('fui-scrollview--bars-visible')
+    expect(parent.classes()).not.toContain('fui-scrollview--bars-visible')
+    expect(childB.classes()).not.toContain('fui-scrollview--bars-visible')
     wrapper.unmount()
   })
 })
