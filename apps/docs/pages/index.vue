@@ -168,12 +168,90 @@ const ctLinks = [
       <section class="max-w-4xl mx-auto px-6 pb-24">
         <div class="rounded-fluent-xl border border-colorNeutralStroke1 overflow-hidden shadow-8">
           <div
-            class="flex items-center gap-1.5 px-4 h-9 bg-colorNeutralBackground3 border-b border-colorNeutralStroke1"
+            class="flex items-center justify-between h-10 bg-colorNeutralBackground2/90 backdrop-blur-md border-b border-colorNeutralStroke1"
           >
-            <div class="w-3 h-3 rounded-fluent-circular bg-[#ff5f57]"></div>
-            <div class="w-3 h-3 rounded-fluent-circular bg-[#febc2e]"></div>
-            <div class="w-3 h-3 rounded-fluent-circular bg-[#28c840]"></div>
-            <span class="ml-3 text-xs text-colorNeutralForeground3 font-mono">App.vue</span>
+            <div class="flex items-center gap-2 pl-4 pr-2 select-none">
+              <svg
+                class="w-4 h-4 text-colorNeutralForeground3"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.2"
+                aria-hidden="true"
+              >
+                <path
+                  d="M3 1.5h6l4 4v9H3z"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M9 1.5v4h4"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              <span class="text-xs text-colorNeutralForeground2 font-mono">App.vue</span>
+            </div>
+            <div class="flex items-center h-full">
+              <button
+                type="button"
+                aria-label="Minimize"
+                class="w-11 h-full flex items-center justify-center text-colorNeutralForeground2 hover:bg-colorSubtleBackgroundHover active:bg-colorSubtleBackgroundPressed transition-colors duration-fluent-faster"
+              >
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 10 10"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M0.5 5.5h9"
+                    stroke="currentColor"
+                    stroke-width="1.1"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </button>
+              <button
+                type="button"
+                aria-label="Maximize"
+                class="w-11 h-full flex items-center justify-center text-colorNeutralForeground2 hover:bg-colorSubtleBackgroundHover active:bg-colorSubtleBackgroundPressed transition-colors duration-fluent-faster"
+              >
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.1"
+                  aria-hidden="true"
+                >
+                  <rect
+                    x="1"
+                    y="1"
+                    width="7"
+                    height="7"
+                    rx="0.5"
+                  />
+                </svg>
+              </button>
+              <button
+                type="button"
+                aria-label="Close"
+                class="w-11 h-full flex items-center justify-center text-colorNeutralForeground1 hover:bg-colorStatusDangerBackground3 hover:text-colorNeutralForegroundStaticInverted active:bg-colorStatusDangerBackground3Pressed transition-colors duration-fluent-faster"
+              >
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 10 10"
+                  stroke="currentColor"
+                  stroke-width="1.1"
+                  stroke-linecap="round"
+                  aria-hidden="true"
+                >
+                  <path d="M1 1l8 8" />
+                  <path d="M9 1L1 9" />
+                </svg>
+              </button>
+            </div>
           </div>
           <pre
             class="bg-colorNeutralBackground2 p-6 text-sm font-mono leading-relaxed overflow-x-auto"
