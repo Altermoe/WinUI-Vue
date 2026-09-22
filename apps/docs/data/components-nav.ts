@@ -43,7 +43,7 @@ const componentNavGroups: ComponentNavGroup[] = [
     label: '表单',
     items: [
       { slug: 'autocomplete', name: 'Autocomplete', implemented: false },
-      { slug: 'checkbox', name: 'Checkbox', implemented: false },
+      { slug: 'checkbox', name: 'Checkbox', implemented: true },
       { slug: 'combobox', name: 'Combobox', implemented: false },
       { slug: 'editable', name: 'Editable', implemented: false },
       { slug: 'listbox', name: 'Listbox', implemented: false },

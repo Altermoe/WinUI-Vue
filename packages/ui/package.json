@@ -16,6 +16,7 @@
     "@fluentui/tokens": "catalog:",
     "@fluere-vue/designs": "workspace:*",
     "@fluere-vue/hooks": "workspace:*",
+    "@fluere-vue/icons": "workspace:*",
     "@fluere-vue/themes": "workspace:*",
     "reka-ui": "catalog:"
   },

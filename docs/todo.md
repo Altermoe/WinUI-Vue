@@ -10,7 +10,7 @@
 
 按 ① 被依赖程度 ② 还原成本 从低到高排：
 
-- [ ] 1. `Checkbox`（对应 CheckBox）
+- [x] 1. `Checkbox`（对应 CheckBox）
 - [ ] 2. `ToggleSwitch`（ToggleSwitch，WinUI 标志性控件，自定义实现）
 - [ ] 3. `RadioButton` + `RadioGroup`（RadioButton，复用 reka RadioGroup）
 - [ ] 4. `Slider`（Slider，复用 reka Slider）

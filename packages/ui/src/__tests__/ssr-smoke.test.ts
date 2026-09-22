@@ -15,6 +15,7 @@ import { createSSRApp, h } from 'vue'
 import type { Component } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import FluereButton from '../button/button.vue'
+import FluereCheckbox from '../checkbox/checkbox.vue'
 import FluereInput from '../input/input.vue'
 import FluereScrollView from '../scrollview/scroll-view.vue'
 
@@ -36,6 +37,12 @@ describe('SSR 兼容性冒烟测试', () => {
   it('FluereInput 可服务端渲染', async () => {
     const html = await renderServer(FluereInput)
     expect(html).toContain('fui-input')
+  })
+
+  it('FluereCheckbox 可服务端渲染（复用 reka CheckboxRoot + VueUse，回归无浏览器 API 依赖）', async () => {
+    const html = await renderServer(FluereCheckbox, '接收通知')
+    expect(html).toContain('fui-checkbox')
+    expect(html).toContain('接收通知')
   })
 
   it('FluereScrollView 可服务端渲染（回归：matchMedia SSR 崩溃）', async () => {
