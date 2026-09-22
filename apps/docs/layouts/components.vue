@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { FluereScrollView } from '@fluere-vue/ui'
 import { componentNavGroups } from '../data/components-nav'
 
 const route = useRoute()
@@ -89,66 +90,66 @@ const isActive = (slug: string) => route.path === `/components/${slug}`
 
     <div class="max-w-7xl mx-auto px-6 flex gap-8 items-start">
       <!-- Sidebar -->
-      <aside
-        class="hidden lg:block w-60 shrink-0 sticky top-14 py-8 pr-4 max-h-[calc(100vh-3.5rem)] overflow-y-auto"
-      >
-        <nav class="space-y-7">
-          <NuxtLink
-            to="/components"
-            class="block px-3 py-1.5 rounded-fluent-md text-sm transition-colors"
-            :class="
-              route.path === '/components'
-                ? 'bg-colorBrandBackground text-colorNeutralForegroundOnBrand font-medium'
-                : 'text-colorNeutralForeground2 hover:bg-colorSubtleBackgroundHover hover:text-colorNeutralForeground1'
-            "
-          >
-            Overview
-          </NuxtLink>
-
-          <section
-            v-for="group in componentNavGroups"
-            :key="group.id"
-          >
-            <h3
-              class="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-colorNeutralForeground3"
+      <aside class="hidden lg:block w-60 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)]">
+        <FluereScrollView class="h-full">
+          <nav class="space-y-7 py-4 pr-4">
+            <NuxtLink
+              to="/components"
+              class="block px-3 py-1.5 rounded-fluent-md text-sm transition-colors"
+              :class="
+                route.path === '/components'
+                  ? 'bg-colorBrandBackground text-colorNeutralForegroundOnBrand font-medium'
+                  : 'text-colorNeutralForeground2 hover:bg-colorSubtleBackgroundHover hover:text-colorNeutralForeground1'
+              "
             >
-              {{ group.title }}
-              <span class="ml-1 font-normal normal-case text-colorNeutralForeground3">{{
-                group.label
-              }}</span>
-            </h3>
-            <ul class="space-y-0.5">
-              <li
-                v-for="item in group.items"
-                :key="item.slug"
+              Overview
+            </NuxtLink>
+
+            <section
+              v-for="group in componentNavGroups"
+              :key="group.id"
+            >
+              <h3
+                class="px-3 mb-2 text-xs font-semibold uppercase tracking-wider text-colorNeutralForeground3"
               >
-                <NuxtLink
-                  v-if="item.implemented"
-                  :to="`/components/${item.slug}`"
-                  class="block px-3 py-1.5 rounded-fluent-md text-sm transition-colors"
-                  :class="
-                    isActive(item.slug)
-                      ? 'bg-colorBrandBackground text-colorNeutralForegroundOnBrand font-medium'
-                      : 'text-colorNeutralForeground2 hover:bg-colorSubtleBackgroundHover hover:text-colorNeutralForeground1'
-                  "
+                {{ group.title }}
+                <span class="ml-1 font-normal normal-case text-colorNeutralForeground3">{{
+                  group.label
+                }}</span>
+              </h3>
+              <ul class="space-y-0.5">
+                <li
+                  v-for="item in group.items"
+                  :key="item.slug"
                 >
-                  {{ item.name }}
-                </NuxtLink>
-                <span
-                  v-else
-                  class="flex items-center gap-2 px-3 py-1.5 rounded-fluent-md text-sm text-colorNeutralForeground3"
-                >
-                  {{ item.name }}
-                  <span
-                    class="text-[10px] leading-none px-1 py-0.5 rounded-fluent-sm bg-colorNeutralBackground3 text-colorNeutralForeground3"
+                  <NuxtLink
+                    v-if="item.implemented"
+                    :to="`/components/${item.slug}`"
+                    class="block px-3 py-1.5 rounded-fluent-md text-sm transition-colors"
+                    :class="
+                      isActive(item.slug)
+                        ? 'bg-colorBrandBackground text-colorNeutralForegroundOnBrand font-medium'
+                        : 'text-colorNeutralForeground2 hover:bg-colorSubtleBackgroundHover hover:text-colorNeutralForeground1'
+                    "
                   >
-                    未实现
+                    {{ item.name }}
+                  </NuxtLink>
+                  <span
+                    v-else
+                    class="flex items-center gap-2 px-3 py-1.5 rounded-fluent-md text-sm text-colorNeutralForeground3"
+                  >
+                    {{ item.name }}
+                    <span
+                      class="text-[10px] leading-none px-1 py-0.5 rounded-fluent-sm bg-colorNeutralBackground3 text-colorNeutralForeground3"
+                    >
+                      未实现
+                    </span>
                   </span>
-                </span>
-              </li>
-            </ul>
-          </section>
-        </nav>
+                </li>
+              </ul>
+            </section>
+          </nav>
+        </FluereScrollView>
       </aside>
 
       <!-- Content -->
