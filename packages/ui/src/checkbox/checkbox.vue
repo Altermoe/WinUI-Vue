@@ -87,15 +87,18 @@ defineOptions({
         class="fui-checkbox__box"
         aria-hidden="true"
       >
-        <!-- 选中：对勾（WinUI CheckBoxCheckedGlyph E73E）；字形出现时自左向右缓动 -->
+        <!-- 选中：对勾（WinUI CheckBoxCheckedGlyph E73E）；字形裁切自左向右出现，
+             对比像素为 12px 偏小 3px → size=15。字形整体原地不动（见动画注释） -->
         <FluentIconCheckmark12Regular
           v-if="state === true"
           class="fui-checkbox__glyph"
+          size="15"
         />
-        <!-- 不确定：横杠（WinUI CheckBoxIndeterminateGlyph E73A）；同出现动效 -->
+        <!-- 不确定：横杠（WinUI CheckBoxIndeterminateGlyph E73A）；同出现动效、同尺寸 -->
         <FluentIconSubtract12Regular
           v-else-if="state === 'indeterminate'"
           class="fui-checkbox__glyph"
+          size="15"
         />
       </span>
 
@@ -163,7 +166,7 @@ defineOptions({
 /* ---- 方块：20px 圆角、1px 描边 ---- */
 .fui-checkbox__box {
   position: relative;
-  display: inline-flex;
+  display: grid;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
@@ -179,26 +182,28 @@ defineOptions({
     border-color var(--durationFast) var(--curveEasyEase);
 }
 
-/* ---- 字形：居中，12px 视窗 ---- */
-/* ---- 字形：图标组件自身即 12×12，随 currentColor 变色 ---- */
+/* ---- 字形：居中，随 currentColor 变色 ---- */
 .fui-checkbox__glyph {
-  display: flex;
-  /* 出现动效：字形从 unchecked → checked / indeterminate 时自左向右缓动出现。
-     因为字形用 v-if 挂载（unchecked 时不渲染），每次出现都会重触发该动画；
+  /** 视网膜屏幕下 100% 缩放率时图标略微有点偏左 */
+  transform: translate(2%, 0);
+  /* 出现动效：字形从 unchecked → checked / indeterminate 时「原地不动、
+     裁切(crop)自左向右」出现 —— 对齐 WinUI CheckGlyph 的 Reveal 视觉。
+     用 clip-path 而非 transform：字形自身几何不移动、不缩放，元素盒全程
+     居中占位，仅由右侧内缩(wright inset)从 100%→0 揭示字形，形成「从左往右
+     刷出」的裁切效果。transition-property 只对 clip-path+opacity 生效，
+     不影响布局与位置。
+     因为字形用 v-if 挂载（unchecked 时不渲染），每次出现都会重触发动画；
      消失（checked → unchecked）由 v-if 移除 DOM，瞬时完成，不做退出动画 ——
      对应 WinUI CheckGlyph 的 PointerOver/Normal 画入、Off 态瞬时清空。 */
-  transform-origin: left center;
-  animation: fui-checkbox-glyph-in var(--durationNormal) var(--curveDecelerateMid) both;
+  animation: fui-checkbox-glyph-in var(--durationUltraSlow) var(--curveDecelerateMid) both;
 }
 
 @keyframes fui-checkbox-glyph-in {
   from {
-    transform: translateX(-30%) scaleX(0);
-    opacity: 0;
+    clip-path: inset(0 100% 0 0); /* 全部遮住：右侧内缩至尽头，可见区为 0 */
   }
   to {
-    transform: translateX(0) scaleX(1);
-    opacity: 1;
+    clip-path: inset(0 0 0 0); /* 完全揭示：右侧内缩归零，字形整体可见 */
   }
 }
 
