@@ -34,7 +34,8 @@
     "format": "oxfmt --check",
     "format:fix": "oxfmt --write",
     "tsc": "pnpm -r tsc",
-    "check": "pnpm lint && pnpm format && pnpm tsc"
+    "check": "pnpm lint && pnpm format && pnpm tsc",
+    "check:fix": "pnpm lint:fix && pnpm format:fix && pnpm tsc"
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
