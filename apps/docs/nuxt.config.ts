@@ -26,7 +26,7 @@ function resolveOptimizeDepsEntry(id: string, rootDir: string) {
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-01-01',
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   modules: ['@unocss/nuxt', '@nuxt/content'],
   content: {
     // 用 Node 原生 sqlite（v22.5+），避免 pnpm 原生构建脚本被禁导致的 better-sqlite3 绑定问题

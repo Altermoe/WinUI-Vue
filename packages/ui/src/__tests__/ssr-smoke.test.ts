@@ -18,6 +18,7 @@ import FluereButton from '../button/button.vue'
 import FluereCheckbox from '../checkbox/checkbox.vue'
 import FluereInput from '../input/input.vue'
 import FluereScrollView from '../scrollview/scroll-view.vue'
+import FluereToggleSwitch from '../toggle-switch/toggle-switch.vue'
 
 /** 把单个组件以 SSR 模式渲染为 HTML 字符串 */
 const renderServer = async (component: Component, slotText = ''): Promise<string> => {
@@ -49,5 +50,12 @@ describe('SSR 兼容性冒烟测试', () => {
     const html = await renderServer(FluereScrollView, '滚动内容')
     expect(html).toContain('fui-scrollview')
     expect(html).toContain('滚动内容')
+  })
+
+  it('FluereToggleSwitch 可服务端渲染（纯客户端指针交互，setup 无浏览器 API 依赖）', async () => {
+    const html = await renderServer(FluereToggleSwitch, '夜间模式')
+    expect(html).toContain('fui-switch')
+    expect(html).toContain('role="switch"')
+    expect(html).toContain('夜间模式')
   })
 })
