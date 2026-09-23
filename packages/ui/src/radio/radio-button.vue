@@ -157,7 +157,38 @@ defineOptions({ name: 'FluereRadioButton' })
 /* ------------------------------------------------------------------ */
 
 /* ---- 根按钮 ---- */
+/* 状态建模：以「抽象状态值」声明式表达。具体属性（背景/描边/内点缩放与透明度、
+   预览点缩放与透明度）只在一处读取这些变量；各交互状态用等权重的根级选择器
+   改写变量。相比在每个深层选择器里直接设具体属性，避免了 checked/hover/active
+   组合时特异性与覆盖顺序的脆弱性。明暗主题仍由 tokens.css 的 light-dark() 切换。
+ * ------------------------------------------------------------ */
 .fui-radio {
+  /* 抽象状态值（被 __circle / __dot / __pressed-dot 读取） */
+  --fill: var(--colorNeutralBackground3); /* 圆填充：未选 rest */
+  --stroke: var(--colorNeutralStrokeAccessible); /* 圆描边：未选 rest */
+  --dot-fill: var(--colorNeutralForegroundOnBrand); /* 内点 / 预览点颜色 */
+  --dot: 0; /* 内点缩放（0=隐藏） */
+  --dot-opacity: 0; /* 内点透明度 */
+  --press: 0; /* 预览点缩放（0=隐藏） */
+  --press-opacity: 0; /* 预览点透明度 */
+
+  /* 各状态的具体取值（对照 WinUI token，集中于此便于核对） */
+  --fill-unchecked-hover: var(--colorNeutralBackground4); /* controlAltFill*Tertiary */
+  --fill-unchecked-active: var(--colorNeutralBackground5); /* controlAltFill*Quarternary */
+  --stroke-unchecked-active: var(
+    --colorNeutralStrokeDisabled
+  ); /* OuterEllipseStrokePressed（原样） */
+  --fill-checked: var(--colorCompoundBrandBackground); /* accentFill Default */
+  --fill-checked-hover: var(--colorCompoundBrandBackgroundHover); /* accentFill Secondary */
+  --fill-checked-active: var(--colorCompoundBrandBackgroundPressed); /* accentFill Tertiary */
+  --stroke-checked: var(--colorCompoundBrandBackground);
+  --stroke-checked-hover: var(--colorCompoundBrandBackgroundHover);
+  --stroke-checked-active: var(--colorCompoundBrandBackgroundPressed);
+  --dot-checked: 1; /* 12px */
+  --dot-checked-hover: 1.1667; /* CheckGlyphPointerOverSize 14/12 */
+  --dot-checked-active: 0.8333; /* CheckGlyphPressedOverSize 10/12 */
+  --press-on: 2.5; /* PressedCheckGlyph 4→10 */
+
   display: inline-flex;
   align-items: center;
   gap: var(--spacingHorizontalS); /* 圆与文本间距 8px（WinUI content Margin-left 8） */
@@ -185,9 +216,9 @@ defineOptions({ name: 'FluereRadioButton' })
   height: 20px; /* RadioButton 圆直径 */
   box-sizing: border-box;
   border-radius: var(--borderRadiusCircular); /* 全圆：20/2=10 */
-  border: var(--strokeWidthThin) solid var(--colorNeutralStrokeAccessible);
-  /* OuterEllipseFill = ControlAltFillColorSecondary（未选中性底） */
-  background-color: var(--colorNeutralBackground3);
+  /* 填充 / 描边取值统一来自顶层抽象变量（见 .fui-radio） */
+  border: var(--strokeWidthThin) solid var(--stroke);
+  background-color: var(--fill);
   transition:
     background-color var(--durationFast) var(--curveEasyEase),
     border-color var(--durationFast) var(--curveEasyEase);
@@ -202,12 +233,14 @@ defineOptions({ name: 'FluereRadioButton' })
   height: 12px; /* RadioButtonCheckGlyphSize */
   box-sizing: border-box;
   border-radius: var(--borderRadiusCircular);
-  /* CheckGlyphFill = TextOnAccentFillColorPrimary（白色内点） */
-  background-color: var(--colorNeutralForegroundOnBrand);
-  transform: translate(-50%, -50%) scale(0);
-  opacity: 0;
+  /* 颜色 / 缩放 / 透明度来自顶层抽象变量（--dot-fill/--dot/--dot-opacity） */
+  background-color: var(--dot-fill);
+  opacity: var(--dot-opacity);
+  transform: translate(-50%, -50%) scale(var(--dot));
+  /* opacity 与 transform 统一用同一条曲线：使「内点收缩淡出」与下方预览点
+     「放大渐显」相位一致，消除中途两圆错位造成的尺寸跳变 */
   transition:
-    opacity var(--durationFast) var(--curveEasyEase),
+    opacity var(--durationFast) var(--curveEasyEaseMax),
     transform var(--durationFast) var(--curveEasyEaseMax);
 }
 
@@ -216,78 +249,75 @@ defineOptions({ name: 'FluereRadioButton' })
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 4px;
+  width: 4px; /* PressedCheckGlyph 起始 4px */
   height: 4px;
   box-sizing: border-box;
   border-radius: var(--borderRadiusCircular);
-  /* PressedCheckGlyph Background = CheckGlyphFill（白色预览点） */
-  background-color: var(--colorNeutralForegroundOnBrand);
-  transform: translate(-50%, -50%) scale(0);
-  opacity: 0;
+  /* 颜色 / 缩放 / 透明度来自顶层抽象变量；过渡曲线与内点一致，保证交叉相位同步 */
+  background-color: var(--dot-fill); /* PressedCheckGlyph Background = CheckGlyphFill */
+  opacity: var(--press-opacity);
+  transform: translate(-50%, -50%) scale(var(--press));
   transition:
-    opacity var(--durationFast) var(--curveEasyEase),
+    opacity var(--durationFast) var(--curveEasyEaseMax),
     transform var(--durationFast) var(--curveEasyEaseMax);
 }
 
-/* ---- 选中：品牌实心圆 + 同色描边 + 白色内点显现（data-state 交换） ---- */
-.fui-radio[data-state='checked'] .fui-radio__circle {
-  /* CheckedFill/CheckedStroke = AccentFillColorDefault */
-  background-color: var(--colorCompoundBrandBackground);
-  border-color: var(--colorCompoundBrandBackground);
-}
-.fui-radio[data-state='checked'] .fui-radio__dot {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+/* ---- 选中：品牌实心圆 + 白色内点（governed by 顶层抽象变量的 checked 规则，
+       见下方状态机；此处不再写直接样式，避免覆盖 --dot/--dot-opacity） ---- */
+
+/* ------------------------------------------------------------
+ * 状态机：全部为 .fui-radio 根级、等权重选择器，只改写抽象变量。
+ * 覆盖优先级仅由书写顺序决定，不再受深层子级特异性牵制。
+ * 说明：按下时 hover 必然同时命中；active 规则书写在后，等权重下
+ * 赢得平局，故按住时内点真正收缩 12→10px，避免卡死 hover 14px
+ * 造成的「先消失再冒出」尺寸跳变。
+ * ---------------------------------------------------------- */
+
+/* ---- checked：品牌实心圆 + 白色内点显现 ---- */
+.fui-radio[data-state='checked'] {
+  --fill: var(--fill-checked);
+  --stroke: var(--stroke-checked);
+  --dot: var(--dot-checked);
+  --dot-opacity: 1;
 }
 
 /* ---- hover -- */
-/* 未选 hover：填充加深一档（ControlAltFillColorSecondary→Tertiary），描边不变 */
-.fui-radio:hover:not(:disabled):not([data-disabled])[data-state='unchecked'] .fui-radio__circle {
-  background-color: var(--colorNeutralBackground4);
+/* 未选 hover：填充加深一档（Secondary→Tertiary），描边不变 */
+.fui-radio:hover:not(:disabled):not([data-disabled]):not([data-state='checked']) {
+  --fill: var(--fill-unchecked-hover);
 }
-/* 选中 hover：品牌色深一档（AccentFillColorSecondary）+ 内点放大到 14px */
-.fui-radio:hover:not(:disabled):not([data-disabled])[data-state='checked'] .fui-radio__circle {
-  background-color: var(--colorCompoundBrandBackgroundHover);
-  border-color: var(--colorCompoundBrandBackgroundHover);
-}
-.fui-radio:hover:not(:disabled):not([data-disabled])[data-state='checked'] .fui-radio__dot {
-  transform: translate(-50%, -50%) scale(1.1667); /* 12→14 = CheckGlyphPointerOverSize */
+/* 选中 hover：品牌色深一档 + 内点放大到 14px */
+.fui-radio:hover:not(:disabled):not([data-disabled])[data-state='checked'] {
+  --fill: var(--fill-checked-hover);
+  --stroke: var(--stroke-checked-hover);
+  --dot: var(--dot-checked-hover); /* 12→14 = CheckGlyphPointerOverSize */
 }
 
 /* ---- pressed -- */
-/* 未选 pressed：填充 Quarternary + WinUI 原样载入「禁用描边」（外圈按下的特殊表现） */
-.fui-radio:active:not(:disabled):not([data-disabled])[data-state='unchecked'] .fui-radio__circle {
-  background-color: var(--colorNeutralBackground5); /* ControlAltFillColorQuarternary */
-  border-color: var(--colorNeutralStrokeDisabled); /* OuterEllipseStrokePressed（WinUI 原样） */
+/* 未选 pressed：填充最深档 + WinUI 原样载入禁用描边 + 预览点出现 */
+.fui-radio:active:not(:disabled):not([data-disabled]):not([data-state='checked']) {
+  --fill: var(--fill-unchecked-active); /* ControlAltFillColorQuarternary */
+  --stroke: var(--stroke-unchecked-active); /* OuterEllipseStrokePressed（原样） */
+  --press: var(--press-on);
+  --press-opacity: 1;
 }
-/* 选中 pressed：品牌色再深一档；内点收缩到 10px 并让位给按下预览点 */
-.fui-radio:active:not(:disabled):not([data-disabled])[data-state='checked'] .fui-radio__circle {
-  background-color: var(--colorCompoundBrandBackgroundPressed);
-  border-color: var(--colorCompoundBrandBackgroundPressed);
-}
-.fui-radio:active:not(:disabled):not([data-disabled]) .fui-radio__dot {
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.8333); /* 12→10 = CheckGlyphPressedOverSize */
-}
-/* 按下预览点：按住时渐显并放大到 10px（WinUI PressedCheckGlyph 4→10） */
-.fui-radio:active:not(:disabled):not([data-disabled]) .fui-radio__pressed-dot {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(2.5); /* 4→10 */
+/* 选中 pressed：品牌色 pressed 档；内点收缩到 10px 淡出让位 + 预览点出现 */
+.fui-radio:active:not(:disabled):not([data-disabled])[data-state='checked'] {
+  --fill: var(--fill-checked-active);
+  --stroke: var(--stroke-checked-active);
+  --dot: var(--dot-checked-active); /* 12→10 = CheckGlyphPressedOverSize */
+  --dot-opacity: 0;
+  --press: var(--press-on); /* 4→10 = PressedCheckGlyph */
+  --press-opacity: 1;
 }
 
-/* ---- disabled：全套 …Disabled 档（置于状态规则之后以赢得同权重平局） ---- */
+/* ---- disabled：全套 …Disabled 档（置于所有交互规则之后） ---- */
 .fui-radio:disabled {
+  --fill: var(--colorNeutralBackgroundDisabled); /* Outer/CheckedFillDisabled */
+  --stroke: var(--colorNeutralStrokeDisabled); /* OuterEllipseStrokeDisabled */
+  --dot-fill: var(--colorNeutralForegroundDisabled); /* 见文件头注释：可读性修正 */
   color: var(--colorNeutralForegroundDisabled); /* RadioButtonForegroundDisabled */
   cursor: not-allowed;
-}
-.fui-radio:disabled .fui-radio__circle {
-  /* Outer/CheckedFillDisabled = AccentFillColorDisabled */
-  background-color: var(--colorNeutralBackgroundDisabled);
-  /* OuterEllipseStrokeDisabled = ControlStrongStrokeColorDisabled */
-  border-color: var(--colorNeutralStrokeDisabled);
-}
-.fui-radio:disabled .fui-radio__dot {
-  background-color: var(--colorNeutralForegroundDisabled); /* 见文件头注释：可读性修正 */
 }
 
 /* ---- 内容区（ContentPresenter） ---- */
