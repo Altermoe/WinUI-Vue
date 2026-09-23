@@ -208,7 +208,8 @@ describe('FluereToggleSwitch 状态样式（WinUI 3 ToggleSwitch 契约）', () 
 
   it('滑块位移走 translateX + translateX calc(var(--travel)*progress)（避免 left/right），垂直居中', () => {
     const rail = rules.get('.fui-switch__rail') ?? ''
-    expect(rail).toContain('width: var(--travel)')
+    // 宽 = 行程 travel - 两侧描边（滑块端点不压轨道描边），translateX 走合成层
+    expect(rail).toContain('width: calc(var(--travel) - 2 * var(--strokeWidthThin))')
     expect(rail).toContain('display: flex')
     expect(rail).toContain('align-items: center')
     expect(rail).toContain('justify-content: center')
@@ -237,7 +238,7 @@ describe('FluereToggleSwitch 状态样式（WinUI 3 ToggleSwitch 契约）', () 
     expect(thumb).toContain('background-color: var(--colorNeutralForegroundOnBrand)')
   })
 
-  it('hover：轨道暗一档 + 滑块放大（scale 合成，不动布局）', () => {
+  it('hover：轨道暗一档 + 滑块圆点放大（clip-path 裁切，不动布局）', () => {
     const trackHover = rules.get(
       ".fui-switch:hover:not(:disabled):not([data-disabled])[data-state='unchecked'] .fui-switch__track",
     )
@@ -245,28 +246,37 @@ describe('FluereToggleSwitch 状态样式（WinUI 3 ToggleSwitch 契约）', () 
     const thumbHover = rules.get(
       '.fui-switch:hover:not(:disabled):not([data-disabled]) .fui-switch__thumb',
     )
-    expect(thumbHover ?? '').toContain('transform: scale(var(--thumb-scale-hover))')
+    // hover 只改 clip-path 的裁切范围（收到 hover 圆直径），不触发布局
+    expect(thumbHover ?? '').toContain('clip-path: inset(')
+    expect(thumbHover ?? '').toContain('var(--thumb-scale-hover)')
+    expect(thumbHover ?? '').not.toContain('transform:')
   })
 
-  it('active：滑块仅原地增宽成药丸（宽/高 + 半径=高/2），居中生长不出轨道、无位移', () => {
+  it('active：滑块仅原地变丸（固定外框 + clip-path inset(0)，零布局回流）', () => {
+    // 外框恒为 pressed 尺寸、药丸圆角、常态由 clip-path 露出居中圆点
+    const thumb = rules.get('.fui-switch__thumb') ?? ''
+    expect(thumb).toContain('width: var(--thumb-w-pressed)')
+    expect(thumb).toContain('height: var(--thumb-h-pressed)')
+    expect(thumb).toContain('border-radius: calc(var(--thumb-h-pressed) / 2)')
+    expect(thumb).toContain('clip-path: inset(')
+    // active 只把 clip-path 切到全露外框 → 不再改 width/height/border-radius，也无位移缩放
     const thumbPressed = rules.get(
       '.fui-switch[data-pressed]:not(:disabled):not([data-disabled]) .fui-switch__thumb',
     )
-    expect(thumbPressed ?? '').toContain('width: var(--thumb-w-pressed)')
-    expect(thumbPressed ?? '').toContain('height: var(--thumb-h-pressed)')
-    expect(thumbPressed ?? '').toContain('border-radius: calc(var(--thumb-h-pressed) / 2)')
-    // 原地大小变化：不依赖 transform 位移/锚定（transform 仅回到 scale(1) 覆盖 hover）
-    expect(thumbPressed ?? '').toContain('transform: scale(1)')
+    expect(thumbPressed ?? '').toContain('clip-path: inset(0 round calc(var(--thumb-h-pressed) / 2))')
+    expect(thumbPressed ?? '').not.toContain('width:')
+    expect(thumbPressed ?? '').not.toContain('height:')
+    expect(thumbPressed ?? '').not.toContain('border-radius:')
     expect(thumbPressed ?? '').not.toContain('translateX')
     expect(thumbPressed ?? '').not.toContain('scaleX')
-    // 药丸延长边直线段：standard 下 pressWidth - pressHeight = 17 - 14 = 3px，且不出轨道
+    // 药丸延长边直线段：standard 下 pressWidth - pressHeight = 19 - 14 = 5px，且不出轨道
     const medium = rules.get('.fui-switch') ?? ''
-    expect(medium).toContain('--thumb-w-pressed: 17px')
+    expect(medium).toContain('--thumb-w-pressed: 19px')
     expect(medium).toContain('--thumb-h-pressed: 14px')
-    expect(medium).toContain('--travel: 20px') // active 宽 17 < travel 20 → 不出 rail/轨道
-    // 三档 active 宽度都小于各自 travel，天然无法离开轨道区域
-    expect(rules.get(".fui-switch[data-size='small']") ?? '').toContain('--thumb-w-pressed: 14px')
-    expect(rules.get(".fui-switch[data-size='large']") ?? '').toContain('--thumb-w-pressed: 20px')
+    expect(medium).toContain('--travel: 20px') // active 宽 19 < travel 20 → 不出 rail/轨道
+    // 三档 active 宽度都小于各自 travel（15/19/23 < 16/20/24），天然无法离开轨道区域
+    expect(rules.get(".fui-switch[data-size='small']") ?? '').toContain('--thumb-w-pressed: 15px')
+    expect(rules.get(".fui-switch[data-size='large']") ?? '').toContain('--thumb-w-pressed: 23px')
   })
 
   it('disabled：全套 …Disabled 档', () => {
@@ -278,9 +288,6 @@ describe('FluereToggleSwitch 状态样式（WinUI 3 ToggleSwitch 契约）', () 
     )
     expect(rules.get('.fui-switch:disabled .fui-switch__thumb') ?? '').toContain(
       'background-color: var(--colorNeutralForegroundDisabled)',
-    )
-    expect(rules.get('.fui-switch:disabled .fui-switch__thumb') ?? '').toContain(
-      'transform: scale(1)',
     )
   })
 

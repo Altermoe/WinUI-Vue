@@ -20,8 +20,8 @@
  *                     opacity 更省绘制，视觉等价
  *     rail            滑块滑轨：宽 = travel（=轨道宽的一半），translateX 控制位
  *                     移（避免 left/right 触发布局，transform 走合成层）
- *     thumb           WinUI SwitchKnobOff/On：单个圆点，hover 整体放大（scale）、
- *                     active 仅在原地增宽（宽度/高度变化，居中生长，不出轨道）
+ *     thumb           WinUI SwitchKnobOff/On：单个圆点，hover 圆点稍大、active 原地
+ *                     变丸（固定外框 + clip-path 裁切显示，居中生长、不出轨道、零布局抖动）
  *     content         内容区：on-content / off-content 交叉淡入淡出 +
  *                     默认插槽为行标签（语义名）
  *
@@ -388,7 +388,8 @@ defineOptions({ name: 'FluereToggleSwitch' })
   --travel: 20px; /* 轨道宽的一半 = 滑块行程 = 轨道高 */
   --thumb-w: 12px;
   --thumb-h: 12px;
-  --thumb-w-pressed: 17px;
+  /* active 药丸宽 = travel - 1px（在行程内再多长 2px 水平视觉宽度，仍 < travel 不出轨道） */
+  --thumb-w-pressed: 19px;
   --thumb-h-pressed: 14px;
   --thumb-scale-hover: 1.1667; /* hover 放大  12→14 */
 
@@ -414,7 +415,7 @@ defineOptions({ name: 'FluereToggleSwitch' })
   --travel: 16px; /* spacingHorizontalL */
   --thumb-w: 10px;
   --thumb-h: 10px;
-  --thumb-w-pressed: 14px;
+  --thumb-w-pressed: 15px; /* small：匹配增宽（travel16 - 1px），仍 < travel */
   --thumb-h-pressed: 12px;
   --thumb-scale-hover: 1.2; /* 10→12 */
 }
@@ -424,7 +425,7 @@ defineOptions({ name: 'FluereToggleSwitch' })
   --travel: 24px; /* spacingHorizontalXXL */
   --thumb-w: 14px;
   --thumb-h: 14px;
-  --thumb-w-pressed: 20px;
+  --thumb-w-pressed: 23px; /* large：匹配增宽（travel24 - 1px），仍 < travel */
   --thumb-h-pressed: 16px;
   --thumb-scale-hover: 1.1429; /* 14→16 */
 }
@@ -451,14 +452,13 @@ defineOptions({ name: 'FluereToggleSwitch' })
     border-color var(--durationFast) var(--curveEasyEase);
 }
 
-/* ---- rail：宽度 = travel，translateX 驱动位移，transform 走合成层 ---- */
+/* ---- rail：宽 = 行程 travel 再扣去两侧描边，translateX 驱动位移，transform 走合成层 ---- */
 .fui-switch__rail {
   position: absolute;
   left: 0;
   top: 0;
-  width: 100%;
   box-sizing: border-box;
-  width: calc(var(--travel) - 2 * var(--strokeWidthThin)); /* 行程 = 轨道宽的一半 */
+  width: calc(var(--travel) - 2 * var(--strokeWidthThin)); /* = 轨道宽的一半，扣描边 → 端点不压轨道描边 */
   height: 100%;
   display: flex;
   align-items: center; /* 垂直居中 → 滑块到两端仍与上下等距（需求 1） */
@@ -470,20 +470,26 @@ defineOptions({ name: 'FluereToggleSwitch' })
   transition: none; /* 拖拽时跟随指针，去掉缓动 */
 }
 
-/* ---- thumb：常态圆点；hover 整体放大（scale，仍为圆）、active 在原地增宽成药丸 ---- */
+/* ---- thumb：固定「最大外框」（= active 药丸 19×14 / 15×12 / 23×16），形状由 clip-path 裁切决定 ---- */
+/* 关键：width/height/border-radius 全部静态（在 active 时不变）→ 不触发布局/回流，        */
+/* 彻底消除 Chrome 改 width/height 产生的像素抖动。常态只露中央圆点，hover 露稍大圆点，        */
+/* active 全露药丸；三态都是 inset(... round ...)，圆角可随 clip-path 平滑插值。             */
 .fui-switch__thumb {
   box-sizing: border-box;
-  width: var(--thumb-w);
-  height: var(--thumb-h);
-  border-radius: var(--borderRadiusCircular);
+  /* 外框恒为 pressed 尺寸：活动时不再改布局尺寸，形状只靠 clip-path 裁切 */
+  width: var(--thumb-w-pressed);
+  height: var(--thumb-h-pressed);
+  border-radius: calc(var(--thumb-h-pressed) / 2); /* 药丸外框的静态圆角（< 直径 → 胶囊） */
   background-color: var(--colorNeutralForeground2); /* ToggleSwitchKnobFillOff */
-  transform: scale(1);
+  /* 常态：从固定药丸四周裁掉 (pressed - rest)/2，露出居中的 rest 直径圆点 */
+  clip-path: inset(
+    calc((var(--thumb-h-pressed) - var(--thumb-h)) / 2)
+    calc((var(--thumb-w-pressed) - var(--thumb-w)) / 2)
+    round calc(var(--thumb-h) / 2)
+  );
   will-change: auto;
   transition:
-    width var(--durationFast) var(--curveEasyEaseMax),
-    height var(--durationFast) var(--curveEasyEaseMax),
-    border-radius var(--durationFast) var(--curveEasyEaseMax),
-    transform var(--durationFast) var(--curveEasyEaseMax),
+    clip-path var(--durationFast) var(--curveEasyEaseMax),
     background-color var(--durationFast) var(--curveEasyEase);
 }
 
@@ -502,7 +508,12 @@ defineOptions({ name: 'FluereToggleSwitch' })
   background-color: var(--colorNeutralBackground4);
 }
 .fui-switch:hover:not(:disabled):not([data-disabled]) .fui-switch__thumb {
-  transform: scale(var(--thumb-scale-hover)); /* 滑块放大（需求 2） */
+  /* hover 圆点稍大：把裁掉的四周收到 hover 圆直径，仍为圆（clip-path，不动布局） */
+  clip-path: inset(
+    calc((var(--thumb-h-pressed) - var(--thumb-h) * var(--thumb-scale-hover)) / 2)
+    calc((var(--thumb-w-pressed) - var(--thumb-w) * var(--thumb-scale-hover)) / 2)
+    round calc(var(--thumb-h) * var(--thumb-scale-hover) / 2)
+  );
 }
 /* 选中 hover：AccentFillColorDefault→Secondary */
 .fui-switch:hover:not(:disabled):not([data-disabled])[data-state='checked'] .fui-switch__track {
@@ -511,8 +522,9 @@ defineOptions({ name: 'FluereToggleSwitch' })
 }
 
 /* ---- pressed -- */
-/* active：轨道按下配色 + 滑块仅在原地增宽（居中生长）-- 不做任何位移/锚定缩放，
-   滑块始终被 rail 夹在轨道内（active 宽度 < travel，天然无法离开轨道区域）。 */
+/* active：轨道按下配色 + 滑块仅在原地「变丸」（固定外框 + clip-path 裁切，居中生长）
+   -- 不做任何位移/锚定缩放，也不改布局尺寸；滑块始终被 rail 夹在轨道内
+   （active 宽度 < travel，天然无法离开轨道区域）。 */
 .fui-switch[data-pressed]:not(:disabled):not([data-disabled])[data-state='unchecked']
   .fui-switch__track {
   background-color: var(--colorNeutralBackground5); /* ControlAltFillColorQuarternary */
@@ -522,13 +534,10 @@ defineOptions({ name: 'FluereToggleSwitch' })
   background-color: var(--colorCompoundBrandBackgroundPressed);
   border-color: var(--colorCompoundBrandBackgroundPressed);
 }
-/* 药丸 = 宽变宽、高略增、圆角=高/2，延长边直线段 = 宽 - 高（standard 17-14=3px）。
-   transform: scale(1) 覆盖 hover 的缩放，避免按压时再叠加放大。 */
+/* 药丸 = 全露固定外框。形状与几何都不再变，仅 clip-path 从圆点切到 inset(0)，
+   （inset 圆角可插值 → 圆←→药丸平滑过渡），零布局、零回流。 */
 .fui-switch[data-pressed]:not(:disabled):not([data-disabled]) .fui-switch__thumb {
-  width: var(--thumb-w-pressed);
-  height: var(--thumb-h-pressed);
-  border-radius: calc(var(--thumb-h-pressed) / 2);
-  transform: scale(1);
+  clip-path: inset(0 round calc(var(--thumb-h-pressed) / 2));
 }
 
 /* ---- disabled：全套 …Disabled 档（置于状态规则之后以赢得同权重平局） ---- */
@@ -542,7 +551,6 @@ defineOptions({ name: 'FluereToggleSwitch' })
 }
 .fui-switch:disabled .fui-switch__thumb {
   background-color: var(--colorNeutralForegroundDisabled); /* KnobFillOff/O 禁用 */
-  transform: scale(1);
   box-shadow: none;
 }
 
