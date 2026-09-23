@@ -17,6 +17,8 @@ import { renderToString } from 'vue/server-renderer'
 import FluereButton from '../button/button.vue'
 import FluereCheckbox from '../checkbox/checkbox.vue'
 import FluereInput from '../input/input.vue'
+import FluereRadioButton from '../radio/radio-button.vue'
+import FluereRadioGroup from '../radio/radio-group.vue'
 import FluereScrollView from '../scrollview/scroll-view.vue'
 import FluereToggleSwitch from '../toggle-switch/toggle-switch.vue'
 
@@ -57,5 +59,20 @@ describe('SSR 兼容性冒烟测试', () => {
     expect(html).toContain('fui-switch')
     expect(html).toContain('role="switch"')
     expect(html).toContain('夜间模式')
+  })
+
+  it('FluereRadioGroup + FluereRadioButton 可服务端渲染（复用 reka RadioGroup，回归 roving focus 无浏览器 API 依赖）', async () => {
+    const app = createSSRApp({
+      render: () =>
+        h(FluereRadioGroup, { modelValue: 'a' }, () => [
+          h(FluereRadioButton, { value: 'a' }, () => '苹果'),
+          h(FluereRadioButton, { value: 'b' }, () => '香蕉'),
+        ]),
+    })
+    const html = await renderToString(app)
+    expect(html).toContain('role="radiogroup"')
+    expect(html).toContain('role="radio"')
+    expect(html).toContain('苹果')
+    expect(html).toContain('data-state="checked"')
   })
 })

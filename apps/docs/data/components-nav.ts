@@ -50,7 +50,7 @@ const componentNavGroups: ComponentNavGroup[] = [
       { slug: 'number-field', name: 'Number Field', implemented: false },
       { slug: 'label', name: 'Label', implemented: false },
       { slug: 'pin-input', name: 'Pin Input', implemented: false },
-      { slug: 'radio-group', name: 'Radio Group', implemented: false },
+      { slug: 'radio-group', name: 'Radio Group', implemented: true },
       { slug: 'rating', name: 'Rating', implemented: false },
       { slug: 'select', name: 'Select', implemented: false },
       { slug: 'slider', name: 'Slider', implemented: false },
