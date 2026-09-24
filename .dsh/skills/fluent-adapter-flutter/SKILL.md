@@ -71,6 +71,45 @@ ThemeData fluentTheme(Brightness b) {
 
 这些只是把 Fluent 的**语义颜色/尺寸**接到 Flutter 控件上；结构与状态映射见 `fluent-components`。
 
+## 高度 / 投影（Elevation）
+
+Flutter 的 `Material.elevation` 用的是 Material 自己的阴影公式，和 Fluent 的两层阴影（key + ambient）不同观感 —— 需要 Fluent 观感时显式给 `BoxShadow`。
+几何来自 `data/tokens/fluent-tokens.json` 的 `shadows` 段（两层：`0 0 2px` 这类 ambient + `0 8px 16px` 这类 key），颜色取当前主题的
+`FluentLightColors/FluentDarkColors.colorNeutralShadowAmbient · colorNeutralShadowKey`（品牌色表面改用 `colorBrandShadow*`）：
+
+```dart
+BoxShadow _layer(Color color, double dx, double dy, double blur) =>
+    BoxShadow(color: color, offset: Offset(dx, dy), blurRadius: blur);
+
+/// 档位数字 = 模糊半径量级（与 shadows 段的 shadow2/4/8/16/28/64 一一对应）。
+List<BoxShadow> fluentShadow(int level, {required Color ambient, required Color key}) {
+  switch (level) {
+    case 2:  return [_layer(ambient, 0, 0, 2),  _layer(key, 0, 1, 2)];
+    case 4:  return [_layer(ambient, 0, 0, 2),  _layer(key, 0, 2, 4)];
+    case 8:  return [_layer(ambient, 0, 0, 2),  _layer(key, 0, 4, 8)];
+    case 16: return [_layer(ambient, 0, 0, 2),  _layer(key, 0, 8, 16)];
+    case 28: return [_layer(ambient, 0, 0, 8),  _layer(key, 0, 14, 28)];
+    case 64: return [_layer(ambient, 0, 0, 8),  _layer(key, 0, 32, 64)];
+    default: throw ArgumentError('Fluent elevation 只有 2/4/8/16/28/64 六档');
+  }
+}
+
+// 用法：Flyout / Popover / Callout → 16；Dialog / 面板 → 64；卡片 → 4；Tooltip / 下拉 → 8
+Container(
+  decoration: BoxDecoration(
+    color: FluentLightColors.colorNeutralBackground1,
+    borderRadius: BorderRadius.circular(FluentTokens.borderRadiusXLarge),
+    boxShadow: fluentShadow(16,
+      ambient: FluentLightColors.colorNeutralShadowAmbient,
+      key: FluentLightColors.colorNeutralShadowKey),
+  ),
+  child: …,
+)
+```
+
+> Windows 上 Fluent 用**描边**替代 key 阴影勾勒边缘：`Border.all(color: …, width: FluentTokens.strokeWidthThin)` + 只留 ambient 层。
+> 各档的用途对照见 `fluent-tokens` 的「高度 / 阴影」。
+
 ## 主题切换
 
 切换亮/暗 = 传不同 `ThemeData` 到 `MaterialApp(theme:, darkTheme:)`。语义 token 名不变，值随主题——这正是跨框架同一设计语言的关键。

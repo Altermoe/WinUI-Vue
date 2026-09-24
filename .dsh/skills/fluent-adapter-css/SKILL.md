@@ -22,7 +22,9 @@ whenToUse: Targeting plain CSS, CSS Modules, CSS-in-JS, UnoCSS, or Tailwind CSS 
 ```
 
 - 亮/暗主题：在 `<html>` 上切 `data-theme="light"` / `data-theme="dark"`，或在容器加 `.fluent-light` / `.fluent-dark`。
-- 全局 token（spacing/radius/stroke/duration/curve/font）在 `:root` 永远可用。
+- 全局 token（spacing/radius/stroke/duration/curve/font/**shadow**）在 `:root` 永远可用。
+- 高度（elevation）直接 `box-shadow: var(--shadow8)`：`--shadow2/4/8/16/28/64` 与品牌版 `--shadowNBrand` 都是两层阴影，
+  颜色部分引用 `--color*Shadow*` 变量 —— 主题块换掉颜色变量，投影自动跟随。
 
 ## 2) UnoCSS（TypeScript 优先，推荐用于 Vite/TS 项目）
 
@@ -62,7 +64,7 @@ import 'virtual:uno.css'
 
 `preset-fluent.ts` 做两件事：
 - **preflight**：自动注入全部 Fluent CSS 变量（`:root` 全局 + `[data-theme=light|dark]` 语义），无需再手引 `fluent.css`。
-- **theme**：把 token 名注册为 UnoCSS 工具生成器，配色/间距/圆角/动效直接可用。
+- **theme**：把 token 名注册为 UnoCSS 工具生成器，配色/间距/圆角/动效/投影直接可用。
 
 ### 使用
 
@@ -72,6 +74,9 @@ import 'virtual:uno.css'
                rounded-fluent-md px-fluent-m duration-fluent-fast hover:bg-colorBrandBackgroundHover">
   Save
 </button>
+
+<!-- 浮层（Flyout / Popover / Callout）用 shadow16，对话框用 shadow64 -->
+<div class="bg-colorNeutralBackground1 rounded-fluent-xl shadow-16">…</div>
 ```
 
 对应关系：
@@ -80,6 +85,7 @@ import 'virtual:uno.css'
 - `rounded-fluent-md` → `--borderRadiusMedium`
 - `p-fluent-m` / `px-fluent-s` → `--spacingHorizontalM/S`
 - `duration-fluent-fast` → `--durationFast`
+- `shadow-8` / `shadow-16` / `shadow-2-brand` → `box-shadow: var(--shadow8/16/2Brand)`
 - 任意自定义值也可直接写 `bg-[var(--colorNeutralBackground2)]`（无需 config）。
 
 > `darkColors` 只在 `presetWind3` 的 dark variant 下覆盖，用于 `dark:bg-...`；单主题直接用 `bg-*` 即可。
@@ -117,6 +123,13 @@ export default {
       borderRadius: { sm: 'var(--borderRadiusSmall)', md: 'var(--borderRadiusMedium)', lg: 'var(--borderRadiusLarge)', xl: 'var(--borderRadiusXLarge)' },
       borderWidth: { DEFAULT: 'var(--strokeWidthThin)', thick: 'var(--strokeWidthThick)' },
       transitionDuration: { fast: 'var(--durationFast)', normal: 'var(--durationNormal)' },
+      // 高度：shadow-2 / shadow-4 / shadow-8 / shadow-16 / shadow-28 / shadow-64（+ brand 变体）
+      boxShadow: {
+        '2': 'var(--shadow2)', '4': 'var(--shadow4)', '8': 'var(--shadow8)',
+        '16': 'var(--shadow16)', '28': 'var(--shadow28)', '64': 'var(--shadow64)',
+        '2-brand': 'var(--shadow2Brand)', '4-brand': 'var(--shadow4Brand)', '8-brand': 'var(--shadow8Brand)',
+        '16-brand': 'var(--shadow16Brand)', '28-brand': 'var(--shadow28Brand)', '64-brand': 'var(--shadow64Brand)',
+      },
     },
   },
 } satisfies Config
@@ -127,7 +140,8 @@ export default {
 ## 命名约定
 
 - CSS 变量名 = 精确 token 名（保留驼峰）：`--colorNeutralBackground2`、`--borderRadiusMedium`、`--spacingHorizontalM`。
-- 语义 token 以 `--color...` 出现；全局以 `--spacing...`、`--borderRadius...`、`--strokeWidth...`、`--duration...`、`--curve...`、`--fontSize...` 等出现。
+- 语义 token 以 `--color...` 出现；全局以 `--spacing...`、`--borderRadius...`、`--strokeWidth...`、`--duration...`、`--curve...`、`--fontSize...`、`--shadow...` 等出现。
+- 高度：`--shadow2/4/8/16/28/64`（中性）+ `--shadowNBrand`（品牌色表面）；UnoCSS 工具类 `shadow-N`。
 - 组件用语义 token（`--colorCompoundBrandStroke`）而非全局灰色值（semantic-first）。
 
 ## 生成/更新文件
@@ -172,6 +186,14 @@ node gen-css.js --tokens <path/to/fluent-tokens.json> --out <path/to/fluent.css>
 .fluent-button--primary:focus-visible {
   outline: 2px solid var(--colorCompoundBrandStroke); outline-offset: 2px;
 }
+
+/* 浮层：表面 + 圆角 + 两层阴影，全部走 token */
+.fluent-flyout {
+  background: var(--colorNeutralBackground1);
+  border: 1px solid var(--colorNeutralStroke1);
+  border-radius: var(--borderRadiusXLarge);
+  box-shadow: var(--shadow16);    /* Callout / Flyout / Popover / HoverCard */
+}
 ```
 
 ## 注意事项
@@ -179,6 +201,9 @@ node gen-css.js --tokens <path/to/fluent-tokens.json> --out <path/to/fluent.css>
 - 只引用已存在的 `--TokenName`；拿不准值时查 `fluent.css` / `preset-fluent.ts` 或 `data/tokens/fluent-tokens.json`。
 - focus 用 `outline/box-shadow` 模拟描边，避免改变布局尺寸。
 - 自定义属性值（`rgba`、`cubic-bezier`）可直接套用。
+- **多值 token（阴影）不要整体塞进 `light-dark()`**：它只接受两个 `<color>` 参数，`light-dark(明, 暗)` 里塞逗号分隔的多层值 = 4 个实参的非法调用，浏览器会把整条 `box-shadow` 丢掉。本适配器用
+  `:root` + `:root[data-theme]` 主题块（阴影放 `:root`、颜色变量随主题切），天然规避；若你要改用 `light-dark()`，必须**逐层**包颜色
+  （`0 0 2px light-dark(a, b), 0 8px 16px light-dark(c, d)`）。详见 `fluent-tokens` 的「高度 / 阴影」。
 - TypeScript 优先：所有框架配置统一用 `.ts` 文件（`uno.config.ts` / `tailwind.config.ts` / `vite.config.ts`），并保证类型推导（`satisfies Config`、`defineConfig`）。
 
 > 结构/组件规格见 `fluent-components`；设计原则见 `fluent-foundations`。

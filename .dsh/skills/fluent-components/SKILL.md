@@ -72,11 +72,11 @@ Focus ring 约定：`strokeWidthThick`（2px），颜色用与背景对比的 `c
 
 - Overlay：`colorOverlay`（半透明黑，默认 ~30%）。
 - 表面 `colorNeutralBackground1`，圆角 `borderRadiusXLarge`（8px）/ `2XLarge`。
-- 层级投影用 elevation/shadow token、标题 `subtitle1`、body `body1`、footer 右对齐 primary/secondary 按钮。
+- 层级投影用 `shadow64`（弹出式对话框 / 面板；Callout 层用 `shadow16`）、标题 `subtitle1`、body `body1`、footer 右对齐 primary/secondary 按钮。
 
 ## Menu / Popover / Tooltip
 
-- 表面 `colorNeutralBackground1`（或 WebView 用 `colorNeutralBackground2`），圆角 `borderRadiusMedium`/`Large`，描边 `colorNeutralStroke1`，`shadow16/20` 级别投影。
+- 表面 `colorNeutralBackground1`（或 WebView 用 `colorNeutralBackground2`），圆角 `borderRadiusMedium`/`Large`，描边 `colorNeutralStroke1`，投影 `shadow8`（Tooltip / 命令下拉）/ `shadow16`（Flyout / Popover / Callout）。
 - 菜单项 hover/selected 用 `colorSubtleBackgroundHover/Selected`；danger item 用全局红系（`red.primary`；支持时用 `colorPaletteRedForeground3`）。
 - 弹出层需 `pointer-events` 处理与 focus trap（无障碍）。
 

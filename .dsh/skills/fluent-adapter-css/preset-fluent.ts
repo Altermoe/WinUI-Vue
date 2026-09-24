@@ -8,7 +8,8 @@
 //
 // app entry: import 'virtual:uno.css'
 // Utilities: bg-colorBrandBackground, text-colorNeutralForeground1,
-//            p-fluent-m, rounded-fluent-md, duration-fluent-fast, ...
+//            p-fluent-m, rounded-fluent-md, duration-fluent-fast,
+//            shadow-4 / shadow-16 / shadow-2-brand, ...
 import type { Preset } from 'unocss'
 
 /** CSS custom properties injected as a preflight: selector -> { '--Token': value }. */
@@ -69,6 +70,18 @@ const cssVars: Record<string, Record<string, string>> = {
       '--lineHeightHero700': "36px",
       '--lineHeightHero800': "40px",
       '--lineHeightHero900': "52px",
+      '--shadow16': "0 0 2px var(--colorNeutralShadowAmbient), 0 8px 16px var(--colorNeutralShadowKey)",
+      '--shadow16Brand': "0 0 2px var(--colorBrandShadowAmbient), 0 8px 16px var(--colorBrandShadowKey)",
+      '--shadow2': "0 0 2px var(--colorNeutralShadowAmbient), 0 1px 2px var(--colorNeutralShadowKey)",
+      '--shadow28': "0 0 8px var(--colorNeutralShadowAmbient), 0 14px 28px var(--colorNeutralShadowKey)",
+      '--shadow28Brand': "0 0 8px var(--colorBrandShadowAmbient), 0 14px 28px var(--colorBrandShadowKey)",
+      '--shadow2Brand': "0 0 2px var(--colorBrandShadowAmbient), 0 1px 2px var(--colorBrandShadowKey)",
+      '--shadow4': "0 0 2px var(--colorNeutralShadowAmbient), 0 2px 4px var(--colorNeutralShadowKey)",
+      '--shadow4Brand': "0 0 2px var(--colorBrandShadowAmbient), 0 2px 4px var(--colorBrandShadowKey)",
+      '--shadow64': "0 0 8px var(--colorNeutralShadowAmbient), 0 32px 64px var(--colorNeutralShadowKey)",
+      '--shadow64Brand': "0 0 8px var(--colorBrandShadowAmbient), 0 32px 64px var(--colorBrandShadowKey)",
+      '--shadow8': "0 0 2px var(--colorNeutralShadowAmbient), 0 4px 8px var(--colorNeutralShadowKey)",
+      '--shadow8Brand': "0 0 2px var(--colorBrandShadowAmbient), 0 4px 8px var(--colorBrandShadowKey)",
       '--spacingHorizontalL': "16px",
       '--spacingHorizontalM': "12px",
       '--spacingHorizontalMNudge': "10px",
@@ -895,6 +908,37 @@ export function presetFluent(options: FluentPresetOptions = {}): Preset {
         'fluent-slow': 'var(--durationSlow)',
         'fluent-slower': 'var(--durationSlower)',
         'fluent-ultra-slow': 'var(--durationUltraSlow)',
+      },
+      // Elevation: shadow-2 / shadow-4 / … / shadow-64 (+ -brand). UnoCSS reads box-shadow
+      // utilities from theme.boxShadow (presetWind3 / preset-mini) or theme.shadow
+      // (presetWind4); registering both keeps either preset working.
+      boxShadow: {
+        '16': 'var(--shadow16)',
+        '16-brand': 'var(--shadow16Brand)',
+        '2': 'var(--shadow2)',
+        '2-brand': 'var(--shadow2Brand)',
+        '28': 'var(--shadow28)',
+        '28-brand': 'var(--shadow28Brand)',
+        '4': 'var(--shadow4)',
+        '4-brand': 'var(--shadow4Brand)',
+        '64': 'var(--shadow64)',
+        '64-brand': 'var(--shadow64Brand)',
+        '8': 'var(--shadow8)',
+        '8-brand': 'var(--shadow8Brand)',
+      },
+      shadow: {
+        '16': 'var(--shadow16)',
+        '16-brand': 'var(--shadow16Brand)',
+        '2': 'var(--shadow2)',
+        '2-brand': 'var(--shadow2Brand)',
+        '28': 'var(--shadow28)',
+        '28-brand': 'var(--shadow28Brand)',
+        '4': 'var(--shadow4)',
+        '4-brand': 'var(--shadow4Brand)',
+        '64': 'var(--shadow64)',
+        '64-brand': 'var(--shadow64Brand)',
+        '8': 'var(--shadow8)',
+        '8-brand': 'var(--shadow8Brand)',
       },
     },
   }

@@ -17,6 +17,8 @@ whenToUse: Any time you must pick a concrete color/spacing/typography/radius/dur
 - `typography.fontSizes / lineHeights / fontWeights / fontFamilies / styles` — 排版
 - `spacing.horizontal / vertical` — 间距标度
 - `radius` — 圆角 · `strokeWidths` — 描边 · `durations` — 动画时长 · `curves` — 缓动曲线
+- `shadows` — **12 个高度（elevation）组合值**：`shadow2..64` 与 `shadow2Brand..64Brand`，
+  形如 `0 0 2px var(--colorNeutralShadowAmbient), 0 8px 16px var(--colorNeutralShadowKey)`
 - `alias.lightWeb` / `alias.darkWeb` — **184 个语义 token** 的解析后取值（默认 web 品牌）
 
 ### 这份数据怎么来 / 如何重建
@@ -39,11 +41,12 @@ npm i @fluentui/tokens --cache "$PWD/.npmcache"
 重建要点：
 - **路径不写死**：抽取脚本里的包位置、临时目录、输出路径都应来自实际环境——AI 先 `pwd` 定位、用 glob 确认 `node_modules/@fluentui/tokens/lib/*.js` 真实存在，再填路径；拿不准就**询问人类**要路径或授权安装。
 - 语义值来自 `generateColorTokens(brand)`（正是其它 adapter 消费的 `alias.lightWeb/darkWeb`）。
+- `shadows` 段来自 `lib/utils/shadows.js` 的 `createShadowTokens(ambient, key[, 'Brand'])`（产出 `shadow2..64` 的几何），颜色部分引用 `alias` 里的 `colorNeutralShadowAmbient/Key` 与 `colorBrandShadowAmbient/Key` —— 所以**取值本身与主题无关**，换主题只需换那些颜色变量。
 - 生成的 adapter 产物（`fluent.css`、`preset-fluent.ts`、`fluent_tokens.dart`）都只依赖这份 JSON；改 JSON 后重跑各自的 `gen-*` 脚本即可。
 
 ## 语义 token 命名规律
 
-- 前缀 `color-`、`font-`、`spacing-`、`borderRadius-`、`strokeWidth-`、`duration-`、`curve-`。
+- 前缀 `color-`、`font-`、`spacing-`、`borderRadius-`、`strokeWidth-`、`duration-`、`curve-`、`shadow`。
 - `Neutral`=中性，`Brand`=品牌，`CompoundBrand`=品牌高亮混合（hover/selected 用）。
 - `Background`/`Foreground` + 数字（1 最靠前/重要，越大越靠后/次要）；后缀 `Hover/Pressed/Selected/Focused` 表状态。
 - `Disabled`/`Static`/`Inverted` 表特殊状态。
@@ -87,6 +90,41 @@ durationNormal 200ms · durationFast 150ms
 curveEasyEase  cubic-bezier(0.33,0,0.67,1)  · curveDecelerateMax/AccelerateMin 等
 ```
 
+### 高度 / 阴影（Elevation）
+
+`shadows` 段给 6 档高度（每档都是「key 阴影 + ambient 阴影」两层），档位数字 = 模糊半径量级：
+
+| token                      | 典型用途（对照 Fluent 2 Elevation）                              |
+| -------------------------- | ---------------------------------------------------------------- |
+| `shadow2`                  | 无明显描边的卡片、按下态浮动按钮（最低抬升）                     |
+| `shadow4`                  | 卡片 / 网格项 / 列表项                                           |
+| `shadow8`                  | 命令栏、命令下拉、Tooltip、抬升 App Bar                          |
+| `shadow16`                 | Callout / Flyout / Popover / HoverCard（Web 上最常用的浮层高度） |
+| `shadow28`                 | 底部面板、侧边导航、抬升 Tab 栏                                  |
+| `shadow64`                 | 弹出式对话框、面板（最高层）                                     |
+| `shadowNBrand`             | 品牌色表面上的同档投影（按 luminosity 修正后的品牌阴影）         |
+
+> 平台差异：**Windows 用描边（stroke）替代 key 阴影**来勾勒对象边缘，Web 侧直接用两层阴影。
+
+⚠️ **多值 token 不能整体塞进 `light-dark()`**：`light-dark()` 只接受两个 `<color>` 参数，
+而阴影是逗号分隔的多层值。`light-dark(明, 暗)` 拼多值会变成 4 个实参的**非法调用**，
+浏览器会把整条 `box-shadow` 声明丢掉（`--shadow2..64` 曾因此全部失效）：
+
+```css
+/* ✅ A. 主题块：值放 :root，颜色变量随主题切换（本仓库 adapter 的做法） */
+:root {
+  --shadow16: 0 0 2px var(--colorNeutralShadowAmbient), 0 8px 16px var(--colorNeutralShadowKey);
+}
+:root[data-theme="dark"] { --colorNeutralShadowAmbient: rgba(0,0,0,0.24); /* … */ }
+
+/* ✅ B. 逐层包色：light-dark() 只包每一层的颜色，几何保持字面量 */
+--shadow16: 0 0 2px light-dark(rgba(0,0,0,0.12), rgba(0,0,0,0.24)),
+            0 8px 16px light-dark(rgba(0,0,0,0.14), rgba(0,0,0,0.28));
+
+/* ❌ 整串塞进去 → 4 个实参 → 非法 CSS → 整条声明被丢弃 */
+--shadow16: light-dark(0 0 2px #0000001f, 0 8px 16px #00000024, 0 0 2px #0000003d, 0 8px 16px #00000047);
+```
+
 > 以上为**示例**——生成代码时**务必查阅 `data/fluent-tokens.json` 取准确值**，不要凭记忆硬编码。深色主题用 `alias.darkWeb`。
 
 ## 使用规则
@@ -95,6 +133,7 @@ curveEasyEase  cubic-bezier(0.33,0,0.67,1)  · curveDecelerateMax/AccelerateMin 
 2. **跨框架一致性**：一份设计，多套表达式——React 用 CSS-in-JS token、CSS 用 `var(--...)`、Tailwind 用主题扩展、Flutter 用 ThemeData。都在 `alias` / global 层对齐同一数值。
 3. **换主题**：切换 `alias.lightWeb` ↔ `alias.darkWeb` 即可获得同一套语义的反向主题；品牌换用 `brandTeams` 等重建 alias。值来自同一个 token 系统。
 4. **不要自创 token**：用户需要的值不在 token 集里时，先选最接近的语义 token + 说明偏差；不要随手发明 `colorNeutralForegroundXxx`。
+5. **投影用 `shadows` 段的组合值**：CSS 写 `box-shadow: var(--shadow8)`、UnoCSS 写 `shadow-8`、Tailwind 映射 `boxShadow`；不要手写 `0 4px 8px rgba(0,0,0,.14)` 这类 magic value（它就是 `shadow8` 的一半）。
 
 ## 相关 skill
 

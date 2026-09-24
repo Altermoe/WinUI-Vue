@@ -40,6 +40,7 @@ const useStyles = makeStyles({
     fontFamily: tokens.fontFamilyBase,
     borderRadius: tokens.borderRadiusMedium,
     padding: tokens.spacingHorizontalM,
+    boxShadow: tokens.shadow4,
   },
 });
 
@@ -51,6 +52,7 @@ export const Card = () => {
 
 - `makeStyles` 在 build 时把 `tokens.x`（`var()`）展开成 CSS 变量并打包成原子 class，性能最好。
 - token 名与 `@fluentui/tokens` 完全一致（`tokens.colorNeutralBackground2`）。
+- 投影用 `tokens.shadowN`（N ∈ 2/4/8/16/28/64，另有 `tokens.shadowNBrand`）；档位用途见 `fluent-tokens` 的「高度 / 阴影」。
 
 ## 方式 B：运行时主题对象（动态变色时用 theme）
 

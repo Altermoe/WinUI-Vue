@@ -36,9 +36,24 @@ if (!fs.existsSync(tokensPath)) {
 
 const d = require(path.resolve(tokensPath));
 
+// Elevation (shadow2..64 / shadow2Brand..64Brand) lives in the GLOBAL block: the values are
+// multi-value token streams ("0 0 2px var(--colorNeutralShadowAmbient), 0 8px 16px ...") whose
+// colour parts reference the semantic shadow-colour variables that the `[data-theme]` blocks
+// swap. They are theme-independent compositions, so a single :root definition is enough.
+//
+// Never wrap a multi-value token in light-dark(): the function takes exactly two <color>
+// arguments, so `light-dark(a, b, c, d)` is invalid CSS and the browser drops the WHOLE
+// declaration (that is how --shadow2..64 silently disappeared in an earlier iteration).
+if (!d.shadows) {
+  console.warn(
+    '[fluent gen-css] token data has no "shadows" section: elevation tokens (shadow2..64) ' +
+    'will be missing from fluent.css. See the fluent-tokens skill "重建" notes.'
+  );
+}
+
 const globals = {};
 Object.assign(globals, d.spacing.horizontal, d.spacing.vertical);
-Object.assign(globals, d.radius, d.strokeWidths, d.durations, d.curves);
+Object.assign(globals, d.radius, d.strokeWidths, d.durations, d.curves, d.shadows);
 Object.assign(globals, d.typography.fontSizes, d.typography.lineHeights, d.typography.fontWeights, d.typography.fontFamilies);
 
 function emit(obj) {

@@ -36,9 +36,20 @@ if (!fs.existsSync(tokensPath)) {
 
 const d = require(path.resolve(tokensPath));
 
+// Elevation (shadow2..64 / shadow2Brand..64Brand) goes into the :root block: the values are
+// multi-value token streams whose colour parts reference the semantic shadow-colour variables
+// that the theme blocks swap. Never wrap a multi-value token in light-dark() — it only takes
+// two <color> arguments, so the whole declaration would be dropped by the browser.
+if (!d.shadows) {
+  console.warn(
+    '[fluent gen-preset] token data has no "shadows" section: elevation tokens (shadow2..64) ' +
+    'will be missing from the preset. See the fluent-tokens skill "重建" notes.'
+  );
+}
+
 const globals = {};
 Object.assign(globals, d.spacing.horizontal, d.spacing.vertical);
-Object.assign(globals, d.radius, d.strokeWidths, d.durations, d.curves);
+Object.assign(globals, d.radius, d.strokeWidths, d.durations, d.curves, d.shadows);
 Object.assign(globals, d.typography.fontSizes, d.typography.lineHeights, d.typography.fontWeights, d.typography.fontFamilies);
 
 // Build a valid-TS object literal: { '--Key': 'value', ... } (comma-separated, quoted)
@@ -62,6 +73,18 @@ const spMap = [
   ['none','None'],['xxs','XXS'],['xs','XS'],['s','S'],['m','M'],['l','L'],['xl','XL'],['xxl','XXL'],['xxxl','XXXL']
 ].map(([key, tok]) => `        'fluent-${key}': 'var(--spacingHorizontal${tok})',`).join('\n');
 
+// Elevation utilities: shadow-2 / shadow-4 / … / shadow-64 (+ -brand variants).
+// UnoCSS resolves box-shadow utilities from `theme.boxShadow` (presetWind3 / preset-mini)
+// or `theme.shadow` (presetWind4) — register both keys so either preset works.
+const shadowMap = Object.keys(d.shadows || {})
+  .map((name) => {
+    const step = name.replace(/^shadow/, '');
+    const key = step.endsWith('Brand') ? step.slice(0, -'Brand'.length) + '-brand' : step;
+    return `        '${key}': 'var(--${name})',`;
+  })
+  .sort()
+  .join('\n');
+
 const ts = `// Generated from @fluentui/tokens (source of truth: data/tokens/fluent-tokens.json).
 // UnoCSS preset for Fluent 2 — TypeScript-first.
 //
@@ -72,7 +95,8 @@ const ts = `// Generated from @fluentui/tokens (source of truth: data/tokens/flu
 //
 // app entry: import 'virtual:uno.css'
 // Utilities: bg-colorBrandBackground, text-colorNeutralForeground1,
-//            p-fluent-m, rounded-fluent-md, duration-fluent-fast, ...
+//            p-fluent-m, rounded-fluent-md, duration-fluent-fast,
+//            shadow-4 / shadow-16 / shadow-2-brand, ...
 import type { Preset } from 'unocss'
 
 /** CSS custom properties injected as a preflight: selector -> { '--Token': value }. */
@@ -139,6 +163,15 @@ ${spMap}
         'fluent-slow': 'var(--durationSlow)',
         'fluent-slower': 'var(--durationSlower)',
         'fluent-ultra-slow': 'var(--durationUltraSlow)',
+      },
+      // Elevation: shadow-2 / shadow-4 / … / shadow-64 (+ -brand). UnoCSS reads box-shadow
+      // utilities from theme.boxShadow (presetWind3 / preset-mini) or theme.shadow
+      // (presetWind4); registering both keeps either preset working.
+      boxShadow: {
+${shadowMap}
+      },
+      shadow: {
+${shadowMap}
       },
     },
   }

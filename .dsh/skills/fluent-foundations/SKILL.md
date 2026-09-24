@@ -40,10 +40,27 @@ Fluent 采用 **4px 基础单元** 的间距标度，语义 token 分层：
 
 ## 层级与高度（Elevation）
 
-平铺界面优先用 **边框与底色** 区分层级，而非投影。需要投影再走 shadow token（见 fluent-tokens）。层级逻辑：
+平铺界面优先用 **边框与底色** 区分层级，而非投影。需要投影再走 `shadows` 段的高度的 token（见 fluent-tokens）。层级逻辑：
 1. 背景基底（Background 1/2/3/4/5）
 2. 在前层内容（Foreground 1–5，数字越小越重要/越靠前）
 3. 叠加层（Overlay / dialog / popover）
+
+投影标度只用这 6 档（数字 = 模糊半径量级，越靠前的层用越大档）：
+
+| 层                     | token      | 用途                                                    |
+| ---------------------- | ---------- | ------------------------------------------------------- |
+| 贴地（可无投影）       | —          | 用 `colorNeutralStroke1` 描边 + `colorNeutralBackground*` 区分 |
+| 轻微抬升               | `shadow2`  | 无描边卡片、按下态浮动按钮                              |
+| 抬升                   | `shadow4`  | 卡片 / 列表项 / 网格项                                  |
+| 浮层入口               | `shadow8`  | 命令栏、命令下拉、Tooltip、抬升 App Bar                 |
+| 浮层（最常用）         | `shadow16` | Callout / Flyout / Popover / HoverCard                  |
+| 面板                   | `shadow28` | 底部面板、侧边导航、抬升 Tab 栏                         |
+| 模态（最高层）         | `shadow64` | 弹出式对话框、面板                                      |
+
+品牌色表面上用对应的 `shadowNBrand`（Fluent 用 luminosity 方程修正过不透明度）。
+
+> 阴影是**两层**（key + ambient）的**多值 token**：不要把它整体塞进 `light-dark()`（非法调用会让整条 `box-shadow` 被丢弃），
+> 正确写法见 fluent-tokens 的「高度 / 阴影」；Windows 平台用描边替代 key 阴影，层级感靠描边 + 更浅的投影。
 
 ## 颜色逻辑（中性 vs 品牌）
 
@@ -75,6 +92,7 @@ Fluent 采用 **4px 基础单元** 的间距标度，语义 token 分层：
 | 强调/主操作 | 品牌色 token，「品牌 = 少量」 |
 | 分隔元素 | `strokeWidthThin`+中性 stroke |
 | 提升层级 | 先试试更浅/更深中性色与更大 radius，再考虑投影 |
+| 浮层投影 | `shadow16`（Flyout/Popover）、`shadow8`（Tooltip/下拉）、`shadow64`（Dialog）；不用手写 `box-shadow` 数值 |
 | 状态反馈 | 语义状态色 + 文本/图标双通道 |
 
 > 实现细节交给 `fluent-adapter-*`。本 skill 只回答「设计上该怎么做」。

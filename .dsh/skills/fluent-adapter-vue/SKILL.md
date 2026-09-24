@@ -28,6 +28,7 @@ cd my-app
 ## 路线 A：UnoCSS + Fluent token（推荐）
 
 参照 `fluent-adapter-css` 的 UnoCSS 段：`preset-fluent.ts` 注入变量 + 主题，`unocss/vite` 插件接入 Vite。
+投影直接用 `shadow-N` 工具类（`shadow-16` → `box-shadow: var(--shadow16)`），档位用途见 `fluent-tokens` 的「高度 / 阴影」。
 
 ```ts
 // vite.config.ts
