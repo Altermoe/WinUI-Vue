@@ -463,12 +463,12 @@ export const tokensCssText = `/* Generated from data/fluent-tokens.json — do n
   --colorStatusDangerBorderActive: light-dark(#c50f1f, #dc626d);
   --colorStatusDangerBorder1: light-dark(#eeacb2, #c50f1f);
   --colorStatusDangerBorder2: light-dark(#c50f1f, #dc626d);
-  --shadow2: light-dark(0 0 2px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.24), 0 1px 2px rgba(0,0,0,0.28));
-  --shadow4: light-dark(0 0 2px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.24), 0 2px 4px rgba(0,0,0,0.28));
-  --shadow8: light-dark(0 0 2px rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.24), 0 4px 8px rgba(0,0,0,0.28));
-  --shadow16: light-dark(0 0 2px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.24), 0 8px 16px rgba(0,0,0,0.28));
-  --shadow28: light-dark(0 0 8px rgba(0,0,0,0.12), 0 14px 28px rgba(0,0,0,0.14), 0 0 8px rgba(0,0,0,0.24), 0 14px 28px rgba(0,0,0,0.28));
-  --shadow64: light-dark(0 0 8px rgba(0,0,0,0.12), 0 32px 64px rgba(0,0,0,0.14), 0 0 8px rgba(0,0,0,0.24), 0 32px 64px rgba(0,0,0,0.28));
+  --shadow2: 0 0 2px light-dark(rgba(0,0,0,0.12), rgba(0,0,0,0.24)), 0 1px 2px light-dark(rgba(0,0,0,0.14), rgba(0,0,0,0.28));
+  --shadow4: 0 0 2px light-dark(rgba(0,0,0,0.12), rgba(0,0,0,0.24)), 0 2px 4px light-dark(rgba(0,0,0,0.14), rgba(0,0,0,0.28));
+  --shadow8: 0 0 2px light-dark(rgba(0,0,0,0.12), rgba(0,0,0,0.24)), 0 4px 8px light-dark(rgba(0,0,0,0.14), rgba(0,0,0,0.28));
+  --shadow16: 0 0 2px light-dark(rgba(0,0,0,0.12), rgba(0,0,0,0.24)), 0 8px 16px light-dark(rgba(0,0,0,0.14), rgba(0,0,0,0.28));
+  --shadow28: 0 0 8px light-dark(rgba(0,0,0,0.12), rgba(0,0,0,0.24)), 0 14px 28px light-dark(rgba(0,0,0,0.14), rgba(0,0,0,0.28));
+  --shadow64: 0 0 8px light-dark(rgba(0,0,0,0.12), rgba(0,0,0,0.24)), 0 32px 64px light-dark(rgba(0,0,0,0.14), rgba(0,0,0,0.28));
 }
 `
 

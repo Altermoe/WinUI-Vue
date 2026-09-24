@@ -56,11 +56,17 @@
 
 1. **`tokens.css`** — 全部 `--TokenName`：
    - 全局标度（spacing/radius/stroke/duration/curve/font）→ `:root { ... }` 固定值；
-   - 语义色/阴影（明暗不同）→ `:root { ... light-dark(<light>, <dark>) ...; color-scheme: light dark; }`。
+   - 语义色（明暗不同、单值）→ `:root { ... light-dark(<light>, <dark>) ...; color-scheme: light dark; }`；
+   - **多值 token（阴影 `--shadow2..64`）** → `light-dark()` 只接受两个 `<color>`，不能把逗号分隔的
+     多层值整体塞进去（会变成 4 个实参的非法调用 → 整条 `box-shadow` 被浏览器丢弃）。
+     由 `scripts/theme-value.mjs` **逐层**把颜色包成 `light-dark()`，几何保持字面量：
+     `--shadow16: 0 0 2px light-dark(A1, A2), 0 8px 16px light-dark(B1, B2);`（有单测兜底；
+     无法表达的结构直接抛错，不产出会被丢弃的 CSS）。
 2. **`preset-fluent.ts`** — UnoCSS preset：
    - `preflights`：注入 `tokens.css` 变量（供未显式引入 CSS 的场景）；
    - `theme.colors`：精确 token 名 → `var(--TokenName)`（`bg-colorBrandBackground` 等）；
-   - `theme.spacing/borderRadius/duration`：`fluent-*` 别名（`p-fluent-m`、`rounded-fluent-md`、`duration-fluent-fast`）。
+   - `theme.spacing/borderRadius/duration`：`fluent-*` 别名（`p-fluent-m`、`rounded-fluent-md`、`duration-fluent-fast`）；
+   - `theme.shadow`：`shadow-4` / `shadow-16` → `var(--shadowN)`（presetWind4 读 `theme.shadow`）。
 3. **`token-names.ts`** — 从 JSON 生成 token 名常量/类型，供 TS 侧引用，杜绝拼写漂移。
 
 **事实源完整性**：fluent-tokens skill 自带的 `data/tokens/fluent-tokens.json` 只含 184 个核心语义色，缺 `colorStatus*`/`colorPalette*`（现有 `colors.ts` 与 docs 在用）。因此按 skill 文档化的重建路径，用 `scripts/extract-tokens.mjs` 从 `@fluentui/tokens` 抽取**完整** `webLightTheme`/`webDarkTheme`（459 token，315 个明暗差异）+ `typographyStyles`，重写为 `data/fluent-tokens.json`。

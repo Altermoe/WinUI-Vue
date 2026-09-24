@@ -1,7 +1,8 @@
 /* oxlint-disable import/no-nodejs-modules, id-length, no-magic-numbers, prefer-named-capture-group, curly, no-null, no-continue, prefer-template, capitalized-comments, no-ternary -- 一次性 token 抽取/生成工具脚本，Node 内建模块为有意使用 */
 /**
  * 从 data/fluent-tokens.json（唯一事实源）生成适配产物：
- *   - generated/tokens.css         全部 CSS 变量（明暗差异用 light-dark() + color-scheme）
+ *   - generated/tokens.css         全部 CSS 变量（明暗差异用 light-dark() + color-scheme；
+ *                                  多值 token（阴影）逐层合成，见 theme-value.mjs）
  *   - generated/preset-fluent.ts   UnoCSS preset（颜色用精确 token 名，标度用 fluent-* 别名）
  *   - generated/token-names.ts     token 名常量与类型
  *
@@ -11,6 +12,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { mergeThemedValue } from './theme-value.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const data = JSON.parse(readFileSync(join(here, '..', 'data', 'fluent-tokens.json'), 'utf8'))
@@ -36,7 +38,9 @@ for (const [name, { light, dark }] of entries) {
   if (String(light) === String(dark)) {
     globalDecls.push(`  ${varName}: ${light};`)
   } else {
-    themeDecls.push(`  ${varName}: light-dark(${light}, ${dark});`)
+    // 明暗不同的值统一走 mergeThemedValue：单值 → light-dark()；多值（阴影）→ 逐层合成。
+    // 直接把多值塞进 light-dark() 会产出 4 个实参的非法调用，整条声明会被浏览器丢弃。
+    themeDecls.push(`  ${varName}: ${mergeThemedValue(name, light, dark)};`)
   }
 }
 const css = [
