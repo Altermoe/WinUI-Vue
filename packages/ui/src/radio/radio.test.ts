@@ -79,22 +79,22 @@ describe('FluereRadioGroup + FluereRadioButton 渲染契约', () => {
   it('受控选中：modelValue=a 时该项 checked，另一项 unchecked（同组互斥）', () => {
     const wrapper = host('a')
     const items = wrapper.findAll('[role="radio"]')
-    expect(items[0].attributes('data-state')).toBe('checked')
-    expect(items[0].attributes('aria-checked')).toBe('true')
-    expect(items[1].attributes('data-state')).toBe('unchecked')
-    expect(items[1].attributes('aria-checked')).toBe('false')
+    expect(items[0]!.attributes('data-state')).toBe('checked')
+    expect(items[0]!.attributes('aria-checked')).toBe('true')
+    expect(items[1]!.attributes('data-state')).toBe('unchecked')
+    expect(items[1]!.attributes('aria-checked')).toBe('false')
   })
 
   it('点击另一项：更新 v-model 并切换选中（互斥）', async () => {
     const wrapper = host('a')
     const items = wrapper.findAll('[role="radio"]')
-    await items[1].trigger('click')
+    await items[1]!.trigger('click')
     expect(wrapper.vm.value).toBe('b')
 
     await nextTick()
     const after = wrapper.findAll('[role="radio"]')
-    expect(after[1].attributes('data-state')).toBe('checked')
-    expect(after[0].attributes('data-state')).toBe('unchecked')
+    expect(after[1]!.attributes('data-state')).toBe('checked')
+    expect(after[0]!.attributes('data-state')).toBe('unchecked')
   })
 
   it('disabled 组：全部项禁用 + data-disabled', () => {
@@ -175,7 +175,7 @@ describe('FluereRadioButton 状态样式（WinUI 3 RadioButton 契约）', () =>
   it('抗锯齿：点边缘过渡带而非硬切（--dot-fade 0.4px）', () => {
     const root = rules.get('.fui-radio') ?? ''
     expect(root).toContain('--dot-fade: 0.4px')
-    // gradient 停止点由「radius」改为「radius - fade → radius」渐隐
+    // Gradient 停止点由「radius」改为「radius - fade → radius」渐隐
     const circle = rules.get('.fui-radio__circle') ?? ''
     expect(circle).toContain('var(--dot-fade)')
     expect(circle).toContain('calc(var(--dot-radius) - var(--dot-fade))')
