@@ -208,8 +208,9 @@ describe('FluereToggleSwitch 状态样式（WinUI 3 ToggleSwitch 契约）', () 
 
   it('滑块位移走 translateX + translateX calc(var(--travel)*progress)（避免 left/right），垂直居中', () => {
     const rail = rules.get('.fui-switch__rail') ?? ''
-    // 宽 = 行程 travel - 两侧描边（滑块端点不压轨道描边），translateX 走合成层
-    expect(rail).toContain('width: calc(var(--travel) - 2 * var(--strokeWidthThin))')
+    // 宽 = 行程 travel - 两侧描边（滑块端点不压轨道描边），translateX 走合成层。
+    // 格式化（oxfmt）会把这条 calc 折成多行，故按「去掉空白后」比对，避免断言依赖排版。
+    expect(rail.replace(/\s+/g, '')).toContain('width:calc(var(--travel)-2*var(--strokeWidthThin))')
     expect(rail).toContain('display: flex')
     expect(rail).toContain('align-items: center')
     expect(rail).toContain('justify-content: center')
