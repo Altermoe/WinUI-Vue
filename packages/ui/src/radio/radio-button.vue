@@ -17,10 +17,12 @@ import type { AcceptableValue } from 'reka-ui'
  * 解剖（anatomy，对照 WinUI ControlTemplate）：
  * - root                  button[role=radio]（reka RadioGroupItem 渲染），整行可点
  * - circle                20px 圆形 = WinUI OuterEllipse（未选）/ CheckOuterEllipse（选中）
- *                         合并为一个随 data-state 走 background/border 过渡的圆形，
+ *                         合并为一个随 data-state 走 background 过渡的圆形，
  *                         比 WinUI 双椭圆叠 opacity 更省绘制，视觉等价
- * - dot                   选中态内圆点 = WinUI CheckGlyph（12px，TextOnAccentFillColorPrimary）
- * - pressed-dot           按下预览圆点 = WinUI PressedCheckGlyph（4→10px，按下浅显）
+ * - circle 内的内点       WinUI CheckGlyph（白色 12px 内点）/ PressedCheckGlyph
+ *                         （按下预览点）不再用独立元素，而是作为单个 radial-gradient
+ *                         直接画在圆上：同一圆点经状态变量在「隐藏 / 选中 / 按下
+ *                         预览」间缩放显隐，减少 DOM 节点
  * - content               右侧标签文本（ContentPresenter，Grid.Column=1）
  *
  * WinUI 里选中态是「品牌色实心圆 + 白色内点」；按下列表预览选中（PressedCheckGlyph
@@ -102,13 +104,7 @@ defineOptions({ name: 'FluereRadioButton' })
     <span
       class="fui-radio__circle"
       aria-hidden="true"
-    >
-      <!-- 选中态内点：WinUI CheckGlyph（白色 12px，hover 放大）
-           单独元素可随 hover/active/选中态做尺寸过渡 -->
-      <span class="fui-radio__dot" />
-      <!-- 按下预览点：WinUI PressedCheckGlyph（4→10px），按住时浅显预览选中 -->
-      <span class="fui-radio__pressed-dot" />
-    </span>
+    />
 
     <span class="fui-radio__content">
       <slot />
@@ -125,7 +121,7 @@ defineOptions({ name: 'FluereRadioButton' })
 /* RadioButton_themeresources.xaml + Common_themeresources.xaml）：     */
 /*   RadioButtonBorderThemeThickness     = 1（strokeWidthThin）         */
 /*   RadioButton CheckGlyphSize = 12 / PointerOverSize = 14 /          */
-/*     PressedOverSize = 10（KeyFrame 取 14/10，这里用 scale 近似）。    */
+/*     PressedOverSize = 10。                                           */
 /*   RadioButtonBackground/BorderBrush*  = ControlFillColorTransparent */
 /*     → 根按钮背景/描边全程透明，只露「圆 + 文本」                       */
 /*   RadioButtonOuterEllipseStroke        = ControlStrongStrokeColorDefault */
@@ -146,7 +142,20 @@ defineOptions({ name: 'FluereRadioButton' })
 /*     CheckOuterEllipse + CheckGlyph 显示（用 data-state + CSS 过渡）   */
 /*   RadioButtonForeground* = TextFillColorPrimary / …Disabled           */
 /*     → colorNeutralForeground1 / colorNeutralForegroundDisabled        */
-/* 动效：WinUI 用 ControlNormal/FastAnimationDuration + FastOutSlowIn */
+/*                                                                     */
+/* 内点绘制方案：不再用子元素，而是作为单个 radial-gradient 直接画在圆的       */
+/*   background 上（双语义 bg 合成）：                                       */
+/*   语义 bg 1 = 外圆 background-color（续 var(--fill)，随交互态过渡）；      */
+/*   语义 bg 2 = 内圆点 gradient 的色（var(--dot-bg)）与半径（var(--dot-radius)）。 */
+/*   圆点缺省 radius=0（隐藏），选中 / 按下态放大到对应直径；色值 transparent    */
+/*   则不绘制。各交互态只需改写这几个语义变量即可，声明式、等权重，无深层子级    */
+/*   选择器。点边缘的抗锯齿过渡带由 --dot-fade 控制（radius - fade → radius     */
+/*   渐隐）。内点颜色 / 半径经下方 <style> 的 @property 注册为可插值属性，       */
+/*   可在 .fui-radio 上的 transition 中逐帧过渡。                              */
+/*   另：内点以「硬边 gradient 精确 12px」绘制（radius 即直径一半），           */
+/*   不受 transform scale 插值影响，视觉上不再显得比模型偏大。                */
+/*                                                                     */
+/* 动效：WinUI 用 ControlNormal/FastAnimationDuration + FastOutSlowIn   */
 /*   → transition(durationFast / durationNormal) + curveEasyEase(Max)  */
 /*                                                                     */
 /* 与参考的一处刻意偏差：参考把 CheckGlyphFillDisabled 指到               */
@@ -157,20 +166,25 @@ defineOptions({ name: 'FluereRadioButton' })
 /* ------------------------------------------------------------------ */
 
 /* ---- 根按钮 ---- */
-/* 状态建模：以「抽象状态值」声明式表达。具体属性（背景/描边/内点缩放与透明度、
-   预览点缩放与透明度）只在一处读取这些变量；各交互状态用等权重的根级选择器
-   改写变量。相比在每个深层选择器里直接设具体属性，避免了 checked/hover/active
+/* 状态建模：以「抽象状态值」声明式表达。具体属性（外圆填充/描边、内点显隐与
+   直径）只在一处读取这些变量；各交互状态用等权重的根级选择器改写变量。
+   相比在每个深层选择器里直接设具体属性，避免了 checked/hover/active
    组合时特异性与覆盖顺序的脆弱性。明暗主题仍由 tokens.css 的 light-dark() 切换。
- * ------------------------------------------------------------ */
+  * ------------------------------------------------------------ */
 .fui-radio {
-  /* 抽象状态值（被 __circle / __dot / __pressed-dot 读取） */
+  /* 语义 bg 1：外圆填充 + 描边（不同交互态下的圆形背景） */
   --fill: var(--colorNeutralBackground3); /* 圆填充：未选 rest */
   --stroke: var(--colorNeutralStrokeAccessible); /* 圆描边：未选 rest */
-  --dot-fill: var(--colorNeutralForegroundOnBrand); /* 内点 / 预览点颜色 */
-  --dot: 0; /* 内点缩放（0=隐藏） */
-  --dot-opacity: 0; /* 内点透明度 */
-  --press: 0; /* 预览点缩放（0=隐藏） */
-  --press-opacity: 0; /* 预览点透明度 */
+
+  /* 语义 bg 2：内圆点 —— 单个 radial-gradient 绘制。
+     transparent = 不绘制；色值 = 实点显现。
+     radius 即点直径的一半（直径 = 2 × radius）；缺省 0 = 隐藏。
+     fade = 点边缘抗锯齿过渡带宽度：从 (radius - fade) 起由点色渐变为透明，
+     而非硬切，消除圆点与底色交界处的锯齿。 */
+  --dot-bg: transparent; /* 内点颜色 = 选中/按下预览点颜色（CheckGlyph） */
+  --dot-radius: 0px; /* 0 = 未选/未按下时内点隐藏；选中 12px / 按下预览 10px */
+  --press-radius: 5px; /* 按下态内点半径（PressedOverSize 10/2） */
+  --dot-fade: 0.4px; /* 圆点边缘抗锯齿过渡带宽度（≈ 6px 半径的 ~7%） */
 
   /* 各状态的具体取值（对照 WinUI token，集中于此便于核对） */
   --fill-unchecked-hover: var(--colorNeutralBackground4); /* controlAltFill*Tertiary */
@@ -184,10 +198,8 @@ defineOptions({ name: 'FluereRadioButton' })
   --stroke-checked: var(--colorCompoundBrandBackground);
   --stroke-checked-hover: var(--colorCompoundBrandBackgroundHover);
   --stroke-checked-active: var(--colorCompoundBrandBackgroundPressed);
-  --dot-checked: 1; /* 12px */
-  --dot-checked-hover: 1.1667; /* CheckGlyphPointerOverSize 14/12 */
-  --dot-checked-active: 0.8333; /* CheckGlyphPressedOverSize 10/12 */
-  --press-on: 2.5; /* PressedCheckGlyph 4→10 */
+  --dot-bg-checked: var(--colorNeutralForegroundOnBrand); /* TextOnAccentFillColorPrimary */
+  --dot-radius-checked-hover: 7px; /* CheckGlyphPointerOverSize 14/2 */
 
   display: inline-flex;
   align-items: center;
@@ -205,12 +217,17 @@ defineOptions({ name: 'FluereRadioButton' })
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   outline: none;
-  transition: color var(--durationFast) var(--curveEasyEase);
+  /* 内点相关自定义属性经下方 <style> 里的 @property 注册后即可过渡/插值；
+     声明在设置它们的根上，中间色逐帧下传到 __circle 的 gradient 重绘。 */
+  transition:
+    color var(--durationFast) var(--curveEasyEase),
+    --dot-bg var(--durationFast) var(--curveEasyEase),
+    --dot-radius var(--durationFaster) var(--curveEasyEase);
 }
 
-/* ---- 圆：20px 圆形，未选实线和中性底；选中品牌实心圆 = WinUI 双椭圆合并 ---- */
+/* ---- 圆：20px 圆形，未选实线和中性底；选中品牌实心圆 = WinUI 双椭圆合并 ----
+     内点经单个 radial-gradient 画在其上（见下） */
 .fui-radio__circle {
-  position: relative;
   flex-shrink: 0;
   width: 20px; /* RadioButton 圆直径 */
   height: 20px; /* RadioButton 圆直径 */
@@ -218,67 +235,40 @@ defineOptions({ name: 'FluereRadioButton' })
   border-radius: var(--borderRadiusCircular); /* 全圆：20/2=10 */
   /* 填充 / 描边取值统一来自顶层抽象变量（见 .fui-radio） */
   border: var(--strokeWidthThin) solid var(--stroke);
+  /* 语义 bg 1：外圆背景 */
   background-color: var(--fill);
+  /* 语义 bg 2：内圆点 —— 单个 gradient，经 transparent / 色值隐藏或显现，
+     半径控制点径（0 = 隐藏；选中/按下态放大）。
+     在 (radius - fade) → radius 处留 --dot-fade 宽过渡带做抗锯齿，
+     避免点与底色交界硬切出现锯齿。
+     radial-gradient(circle) 且不写 center 即默认 50% 50%，恰在圆心。 */
+  background-image: radial-gradient(
+    circle,
+    var(--dot-bg) calc(var(--dot-radius) - var(--dot-fade)),
+    transparent var(--dot-radius)
+  );
   transition:
     background-color var(--durationFast) var(--curveEasyEase),
     border-color var(--durationFast) var(--curveEasyEase);
 }
 
-/* ---- 内点：选中态白色圆点（WinUI CheckGlyph 12px），随 hover 放大 ---- */
-.fui-radio__dot {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 12px; /* RadioButtonCheckGlyphSize */
-  height: 12px; /* RadioButtonCheckGlyphSize */
-  box-sizing: border-box;
-  border-radius: var(--borderRadiusCircular);
-  /* 颜色 / 缩放 / 透明度来自顶层抽象变量（--dot-fill/--dot/--dot-opacity） */
-  background-color: var(--dot-fill);
-  opacity: var(--dot-opacity);
-  transform: translate(-50%, -50%) scale(var(--dot));
-  /* opacity 与 transform 统一用同一条曲线：使「内点收缩淡出」与下方预览点
-     「放大渐显」相位一致，消除中途两圆错位造成的尺寸跳变 */
-  transition:
-    opacity var(--durationFast) var(--curveEasyEaseMax),
-    transform var(--durationFast) var(--curveEasyEaseMax);
-}
-
-/* ---- 按下预览点：WinUI PressedCheckGlyph（4→10px），按住浅显，预感选中 ---- */
-.fui-radio__pressed-dot {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 4px; /* PressedCheckGlyph 起始 4px */
-  height: 4px;
-  box-sizing: border-box;
-  border-radius: var(--borderRadiusCircular);
-  /* 颜色 / 缩放 / 透明度来自顶层抽象变量；过渡曲线与内点一致，保证交叉相位同步 */
-  background-color: var(--dot-fill); /* PressedCheckGlyph Background = CheckGlyphFill */
-  opacity: var(--press-opacity);
-  transform: translate(-50%, -50%) scale(var(--press));
-  transition:
-    opacity var(--durationFast) var(--curveEasyEaseMax),
-    transform var(--durationFast) var(--curveEasyEaseMax);
-}
-
 /* ---- 选中：品牌实心圆 + 白色内点（governed by 顶层抽象变量的 checked 规则，
-       见下方状态机；此处不再写直接样式，避免覆盖 --dot/--dot-opacity） ---- */
+       见下方状态机；此处不再写直接样式，避免覆盖 --fill/--dot-bg） ---- */
 
 /* ------------------------------------------------------------
  * 状态机：全部为 .fui-radio 根级、等权重选择器，只改写抽象变量。
  * 覆盖优先级仅由书写顺序决定，不再受深层子级特异性牵制。
  * 说明：按下时 hover 必然同时命中；active 规则书写在后，等权重下
- * 赢得平局，故按住时内点真正收缩 12→10px，避免卡死 hover 14px
- * 造成的「先消失再冒出」尺寸跳变。
+ * 赢得平局，故按住时内点取按下档（10px）而非 hover 档（14px），
+ * 避免卡死 hover 的「先放大再缩小」尺寸跳变。
  * ---------------------------------------------------------- */
 
 /* ---- checked：品牌实心圆 + 白色内点显现 ---- */
 .fui-radio[data-state='checked'] {
   --fill: var(--fill-checked);
   --stroke: var(--stroke-checked);
-  --dot: var(--dot-checked);
-  --dot-opacity: 1;
+  --dot-bg: var(--dot-bg-checked);
+  --dot-radius: 6px; /* 12px = RadioButtonCheckGlyphSize → 半径 6 */
 }
 
 /* ---- hover -- */
@@ -290,34 +280,35 @@ defineOptions({ name: 'FluereRadioButton' })
 .fui-radio:hover:not(:disabled):not([data-disabled])[data-state='checked'] {
   --fill: var(--fill-checked-hover);
   --stroke: var(--stroke-checked-hover);
-  --dot: var(--dot-checked-hover); /* 12→14 = CheckGlyphPointerOverSize */
+  --dot-radius: var(--dot-radius-checked-hover); /* 12→14 = CheckGlyphPointerOverSize */
 }
 
 /* ---- pressed -- */
-/* 未选 pressed：填充最深档 + WinUI 原样载入禁用描边 + 预览点出现 */
+/* 未选 pressed：填充最深档 + WinUI 原样载入禁用描边 + 内点作按下预览出现 */
 .fui-radio:active:not(:disabled):not([data-disabled]):not([data-state='checked']) {
   --fill: var(--fill-unchecked-active); /* ControlAltFillColorQuarternary */
   --stroke: var(--stroke-unchecked-active); /* OuterEllipseStrokePressed（原样） */
-  --press: var(--press-on);
-  --press-opacity: 1;
+  --dot-bg: var(--dot-bg-checked); /* 按下预览点，白色 */
+  --dot-radius: var(--press-radius); /* 内点放大到 10px = PressedOverSize 终值 */
 }
-/* 选中 pressed：品牌色 pressed 档；内点收缩到 10px 淡出让位 + 预览点出现 */
+/* 选中 pressed：品牌色 pressed 档；内点收缩到 10px，呈现按下预览手感 */
 .fui-radio:active:not(:disabled):not([data-disabled])[data-state='checked'] {
   --fill: var(--fill-checked-active);
   --stroke: var(--stroke-checked-active);
-  --dot: var(--dot-checked-active); /* 12→10 = CheckGlyphPressedOverSize */
-  --dot-opacity: 0;
-  --press: var(--press-on); /* 4→10 = PressedCheckGlyph */
-  --press-opacity: 1;
+  --dot-bg: var(--dot-bg-checked); /* 仍为白色内点 */
+  --dot-radius: var(--press-radius); /* 12 → 10 = PressedOverSize 终值 */
 }
 
 /* ---- disabled：全套 …Disabled 档（置于所有交互规则之后） ---- */
 .fui-radio:disabled {
   --fill: var(--colorNeutralBackgroundDisabled); /* Outer/CheckedFillDisabled */
   --stroke: var(--colorNeutralStrokeDisabled); /* OuterEllipseStrokeDisabled */
-  --dot-fill: var(--colorNeutralForegroundDisabled); /* 见文件头注释：可读性修正 */
   color: var(--colorNeutralForegroundDisabled); /* RadioButtonForegroundDisabled */
   cursor: not-allowed;
+}
+/* disabled + checked：内点改用禁用文字色，保证白点+浅灰圆的可读性（见文件头注释） */
+.fui-radio:disabled[data-state='checked'] {
+  --dot-bg: var(--colorNeutralForegroundDisabled);
 }
 
 /* ---- 内容区（ContentPresenter） ---- */
@@ -338,5 +329,24 @@ defineOptions({ name: 'FluereRadioButton' })
   .fui-radio * {
     transition: none !important;
   }
+}
+</style>
+
+<!-- ------------------------------------------------------------------ -->
+<!-- @property 注册：把内点用到的自定义属性注册为可插值的 <color>/<length>，   -->
+<!-- 使它们在 .fui-radio 上的 transition 真正逐帧过渡（未注册的自定义属性     -->
+<!-- 默认不被动画插值，只会瞬切）。@property 是对属性名的全局注册，须放         -->
+<!-- 非 scoped 的独立 <style>，避免被 scoped 选择器重写。                      -->
+<!-- ------------------------------------------------------------------ -->
+<style>
+@property --dot-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: transparent;
+}
+@property --dot-radius {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
 }
 </style>
