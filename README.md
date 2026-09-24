@@ -71,6 +71,7 @@ import { FluereButton } from '@fluere-vue/ui'
 | `FluereCheckbox`                         | CheckBox              | 已完成 |
 | `FluereToggleSwitch`                     | ToggleSwitch          | 已完成 |
 | `FluereRadioGroup` / `FluereRadioButton` | RadioButton           | 已完成 |
+| `FluereSlider`                           | Slider                | 已完成 |
 | `FluereInput`                            | TextBox               | 开发中 |
 | `FluereScrollView`                       | ScrollView            | 开发中 |
 

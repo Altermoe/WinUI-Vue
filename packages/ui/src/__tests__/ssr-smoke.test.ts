@@ -20,6 +20,7 @@ import FluereInput from '../input/input.vue'
 import FluereRadioButton from '../radio/radio-button.vue'
 import FluereRadioGroup from '../radio/radio-group.vue'
 import FluereScrollView from '../scrollview/scroll-view.vue'
+import FluereSlider from '../slider/slider.vue'
 import FluereToggleSwitch from '../toggle-switch/toggle-switch.vue'
 
 /** 把单个组件以 SSR 模式渲染为 HTML 字符串 */
@@ -59,6 +60,21 @@ describe('SSR 兼容性冒烟测试', () => {
     expect(html).toContain('fui-switch')
     expect(html).toContain('role="switch"')
     expect(html).toContain('夜间模式')
+  })
+
+  it('FluereSlider 可服务端渲染（复用 reka Slider，ResizeObserver / pointer capture 均在挂载后）', async () => {
+    const app = createSSRApp({
+      render: () => h(FluereSlider, { modelValue: 30, header: '音量' }),
+    })
+    const html = await renderToString(app)
+    expect(html).toContain('fui-slider')
+    expect(html).toContain('role="slider"')
+    // SSR 阶段不含 aria-valuenow：它由 reka 的 collection 下标推导，首帧下标尚未回填，
+    // 挂载后才会补上；SSR 阶段断言不依赖下标的那些语义
+    expect(html).toContain('aria-valuemin="0"')
+    expect(html).toContain('aria-valuemax="100"')
+    expect(html).toContain('aria-orientation="horizontal"')
+    expect(html).toContain('音量')
   })
 
   it('FluereRadioGroup + FluereRadioButton 可服务端渲染（复用 reka RadioGroup，回归 roving focus 无浏览器 API 依赖）', async () => {

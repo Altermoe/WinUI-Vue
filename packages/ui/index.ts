@@ -7,6 +7,7 @@ import FluereInput from './src/input/input.vue'
 import FluereRadioButton from './src/radio/radio-button.vue'
 import FluereRadioGroup from './src/radio/radio-group.vue'
 import FluereScrollView from './src/scrollview/scroll-view.vue'
+import FluereSlider from './src/slider/slider.vue'
 import FluereToggleSwitch from './src/toggle-switch/toggle-switch.vue'
 
 export {
@@ -16,6 +17,7 @@ export {
   FluereRadioButton,
   FluereRadioGroup,
   FluereScrollView,
+  FluereSlider,
   FluereToggleSwitch,
 }
 export type { FluereButtonProps } from './src/button/button.vue'
@@ -27,6 +29,11 @@ export type {
   FluereToggleSwitchProps,
   FluereToggleSwitchSize,
 } from './src/toggle-switch/toggle-switch.vue'
+export type {
+  FluereSliderOrientation,
+  FluereSliderProps,
+  FluereSliderTickPlacement,
+} from './src/slider/slider.vue'
 export type {
   FluereScrollViewProps,
   ScrollingAnchorRequestedEventArgs,
