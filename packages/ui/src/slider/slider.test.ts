@@ -71,6 +71,9 @@ const readStyleRules = (sfc: string): Map<string, string> => {
 
 const rules = readStyleRules(sliderSfc)
 
+/** 取声明里的 inset 像素值：命中区与可见外圈必须由同一个 Margin=-2 推出 */
+const readInset = (declarations: string) => /inset: (-?\d+px)/.exec(declarations)?.[1]
+
 /** 受控宿主：v-model 绑到 ref，便于断言回写 */
 const controlled = (initial: number, extra = '', props = '') =>
   mount({
@@ -273,6 +276,38 @@ describe('FluereSlider 交互契约', () => {
     expect(wrapper.find('.fui-slider__tip').exists()).toBe(false)
   })
 
+  it('按在滑块上 = 抓住：不跳值，只进入按下态（WinUI 由 Thumb 自己接管 PointerPressed）', async () => {
+    const wrapper = await controlledSettled(30)
+    const thumb = wrapper.get('[role="slider"]')
+    // 指针落在滑块右侧（clientX=160）：若按「轨道点击」处理（MoveThumbToPoint）会跳到 ~80
+    thumb.element.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 160 }))
+    await nextTick()
+    expect(wrapper.vm.value).toBe(30)
+    expect(wrapper.findComponent(FluereSlider).emitted('update:modelValue')).toBeUndefined()
+    // 抓住也算按下：按下态与数值提示照常出现
+    expect(wrapper.get('.fui-slider-host').attributes('data-pressed')).toBeDefined()
+    expect(wrapper.get('.fui-slider__tip').text()).toBe('30')
+  })
+
+  it('抓住滑块后拖动仍改值，并在抬起时 valueCommit（reka slideMove / slideEnd 通路）', async () => {
+    const wrapper = await controlledSettled(30)
+    const slider = wrapper.findComponent(FluereSlider)
+    const thumb = wrapper.get('[role="slider"]')
+
+    thumb.element.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 100 }))
+    await nextTick()
+    expect(slider.emitted('update:modelValue')).toBeUndefined()
+
+    thumb.element.dispatchEvent(new MouseEvent('pointermove', { bubbles: true, clientX: 60 }))
+    await nextTick()
+    // 在 jsdom 里没有布局：滑块与轨道共用 stub rect（left=0），抓取偏移退化为 clientX，
+    // 于是 position 恒为 0 —— 这里只验证「拖动通路是活的」，像素级偏移由真机布局给出
+    expect(wrapper.vm.value).not.toBe(30)
+
+    thumb.element.dispatchEvent(new MouseEvent('pointerup', { bubbles: true }))
+    expect(slider.emitted('valueCommit')?.at(-1)).toEqual([wrapper.vm.value])
+  })
+
   it('disabled 时不进入按下态，也不出现数值提示', async () => {
     const wrapper = await controlledSettled(30, '', 'disabled')
     await wrapper.get('.fui-slider').trigger('pointerdown')
@@ -405,11 +440,32 @@ describe('FluereSlider 状态样式（WinUI 3 Slider 契约）', () => {
     expect(vertical).toContain('margin-inline: auto')
   })
 
-  it('外圈：Border Margin=-2 → inset -2px（视觉 22×22）+ CornerRadius 10', () => {
+  it('外圈：Border Margin=-2 → inset -2px（视觉 22×22）+ 正圆（按半宽收敛）', () => {
     const puck = rules.get('.fui-slider-host :deep(.fui-slider__puck)') ?? ''
     expect(puck).toContain('inset: -2px')
-    expect(puck).toContain('border-radius: 10px')
+    // 22px 的盒要成圆，半径必须是半宽（11）。WinUI 的 SliderThumbCornerRadius=10 是
+    // 20px 外圈的设计值，照抄到 22px 上会留 2px 直边、1px 环在四角偏厚 → 不成正圆
+    expect(puck).toContain('border-radius: var(--borderRadiusCircular)')
+    expect(puck).not.toContain('border-radius: 10px')
     expect(puck).toContain('padding: var(--strokeWidthThin)')
+  })
+
+  it('滑块命中区：整个可见外圈都算「抓住滑块」，绘制层不吞指针', () => {
+    // 在 jsdom 里没有命中测试，只能在源码层面守住「指针落在哪」这条不变式：
+    // 命中区与 puck 对齐（22×22），且 puck/dot 对指针透明 → 浏览器把 target 判为 thumb 本体。
+    // WinUI 侧同理：按在 Thumb（含 Margin=-2 撑出的外圈）由 Thumb 自己 put_Handled 接管。
+    const puck = rules.get('.fui-slider-host :deep(.fui-slider__puck)') ?? ''
+    const hitArea = rules.get('.fui-slider-host :deep(.fui-slider__thumb)::before') ?? ''
+    expect(hitArea).toContain('content:')
+    expect(hitArea).toContain('position: absolute')
+    // 命中区必须正好盖住可见外圈：两处 inset 由同一个 Margin=-2 推出
+    expect(readInset(hitArea)).toBe('-2px')
+    expect(readInset(hitArea)).toBe(readInset(puck))
+    // 少了这两条，target 会落到 puck/dot 上，reka 会当成「点在轨道上」而跳值
+    expect(puck).toContain('pointer-events: none')
+    expect(rules.get('.fui-slider-host :deep(.fui-slider__dot)') ?? '').toContain(
+      'pointer-events: none',
+    )
   })
 
   it('内点与外圈同心：外圈 flex 居中（块级 auto 外边距不会垂直居中）', () => {

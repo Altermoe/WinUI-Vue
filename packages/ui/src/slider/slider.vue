@@ -39,7 +39,8 @@ const SINGLE_THUMB_INDEX = 0
  * 设计规范来源：WinUI 3 / Windows App SDK — Slider
  * （src/controls/dev/CommonStyles/Slider_themeresources.xaml，
  *   几何/动画另对照 src/dxaml/xcp/dxaml/lib/Slider_Partial.cpp 的
- *   UpdateTrackLayout / MoveThumbToPoint）
+ *   UpdateTrackLayout / MoveThumbToPoint / OnThumbDragDelta，
+ *   指针归属另对照 src/dxaml/xcp/dxaml/lib/Thumb_Partial.cpp）
  * 交互底座复用 reka-ui 的 SliderRoot：指针拖拽（setPointerCapture）、
  * 步进吸附、Home/End/方向键/PageUp/PageDown、role=slider 语义、表单隐藏 input。
  * 取值一律经 Fluent 2 语义 token 落地（fluent-tokens：data/fluent-tokens.json）
@@ -56,9 +57,18 @@ const SINGLE_THUMB_INDEX = 0
  *                   填充 ControlSolidFillColorDefault、描边 ControlElevationBorderBrush
  *     dot           Ellipse SliderInnerThumbWidth/Height=12，靠 RenderTransform 缩放
  *
+ * 指针归属（决定「按哪里跳值」，对照 Slider_Partial.cpp + Thumb_Partial.cpp）：
+ *   按在滑块上 → Thumb 自己 put_Handled(TRUE) 并 IsDragging，按 DragDelta 的相对位移
+ *     移动（抓住手感），Slider 收不到 PointerPressed；
+ *   按在滑块之外 → Slider::OnPointerPressed → MoveThumbToPoint，把滑块中心挪到指针
+ *     处并跳值（getValueFromPointerEvent 的 slideStart 分支与它同口径）。
+ *   Web 侧：滑块的可见外圈（puck，22×22）整体都是命中区，命中 thumb 本体时 reka
+ *   SliderImpl 只 focus 而不 emit slideStart —— 于是「点中滑块不跳值」自然成立。
+ *
  * 尺寸（WinUI 原值，无尺寸变体）：
  *   控件高 32 = SliderPreContentMargin 14 + 轨道 4 + SliderPostContentMargin 14
  *   轨道厚 4 · 轨道圆角 2 · 滑块 18×18（视觉 22×22）· 内点 12（基准）× 0.86
+ *   外圈按半宽收敛成真圆（见下方 .fui-slider__puck 处的说明）
  *
  * 内点的三态缩放（Thumb 自己的 VisualState，逐字对齐 Storyboard）：
  *   Normal      0.86（12 × 0.86 = 10.32 —— 与 WinUI 实机截图一致）
@@ -472,6 +482,9 @@ defineOptions({ name: 'FluereSlider' })
 /*            SliderHorizontalThumbWidth/Height 18                      */
 /*            Thumb 模板 Border Margin=-2 → 视觉 22×22                  */
 /*            SliderThumbCornerRadius 10 / SliderInnerThumb 12          */
+/*  指针      Slider_Partial.cpp：Thumb 之外的按下 → MoveThumbToPoint   */
+/*            跳值（居中于指针）；Thumb 自己的按下被 Thumb_Partial.cpp  */
+/*            put_Handled(TRUE) 吃掉 → 只抓取、按 DragDelta 位移改值     */
 /*   轨道     SliderTrackFill        = ControlStrongFillColorDefault    */
 /*              → colorNeutralStrokeAccessible（…PointerOver/Pressed 同值）*/
 /*            SliderTrackFillDisabled= ControlStrongFillColorDisabled   */
@@ -669,6 +682,18 @@ defineOptions({ name: 'FluereSlider' })
   outline: none;
   cursor: pointer;
 }
+/* 命中区 = 整个可见外圈（22×22 = 18 + 2×(-2)，与 .fui-slider__puck 的 inset 对齐）：
+   按在滑块上只「抓住」不跳值 —— WinUI 里这件事由 Thumb 自己接管
+   （Thumb_Partial.cpp：PointerPressed 里 put_Handled(TRUE) + IsDragging，随后按
+   DragDelta 的相对位移改值），只有按在 Thumb 之外时 Slider::OnPointerPressed 才会
+   走 MoveThumbToPoint 把滑块中心挪到指针处。
+   伪元素不产生 DOM 节点：命中它时 event.target 仍是 thumb 本体，正好落进 reka
+   SliderImpl 的「target ∈ thumbElements → 只 focus、不 emit slideStart」分支。 */
+.fui-slider-host :deep(.fui-slider__thumb)::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+}
 /* 居中：reka 只给 left/bottom + transform，且滑块是轨道节点的**兄弟**，
    定位上下文是控件本体（32px），top/left 走静态位置会落在左上角——
    这里用「两侧置 0 + 对向 auto 外边距」把它对到轨道中心（等价 translate(-50%)，
@@ -692,13 +717,21 @@ defineOptions({ name: 'FluereSlider' })
   position: absolute;
   inset: -2px;
   box-sizing: border-box;
+  /* 外圈纯属绘制：命中一律交给 thumb 本体（见上面的 ::before 命中区）。
+     不置 none 的话 event.target 会落到这个子元素上，reka 会把它当成
+     「点在轨道上」→ 跳值，正是「点滑块非中心区域会改值」的成因 */
+  pointer-events: none;
   /* flex 居中内点：块级盒的垂直 auto 外边距会解析为 0，内点会贴外圈内容盒顶部
      （外圈内容盒比内点高 8px → 内点会偏高 4px，同心关系被破坏） */
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--strokeWidthThin); /* BorderThickness 1：环的厚度 */
-  border-radius: 10px; /* SliderThumbCornerRadius */
+  /* 真圆：WinUI 的 CornerRadius 是 10，那是 20px 外圈的设计半径；Web 侧外圈按
+     Margin=-2 撑到 22px，照抄 10px 会在四边各留 2px 直边（且 1px 环在四角偏厚），
+     看起来就不是正圆。borderRadiusCircular 由浏览器按半宽收敛（22 → 11），
+     外圈直径与 WinUI 一致（22px），环与内胆保持同心等厚 */
+  border-radius: var(--borderRadiusCircular);
   /* 两层背景拼出「1px 渐变环 + 实心内胆」，等价 WinUI 的 BorderBrush + Background：
      上层实心裁到 content-box（= 环内侧），下层渐变铺满 border-box（= 环本体） */
   background-image:
@@ -714,6 +747,8 @@ defineOptions({ name: 'FluereSlider' })
   height: 12px;
   border-radius: var(--borderRadiusCircular);
   background-color: var(--colorCompoundBrandBackground); /* SliderThumbBackground */
+  /* 内点同样只是绘制：点了它也必须算「抓住滑块」，不能穿透成轨道点击 */
+  pointer-events: none;
   /* Normal：0.86（Storyboard 原值，12 × 0.86 ≈ 10.32，与实机一致） */
   transform: scale(0.86);
   transition:

@@ -9,7 +9,9 @@ nav:
 
 滑块让用户在一个连续区间内拖动取值（音量、亮度、字号、价格区间……）。样式与手感还原 WinUI 3（Windows App SDK）的 **Slider**，交互底座复用 reka-ui 的 Slider：指针拖拽、按 step 吸附、`Home` / `End` / 方向键 / `PageUp` / `PageDown` 键盘操作、`role="slider"` 语义与表单提交都由底座承担，本组件负责把 WinUI 的几何与状态逐项落地。
 
-几何全部取自 WinUI 原值：控件高 32px（`SliderPreContentMargin` 14 + 轨道 4 + `SliderPostContentMargin` 14）、轨道厚 4px、轨道圆角 2px、滑块 18×18 的布局盒外再靠 `Margin=-2` 撑出 22×22 的视觉外圈、内点 12px。
+几何全部取自 WinUI 原值：控件高 32px（`SliderPreContentMargin` 14 + 轨道 4 + `SliderPostContentMargin` 14）、轨道厚 4px、轨道圆角 2px、滑块 18×18 的布局盒外再靠 `Margin=-2` 撑出 22×22 的视觉外圈（正圆，半径按半宽收敛）、内点 12px。
+
+指针交互同样对齐 WinUI：按在滑块上（整个 22×22 的可见外圈都算）只是「抓住」滑块，数值不变；按在滑块之外的轨道上才把滑块中心移到指针处跳值（`MoveThumbToPoint`）。
 
 ## 基础用法
 
