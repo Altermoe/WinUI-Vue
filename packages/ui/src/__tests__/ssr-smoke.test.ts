@@ -17,6 +17,7 @@ import { renderToString } from 'vue/server-renderer'
 import FluereButton from '../button/button.vue'
 import FluereCheckbox from '../checkbox/checkbox.vue'
 import FluereInput from '../input/input.vue'
+import FluereNumberBox from '../number-box/number-box.vue'
 import FluereRadioButton from '../radio/radio-button.vue'
 import FluereRadioGroup from '../radio/radio-group.vue'
 import FluereScrollView from '../scrollview/scroll-view.vue'
@@ -90,5 +91,26 @@ describe('SSR 兼容性冒烟测试', () => {
     expect(html).toContain('role="radio"')
     expect(html).toContain('苹果')
     expect(html).toContain('data-state="checked"')
+  })
+
+  it('FluereNumberBox 可服务端渲染（取值 / 格式化均为纯函数，启动阶段不碰定时器与浏览器 API）', async () => {
+    const app = createSSRApp({
+      render: () =>
+        h(FluereNumberBox, {
+          modelValue: 12,
+          header: '数量',
+          spinButtonPlacementMode: 'inline',
+        }),
+    })
+    const html = await renderToString(app)
+    expect(html).toContain('fui-number-box')
+    expect(html).toContain('role="spinbutton"')
+    expect(html).toContain('aria-valuenow="12"')
+    expect(html).toContain('value="12"')
+    expect(html).toContain('数量')
+    // 未显式给出 min / max 时不渲染 aria-valuemin / aria-valuemax（对应 WinUI 只在
+    // Minimum/Maximum 被改写时才拼进 UIA name 的口径）
+    expect(html).not.toContain('aria-valuemin')
+    expect(html).not.toContain('aria-valuemax')
   })
 })

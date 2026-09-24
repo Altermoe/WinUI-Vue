@@ -16,7 +16,7 @@
 - [x] 2. `ToggleSwitch`（ToggleSwitch，WinUI 标志性控件，自定义实现）
 - [x] 3. `RadioButton` + `RadioGroup`（RadioButton，复用 reka RadioGroup）
 - [x] 4. `Slider`（Slider，复用 reka Slider）
-- [ ] 5. `NumberBox`（NumberBox，复用 reka NumberField）
+- [x] 5. `NumberBox`（NumberBox；底座改为自持实现：`format` / `parse` / `expression` / `step` 四个纯函数层 + `use-number-box` / `use-spin-repeat` 两个 hook，理由见组件文档）
 - [ ] 6. `Combobox`（ComboBox，复用 reka Listbox/Combobox；下拉箭头动画、popup 定位、选中态还原最费劲，放队尾）
 
 ## Wave 2 · 反馈与状态（满足"加载 / 提示"）

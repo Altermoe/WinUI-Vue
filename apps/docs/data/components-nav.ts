@@ -47,7 +47,7 @@ const componentNavGroups: ComponentNavGroup[] = [
       { slug: 'combobox', name: 'Combobox', implemented: false },
       { slug: 'editable', name: 'Editable', implemented: false },
       { slug: 'listbox', name: 'Listbox', implemented: false },
-      { slug: 'number-field', name: 'Number Field', implemented: false },
+      { slug: 'number-box', name: 'Number Box', implemented: true },
       { slug: 'label', name: 'Label', implemented: false },
       { slug: 'pin-input', name: 'Pin Input', implemented: false },
       { slug: 'radio-group', name: 'Radio Group', implemented: true },

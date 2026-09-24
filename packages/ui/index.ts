@@ -4,6 +4,7 @@ import '@fluere-vue/designs/tokens.css'
 import FluereButton from './src/button/button.vue'
 import FluereCheckbox from './src/checkbox/checkbox.vue'
 import FluereInput from './src/input/input.vue'
+import FluereNumberBox from './src/number-box/number-box.vue'
 import FluereRadioButton from './src/radio/radio-button.vue'
 import FluereRadioGroup from './src/radio/radio-group.vue'
 import FluereScrollView from './src/scrollview/scroll-view.vue'
@@ -14,6 +15,7 @@ export {
   FluereButton,
   FluereCheckbox,
   FluereInput,
+  FluereNumberBox,
   FluereRadioButton,
   FluereRadioGroup,
   FluereScrollView,
@@ -23,6 +25,12 @@ export {
 export type { FluereButtonProps } from './src/button/button.vue'
 export type { FluereCheckboxProps } from './src/checkbox/checkbox.vue'
 export type { FluereInputProps } from './src/input/input.vue'
+export type {
+  FluereNumberBoxProps,
+  FluereNumberBoxSpinButtonPlacementMode,
+  FluereNumberBoxValidationMode,
+  FluereNumberBoxValueChangedEventArgs,
+} from './src/number-box/types'
 export type { FluereRadioButtonProps } from './src/radio/radio-button.vue'
 export type { FluereRadioGroupProps } from './src/radio/radio-group.vue'
 export type {
