@@ -16,6 +16,7 @@ import type { Component } from 'vue'
 import { renderToString } from 'vue/server-renderer'
 import FluereButton from '../button/button.vue'
 import FluereCheckbox from '../checkbox/checkbox.vue'
+import FluereCombobox from '../combobox/combobox.vue'
 import FluereInput from '../input/input.vue'
 import FluereNumberBox from '../number-box/number-box.vue'
 import FluereRadioButton from '../radio/radio-button.vue'
@@ -112,5 +113,29 @@ describe('SSR 兼容性冒烟测试', () => {
     // Minimum/Maximum 被改写时才拼进 UIA name 的口径）
     expect(html).not.toContain('aria-valuemin')
     expect(html).not.toContain('aria-valuemax')
+  })
+
+  it('FluereCombobox 可服务端渲染（弹层走 Teleport + Presence，收起时不进首帧）', async () => {
+    const app = createSSRApp({
+      render: () =>
+        h(FluereCombobox, {
+          modelValue: 'b',
+          header: '水果',
+          placeholder: '选一个',
+          items: [
+            { value: 'a', text: 'Apple' },
+            { value: 'b', text: 'Banana' },
+          ],
+        }),
+    })
+    const html = await renderToString(app)
+    expect(html).toContain('fui-combobox')
+    expect(html).toContain('role="combobox"')
+    expect(html).toContain('aria-expanded="false"')
+    expect(html).toContain('readonly')
+    expect(html).toContain('value="Banana"')
+    expect(html).toContain('水果')
+    // 收起态不渲染下拉内容
+    expect(html).not.toContain('fui-combobox__popup')
   })
 })

@@ -44,7 +44,7 @@ const componentNavGroups: ComponentNavGroup[] = [
     items: [
       { slug: 'autocomplete', name: 'Autocomplete', implemented: false },
       { slug: 'checkbox', name: 'Checkbox', implemented: true },
-      { slug: 'combobox', name: 'Combobox', implemented: false },
+      { slug: 'combobox', name: 'Combobox', implemented: true },
       { slug: 'editable', name: 'Editable', implemented: false },
       { slug: 'listbox', name: 'Listbox', implemented: false },
       { slug: 'number-box', name: 'Number Box', implemented: true },

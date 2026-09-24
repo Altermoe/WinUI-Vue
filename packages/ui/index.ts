@@ -3,6 +3,7 @@
 import '@fluere-vue/designs/tokens.css'
 import FluereButton from './src/button/button.vue'
 import FluereCheckbox from './src/checkbox/checkbox.vue'
+import FluereCombobox from './src/combobox/combobox.vue'
 import FluereInput from './src/input/input.vue'
 import FluereNumberBox from './src/number-box/number-box.vue'
 import FluereRadioButton from './src/radio/radio-button.vue'
@@ -14,6 +15,7 @@ import FluereToggleSwitch from './src/toggle-switch/toggle-switch.vue'
 export {
   FluereButton,
   FluereCheckbox,
+  FluereCombobox,
   FluereInput,
   FluereNumberBox,
   FluereRadioButton,
@@ -24,6 +26,13 @@ export {
 }
 export type { FluereButtonProps } from './src/button/button.vue'
 export type { FluereCheckboxProps } from './src/checkbox/checkbox.vue'
+export type {
+  FluereComboboxItem,
+  FluereComboboxProps,
+  FluereComboboxSelectionChangedEventArgs,
+  FluereComboboxSelectionChangedTrigger,
+  FluereComboboxTextSubmittedEventArgs,
+} from './src/combobox/types'
 export type { FluereInputProps } from './src/input/input.vue'
 export type {
   FluereNumberBoxProps,

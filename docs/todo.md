@@ -17,7 +17,7 @@
 - [x] 3. `RadioButton` + `RadioGroup`（RadioButton，复用 reka RadioGroup）
 - [x] 4. `Slider`（Slider，复用 reka Slider）
 - [x] 5. `NumberBox`（NumberBox；底座改为自持实现：`format` / `parse` / `expression` / `step` 四个纯函数层 + `use-number-box` / `use-spin-repeat` 两个 hook，理由见组件文档）
-- [ ] 6. `Combobox`（ComboBox，复用 reka Listbox/Combobox；下拉箭头动画、popup 定位、选中态还原最费劲，放队尾）
+- [x] 6. `Combobox`（ComboBox，复用 reka Listbox/Combobox；下拉箭头动画、popup 定位、选中态还原最费劲，放队尾）
 
 ## Wave 2 · 反馈与状态（满足"加载 / 提示"）
 
@@ -48,10 +48,10 @@
 
 ## 发布检查（每波结束执行）
 
-- [ ] `pnpm check`（lint + format + tsc）
-- [ ] `pnpm test` / SSR smoke（`packages/ui/src/__tests__/ssr-smoke.test.ts`）
+- [x] `pnpm check`（lint + format + tsc）
+- [x] `pnpm test` / SSR smoke（`packages/ui/src/__tests__/ssr-smoke.test.ts`）
 - [ ] 用 Wave 1 子集在 `apps/playground` 搭一个真实设置页做视觉回归（rest / hover / pressed / selected / focus / disabled）
-- [ ] 为每个新组件补文档页（`apps/docs/content/components/*.md` + `demos/*/`）+ 更新 README「组件进度」索引
+- [x] 为每个新组件补文档页（`apps/docs/content/components/*.md` + `demos/*/`）+ 更新 README「组件进度」索引
 
 ---
 

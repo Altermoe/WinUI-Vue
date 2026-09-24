@@ -12,6 +12,7 @@
 
 - `FluereButton` — 5 种外观（primary / secondary / outline / subtle / transparent）× 3 尺寸（24 / 32 / 40px）× 3 形状（rounded / circular / square）+ 禁用 / 选中（toggle）/ 图标 / 块级。
 - `FluereInput` — 3 尺寸（24 / 32 / 40px）× 2 外观（outline / underline）+ 禁用 / 错误态（invalid，`aria-invalid`）+ `v-model`。
+- `FluereCombobox` — WinUI ComboBox 的还原：`items` 数据源 + 选中项指示条 + 文本搜索（前缀匹配 / 1000ms 窗口）+ 可编辑态（行内补全 / `TextSubmitted`）+ `SelectionChangedTrigger` + 完整键位与焦点表现（`Focused` / `PointerFocused`）；弹层用 reka Popper 定位，最大高 504px。
 
 ## 使用
 
