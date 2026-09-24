@@ -13,6 +13,7 @@
     "no-duplicate-imports": "off", // 允许分开导入
     "sort-imports": "off", // 由 oxfmt 接管
     "sort-keys": "off",
+    "max-statements": "off",
 
     // === Vue 最佳实践 - 正确性 (correctness) ===
     "vue/no-dupe-keys": "error",
