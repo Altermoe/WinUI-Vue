@@ -8,6 +8,8 @@ import { computed, ref, watch } from 'vue'
 import type { Component } from 'vue'
 
 const PAGE_SIZE = 40
+/** 页码从 1 开始 */
+const FIRST_PAGE = 1
 const COPY_RESET_MS = 1200
 /** 图标瓦片统一渲染尺寸（保持正方形，令网格整齐） */
 const ICON_TILE_SIZE = 24
@@ -26,7 +28,7 @@ const allSizes = iconsData.sizes
 const keyword = ref('')
 const sizeFilter = ref<number | 'all'>('all')
 const styleFilter = ref<FluentIconStyle | 'all'>('all')
-const currentPage = ref(1)
+const currentPage = ref(FIRST_PAGE)
 const copiedName = ref<string | undefined>(undefined)
 
 const pascalCase = (name: string): string =>
@@ -72,19 +74,21 @@ const combos = computed<IconCombo[]>(() => {
 })
 
 const visibleCombos = computed<IconCombo[]>(() => {
-  const start = (currentPage.value - 1) * PAGE_SIZE
+  const start = (currentPage.value - FIRST_PAGE) * PAGE_SIZE
   return combos.value.slice(start, start + PAGE_SIZE)
 })
 
-const totalPages = computed<number>(() => Math.max(1, Math.ceil(combos.value.length / PAGE_SIZE)))
+const totalPages = computed<number>(() =>
+  Math.max(FIRST_PAGE, Math.ceil(combos.value.length / PAGE_SIZE)),
+)
 
 const goToPage = (page: number): void => {
-  currentPage.value = Math.min(Math.max(1, page), totalPages.value)
+  currentPage.value = Math.min(Math.max(FIRST_PAGE, page), totalPages.value)
 }
 
 // 关键词/筛选变化后回到第一页，避免停留在空页
 watch([keyword, sizeFilter, styleFilter, combos], () => {
-  currentPage.value = 1
+  currentPage.value = FIRST_PAGE
 })
 
 const iconComponents = icons as unknown as Record<string, Component | undefined>

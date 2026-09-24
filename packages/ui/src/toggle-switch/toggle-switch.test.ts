@@ -246,7 +246,7 @@ describe('FluereToggleSwitch 状态样式（WinUI 3 ToggleSwitch 契约）', () 
     const thumbHover = rules.get(
       '.fui-switch:hover:not(:disabled):not([data-disabled]) .fui-switch__thumb',
     )
-    // hover 只改 clip-path 的裁切范围（收到 hover 圆直径），不触发布局
+    // Hover 只改 clip-path 的裁切范围（收到 hover 圆直径），不触发布局
     expect(thumbHover ?? '').toContain('clip-path: inset(')
     expect(thumbHover ?? '').toContain('var(--thumb-scale-hover)')
     expect(thumbHover ?? '').not.toContain('transform:')
@@ -259,11 +259,13 @@ describe('FluereToggleSwitch 状态样式（WinUI 3 ToggleSwitch 契约）', () 
     expect(thumb).toContain('height: var(--thumb-h-pressed)')
     expect(thumb).toContain('border-radius: calc(var(--thumb-h-pressed) / 2)')
     expect(thumb).toContain('clip-path: inset(')
-    // active 只把 clip-path 切到全露外框 → 不再改 width/height/border-radius，也无位移缩放
+    // Active 只把 clip-path 切到全露外框 → 不再改 width/height/border-radius，也无位移缩放
     const thumbPressed = rules.get(
       '.fui-switch[data-pressed]:not(:disabled):not([data-disabled]) .fui-switch__thumb',
     )
-    expect(thumbPressed ?? '').toContain('clip-path: inset(0 round calc(var(--thumb-h-pressed) / 2))')
+    expect(thumbPressed ?? '').toContain(
+      'clip-path: inset(0 round calc(var(--thumb-h-pressed) / 2))',
+    )
     expect(thumbPressed ?? '').not.toContain('width:')
     expect(thumbPressed ?? '').not.toContain('height:')
     expect(thumbPressed ?? '').not.toContain('border-radius:')
@@ -273,7 +275,7 @@ describe('FluereToggleSwitch 状态样式（WinUI 3 ToggleSwitch 契约）', () 
     const medium = rules.get('.fui-switch') ?? ''
     expect(medium).toContain('--thumb-w-pressed: 19px')
     expect(medium).toContain('--thumb-h-pressed: 14px')
-    expect(medium).toContain('--travel: 20px') // active 宽 19 < travel 20 → 不出 rail/轨道
+    expect(medium).toContain('--travel: 20px') // Active 宽 19 < travel 20 → 不出 rail/轨道
     // 三档 active 宽度都小于各自 travel（15/19/23 < 16/20/24），天然无法离开轨道区域
     expect(rules.get(".fui-switch[data-size='small']") ?? '').toContain('--thumb-w-pressed: 15px')
     expect(rules.get(".fui-switch[data-size='large']") ?? '').toContain('--thumb-w-pressed: 23px')

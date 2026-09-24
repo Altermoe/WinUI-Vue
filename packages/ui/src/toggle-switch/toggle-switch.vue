@@ -97,6 +97,14 @@ const model = defineModel<boolean>({ default: false })
 
 /** 拖拽一旦开始位移超过此阈值，即视为「拖动」（否则当点击处理切换状态） */
 const DRAG_THRESHOLD = 4
+/** 滑块进度最小值（= Off 端），同时是 travel 合法性的下界 */
+const PROGRESS_MIN = 0
+/** 滑块进度最大值（= On 端） */
+const PROGRESS_MAX = 1
+/** 拖拽释放切向判定中点：进度 ≥ 此值视为 On */
+const DRAG_MIDPOINT = 0.5
+/** 兜底 travel 像素（medium 档 40×20 的行程），读取失败时回退 */
+const DEFAULT_TRAVEL_PX = 20
 
 const rootEl = ref<HTMLElement | null>(null)
 const disabled = computed(() => props.disabled)
@@ -113,7 +121,7 @@ const dragProgress = ref<number | null>(null)
 
 /** 每次渲染落地的滑块进度（拖拽中跟随指针，否则取 end 态 0/1） */
 const styleProgress = computed(() =>
-  dragging.value ? (dragProgress.value ?? 0) : model.value ? 1 : 0,
+  dragging.value ? (dragProgress.value ?? PROGRESS_MIN) : model.value ? PROGRESS_MAX : PROGRESS_MIN,
 )
 
 /** 滑块滑轨位移。常态内联 transform 会随 progress 走 CSS transition；拖拽中才加 will-change */
@@ -126,14 +134,15 @@ const railStyle = computed(() => ({
 const travelPx = (): number => {
   const el = rootEl.value
   if (!el) {
-    return 20
+    return DEFAULT_TRAVEL_PX
   }
   const raw = getComputedStyle(el).getPropertyValue('--travel').trim()
   const parsed = Number.parseFloat(raw)
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 20
+  return Number.isFinite(parsed) && parsed > PROGRESS_MIN ? parsed : DEFAULT_TRAVEL_PX
 }
 
-const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v)
+const clamp01 = (v: number) =>
+  v < PROGRESS_MIN ? PROGRESS_MIN : v > PROGRESS_MAX ? PROGRESS_MAX : v
 
 let pointerId: number | null = null
 let startX = 0
@@ -191,7 +200,7 @@ function finishInteraction(cancel = false) {
   }
   if (hasMoved) {
     // 拖到中点右侧 → On，否则 Off；然后让滑块从当前进度缓动到终点
-    model.value = (dragProgress.value ?? 0) >= 0.5
+    model.value = (dragProgress.value ?? PROGRESS_MIN) >= DRAG_MIDPOINT
     suppressClick.value = true
   }
   dragging.value = false
@@ -458,7 +467,9 @@ defineOptions({ name: 'FluereToggleSwitch' })
   left: 0;
   top: 0;
   box-sizing: border-box;
-  width: calc(var(--travel) - 2 * var(--strokeWidthThin)); /* = 轨道宽的一半，扣描边 → 端点不压轨道描边 */
+  width: calc(
+    var(--travel) - 2 * var(--strokeWidthThin)
+  ); /* = 轨道宽的一半，扣描边 → 端点不压轨道描边 */
   height: 100%;
   display: flex;
   align-items: center; /* 垂直居中 → 滑块到两端仍与上下等距（需求 1） */
@@ -484,8 +495,7 @@ defineOptions({ name: 'FluereToggleSwitch' })
   /* 常态：从固定药丸四周裁掉 (pressed - rest)/2，露出居中的 rest 直径圆点 */
   clip-path: inset(
     calc((var(--thumb-h-pressed) - var(--thumb-h)) / 2)
-    calc((var(--thumb-w-pressed) - var(--thumb-w)) / 2)
-    round calc(var(--thumb-h) / 2)
+      calc((var(--thumb-w-pressed) - var(--thumb-w)) / 2) round calc(var(--thumb-h) / 2)
   );
   will-change: auto;
   transition:
@@ -511,8 +521,8 @@ defineOptions({ name: 'FluereToggleSwitch' })
   /* hover 圆点稍大：把裁掉的四周收到 hover 圆直径，仍为圆（clip-path，不动布局） */
   clip-path: inset(
     calc((var(--thumb-h-pressed) - var(--thumb-h) * var(--thumb-scale-hover)) / 2)
-    calc((var(--thumb-w-pressed) - var(--thumb-w) * var(--thumb-scale-hover)) / 2)
-    round calc(var(--thumb-h) * var(--thumb-scale-hover) / 2)
+      calc((var(--thumb-w-pressed) - var(--thumb-w) * var(--thumb-scale-hover)) / 2) round
+      calc(var(--thumb-h) * var(--thumb-scale-hover) / 2)
   );
 }
 /* 选中 hover：AccentFillColorDefault→Secondary */

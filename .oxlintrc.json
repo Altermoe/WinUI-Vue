@@ -14,6 +14,16 @@
     "sort-imports": "off", // 由 oxfmt 接管
     "sort-keys": "off",
     "max-statements": "off",
+    // 过度噪音的扁平 style 规则：改代码收益低、噪声大，统一弱化为 off。
+    // no-magic-numbers 保留（warn），只是需用命名常量落地。
+    "no-ternary": "off",
+    "no-nested-ternary": "off",
+    "func-style": "off",
+    "id-length": "off",
+    "prefer-destructuring": "off",
+    "unicorn/no-null": "off",
+    "unicorn/no-nested-ternary": "off",
+    "import/group-exports": "off",
 
     // === Vue 最佳实践 - 正确性 (correctness) ===
     "vue/no-dupe-keys": "error",
