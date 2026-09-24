@@ -58,9 +58,11 @@ const useColorMode = () => {
     hydrated = true
     if (import.meta.client) {
       // 首帧样式由 nuxt.config 的内联头脚本按同一规则写入，避免闪烁；
-      // 此处同步响应式状态，并使按钮图标与 DOM 一致。
+      // 响应式状态（图标可见性已交给 data-color-mode + CSS，这里只剩 aria-label / title
+      // 等属性文案）必须推迟到水合完成后再同步 —— 否则服务端恒为 light 分支，
+      // 暗色访客会在水合时看到属性不匹配告警（ThemeToggle 图标 d / aria-label）。
       // 初始值跟随系统时不持久化，只有当用户显式点击切换后才记住偏好。
-      setMode(resolveInitial(), false)
+      onMounted(() => setMode(resolveInitial(), false))
     }
   }
 
