@@ -1,46 +1,22 @@
-<script lang="ts">
-import type { Direction } from 'reka-ui'
-
+<script setup lang="ts">
 /**
- * 组件级数值常量。
- * 放在普通 <script> 块（模块作用域）里，才能在 <script setup> 的
- * withDefaults() 中被引用 —— defineProps 的默认值会被提升到 setup 之外。
- */
-
-/** 值提示的小数位上限（WinUI DefaultDisambiguationUIConverter 最多保留 4 位） */
-const TOOLTIP_MAX_DECIMALS = 4
-/** 步进为整数（step=1）时提示保留 0 位小数 */
-const TOOLTIP_MIN_DECIMALS = 0
-/** String.indexOf 未命中的返回值（小数分隔符不存在） */
-const INDEX_NOT_FOUND = -1
-/** 小数分隔符自身的长度，用于把「小数点位置」换算成「小数位数」 */
-const DECIMAL_POINT_LENGTH = 1
-/** 浮点累加误差容忍，用于判定刻度是否落到 max 上 */
-const TICK_EPSILON = 1e-9
-/** 纵向控件的缺省长度（px）；WinUI 里由布局决定，Web 侧给一个可用缺省值 */
-const DEFAULT_VERTICAL_LENGTH = 200
-/** 刻度线数量上限：避免 tickFrequency 极小时渲染出成千上万个节点 */
-const TICK_COUNT_LIMIT = 200
-/** 刻度下标从 0 起、每次 +1 */
-const FIRST_TICK_INDEX = 0
-const TICK_INDEX_STEP = 1
-/** 比例 / 百分比标度：ratio ∈ [0, 1]，percent ∈ [0, 100] */
-const RATIO_MIN = 0
-const RATIO_MAX = 1
-const PERCENT_MAX = 100
-/** 值域下界：range ≤ 0 视为无有效值域 */
-const EMPTY_RANGE = 0
-/** 单值滑块的取值口径：reka 的 modelValue 是数组，固定取第 0 项 */
-const SINGLE_THUMB_INDEX = 0
-
-/**
- * FluereSlider 组件 Props 契约
+ * FluereSlider：WinUI 3 / Fluent 2 Slider 的 Vue 实现。
+ *
+ * 本文件只做**组合**：props 默认值与 emits 契约 + 模板 + 样式
+ * （Props 的类型与逐项说明在 types.ts）。
+ * 逻辑按层拆到同目录模块，均可脱离组件单测：
+ * - types.ts                   公共类型与 Props 契约（各层的公共依赖，避免反向 import .vue）
+ * - constants.ts               有领域含义的命名常量
+ * - disambiguation.ts          纯函数：数值提示文本口径（WinUI Disambiguation UI）
+ * - geometry.ts                纯函数：刻度分布、刻度条显隐、宿主 / 刻度样式投影
+ * - use-slider-value.ts        取值层：受控 / 非受控取值 + reka 数组载荷适配
+ * - use-slider-interaction.ts  交互层：按下态与键盘聚焦（数值提示显隐）
  *
  * 设计规范来源：WinUI 3 / Windows App SDK — Slider
- * （src/controls/dev/CommonStyles/Slider_themeresources.xaml，
- *   几何/动画另对照 src/dxaml/xcp/dxaml/lib/Slider_Partial.cpp 的
+ * （controls/dev/CommonStyles/Slider_themeresources.xaml，
+ *   几何/动画另对照 dxaml/xcp/dxaml/lib/Slider_Partial.cpp 的
  *   UpdateTrackLayout / MoveThumbToPoint / OnThumbDragDelta，
- *   指针归属另对照 src/dxaml/xcp/dxaml/lib/Thumb_Partial.cpp）
+ *   指针归属另对照 dxaml/xcp/dxaml/lib/Thumb_Partial.cpp）
  * 交互底座复用 reka-ui 的 SliderRoot：指针拖拽（setPointerCapture）、
  * 步进吸附、Home/End/方向键/PageUp/PageDown、role=slider 语义、表单隐藏 input。
  * 取值一律经 Fluent 2 语义 token 落地（fluent-tokens：data/fluent-tokens.json）
@@ -80,128 +56,26 @@ const SINGLE_THUMB_INDEX = 0
  * 「root :hover/:active」与「thumb :hover/:active」分别落地。
  *
  * 数值提示（WinUI Disambiguation UI，Slider 在代码里挂到 Thumb 上的 ToolTip）：
- *   按下 / 键盘聚焦时显示，文本按 StepFrequency 的小数位（上限 4 位）格式化。
- *   它是 Slider 的一部分，正式 ToolTip 组件（Wave 3）落地后再统一表面样式。
+ *   按下 / 键盘聚焦时显示，文本按 StepFrequency 的小数位（上限 4 位）格式化
+ *   （口径见 disambiguation.ts）。
  *
  * 无障碍：thumb 自带 role=slider + aria-valuenow/min/max + tabindex；
  * 可访问名优先取 label，其次 WinUI Header（对应 GetPlainText 用 Header 当 AutomationName），
  * 再其次由 #header 插槽经 aria-labelledby 关联。
  */
-export type FluereSliderOrientation = 'horizontal' | 'vertical'
-
-/**
- * 刻度线位置（对应 WinUI Slider.TickPlacement）
- * - none        不画刻度（WinUI 默认）
- * - inline      画在轨道内（TickPlacement=Inline）
- * - outside     轨道两侧都画（TickPlacement=Outside）
- * - top-left    WinUI TopLeft：横向在轨道上方 / 纵向在轨道左侧
- * - bottom-right WinUI BottomRight：横向在轨道下方 / 纵向在轨道右侧
- */
-export type FluereSliderTickPlacement = 'none' | 'inline' | 'outside' | 'top-left' | 'bottom-right'
-
-export interface FluereSliderProps {
-  /**
-   * 当前值（v-model）。缺省时组件走非受控模式（见 defaultValue）。
-   */
-  modelValue?: number
-
-  /**
-   * 非受控初始值，缺省落到 min（对应 WinUI Slider.Value 默认 = Minimum）
-   */
-  defaultValue?: number
-
-  /**
-   * 最小值（对应 WinUI RangeBase.Minimum）
-   * @default 0
-   */
-  min?: number
-
-  /**
-   * 最大值（对应 WinUI RangeBase.Maximum）
-   * @default 100
-   */
-  max?: number
-
-  /**
-   * 步进（对应 WinUI Slider.StepFrequency）
-   * @default 1
-   */
-  step?: number
-
-  /**
-   * 是否禁用
-   * @default false
-   */
-  disabled?: boolean
-
-  /**
-   * 方向（对应 WinUI Slider.Orientation）
-   * @default 'horizontal'
-   */
-  orientation?: FluereSliderOrientation
-
-  /**
-   * 反向：横向时最大值在左，纵向时最大值在下（对应 WinUI Slider.IsDirectionReversed）
-   * @default false
-   */
-  inverted?: boolean
-
-  /**
-   * 顶部标题（对应 WinUI Slider.Header）。同时作为缺省的可访问名。
-   */
-  header?: string
-
-  /**
-   * 可访问名称（缺省依次回落到 header 文本、#header 插槽）
-   */
-  label?: string
-
-  /**
-   * 表单提交名：位于 <form> 内时补隐藏原生 input，提交 `name=value`。
-   * （reka 的隐藏 input 会把数组值摊平成 `name[0]`，这里自渲染以保证提交名可预期）
-   */
-  name?: string
-
-  /**
-   * 阅读方向（一般无需设置，由 ConfigProvider / LTR 推断）
-   */
-  dir?: Direction
-
-  /**
-   * 是否显示数值提示（对应 WinUI Slider.IsThumbToolTipEnabled）
-   * @default true
-   */
-  tooltip?: boolean
-
-  /**
-   * 刻度线位置（对应 WinUI Slider.TickPlacement）
-   * @default 'none'
-   */
-  tickPlacement?: FluereSliderTickPlacement
-
-  /**
-   * 刻度间隔（对应 WinUI Slider.TickFrequency）。
-   * 与 WinUI 一致：为 0 时不画刻度线。
-   * @default 0
-   */
-  tickFrequency?: number
-
-  /**
-   * 纵向时的控件长度（px）。横向固定 32px（WinUI SliderHorizontalHeight）
-   * @default 200
-   */
-  verticalLength?: number
-}
-</script>
-
-<script setup lang="ts">
 import {
   SliderRange as RekaSliderRange,
   SliderRoot as RekaSliderRoot,
   SliderThumb as RekaSliderThumb,
   SliderTrack as RekaSliderTrack,
 } from 'reka-ui'
-import { computed, getCurrentInstance, ref, useSlots } from 'vue'
+import { computed, getCurrentInstance, useSlots } from 'vue'
+import { DEFAULT_VERTICAL_LENGTH } from './constants'
+import { getHostStyle, getTickBars, getTickPercents, getTickStyle } from './geometry'
+import type { FluereSliderProps } from './types'
+import { useSliderInteraction } from './use-slider-interaction'
+import { useSliderValue } from './use-slider-value'
+import type { SliderValueEvents } from './use-slider-value'
 
 const slots = useSlots()
 const instance = getCurrentInstance()
@@ -232,123 +106,40 @@ const emit = defineEmits<{
   'valueCommit': [value: number]
 }>()
 
-/** 非受控模式下的本地值（与 reka 的 defaultValue 并行维护，供值提示显示） */
-const localValue = ref(props.defaultValue ?? props.min)
-const currentValue = computed(() => props.modelValue ?? localValue.value)
+/* ---- 取值层：受控 / 非受控取值 + 数值提示文本 ---- */
+/* 把 defineEmits 的 emit 适配成具名事件（重载签名不便跨模块传递，同 ScrollView 的 events 层） */
+const sliderEvents: SliderValueEvents = {
+  valueChange: (value) => emit('update:modelValue', value),
+  valueCommit: (value) => emit('valueCommit', value),
+}
+const { currentValue, rootValue, rootDefaultValue, valueText, onUpdateModelValue, onValueCommit } =
+  useSliderValue(props, sliderEvents)
 
-/** 受控时把单值包成 reka 需要的数组；非受控时交给 reka 的 defaultValue */
-const controlledValue = computed(() =>
-  props.modelValue === undefined ? undefined : [props.modelValue],
+/* ---- 交互层：按下态 / 键盘聚焦（数值提示显隐） ---- */
+const {
+  pressed,
+  tooltipVisible,
+  onPointerDownCapture,
+  onPointerDown,
+  onPointerUp,
+  onKeyDown,
+  onFocusIn,
+  onFocusOut,
+} = useSliderInteraction(props)
+
+/* ---- 刻度：纯函数投影（刻度分布 + 三条 TickBar 的显隐） ---- */
+const tickPercents = computed(() =>
+  getTickPercents({
+    min: props.min,
+    max: props.max,
+    tickFrequency: props.tickFrequency,
+    tickPlacement: props.tickPlacement,
+  }),
 )
-const rootDefaultValue = computed(() => [props.defaultValue ?? props.min])
+const tickBars = computed(() => getTickBars(props.tickPlacement, tickPercents.value))
+const hostStyle = computed(() => getHostStyle(props.orientation, props.verticalLength))
 
-/** 百分比位置（0..100），与 reka / WinUI 的取值口径一致 */
-const percent = computed(() => {
-  const range = props.max - props.min
-  if (range <= EMPTY_RANGE) {
-    return RATIO_MIN
-  }
-  const ratio = (currentValue.value - props.min) / range
-  return Math.min(Math.max(ratio, RATIO_MIN), RATIO_MAX) * PERCENT_MAX
-})
-
-/** 值提示文本：小数位 = step 的小数位（上限 4），与 WinUI 的转换器一致 */
-const valueText = computed(() => {
-  const raw = String(props.step)
-  const dot = raw.indexOf('.')
-  const decimals =
-    dot === INDEX_NOT_FOUND
-      ? TOOLTIP_MIN_DECIMALS
-      : Math.min(raw.length - dot - DECIMAL_POINT_LENGTH, TOOLTIP_MAX_DECIMALS)
-  return currentValue.value.toFixed(decimals)
-})
-
-/* ---- 交互状态：按下 / 键盘聚焦（驱动数值提示；按下同时驱动 pressed 配色） ---- */
-/*
- * 与 WinUI 一致：数值提示在「按下 / 键盘聚焦」时出现，指针抬起即收起。
- * 指针交互时 reka 也会 focus() 滑块，所以「聚焦」不能直接等同于「键盘聚焦」：
- * pointerdown 在捕获阶段先记下「本次聚焦由指针发起」，focusin 再据此判定。
- */
-const pressed = ref(false)
-const keyboardFocus = ref(false)
-let pointerInitiatedFocus = false
-const tooltipVisible = computed(() => props.tooltip && (pressed.value || keyboardFocus.value))
-
-function onHostPointerDownCapture() {
-  pointerInitiatedFocus = true
-}
-function onHostPointerDown() {
-  if (!props.disabled) {
-    pressed.value = true
-    keyboardFocus.value = false
-  }
-}
-function onHostPointerUp() {
-  pressed.value = false
-  pointerInitiatedFocus = false
-}
-function onHostKeyDown() {
-  if (!props.disabled) {
-    keyboardFocus.value = true
-  }
-}
-function onFocusIn() {
-  keyboardFocus.value = !pointerInitiatedFocus
-}
-function onFocusOut() {
-  keyboardFocus.value = false
-  pointerInitiatedFocus = false
-}
-
-function onUpdateModelValue(payload?: number[]) {
-  const next = payload?.[SINGLE_THUMB_INDEX]
-  if (next === undefined) {
-    return
-  }
-  localValue.value = next
-  emit('update:modelValue', next)
-}
-function onValueCommit(payload: number[]) {
-  emit('valueCommit', payload[SINGLE_THUMB_INDEX] ?? props.min)
-}
-
-/* ---- 刻度线（WinUI TickBar）：频率 ≤ 0 时不画，与 WinUI 默认 TickFrequency=0 一致 ---- */
-const tickPercents = computed(() => {
-  const { min, max, tickFrequency } = props
-  const range = max - min
-  if (props.tickPlacement === 'none' || tickFrequency <= EMPTY_RANGE || range <= EMPTY_RANGE) {
-    return []
-  }
-  const count = Math.floor(range / tickFrequency + TICK_EPSILON)
-  if (count < TICK_INDEX_STEP || count + TICK_INDEX_STEP > TICK_COUNT_LIMIT) {
-    return []
-  }
-  const out: number[] = []
-  for (let i = FIRST_TICK_INDEX; i <= count; i += TICK_INDEX_STEP) {
-    out.push(((i * tickFrequency) / range) * PERCENT_MAX)
-  }
-  return out
-})
-const hasTicks = computed(() => tickPercents.value.length > FIRST_TICK_INDEX)
-const showInlineTicks = computed(() => hasTicks.value && props.tickPlacement === 'inline')
-/** WinUI TopTickBar（纵向时是 LeftTickBar） */
-const showTopTicks = computed(
-  () => hasTicks.value && (props.tickPlacement === 'outside' || props.tickPlacement === 'top-left'),
-)
-/** WinUI BottomTickBar（纵向时是 RightTickBar） */
-const showBottomTicks = computed(
-  () =>
-    hasTicks.value && (props.tickPlacement === 'outside' || props.tickPlacement === 'bottom-right'),
-)
-const tickStyle = (value: number) => ({ '--fui-slider-tick': `${value}%` })
-
-const hostStyle = computed(() =>
-  props.orientation === 'vertical'
-    ? { '--fui-slider-length': `${props.verticalLength}px` }
-    : undefined,
-)
-
-/** 可访问名：label > header 文本；只有 #header 插槽时改用 aria-labelledby 关联 */
+/* ---- 可访问名：label > header 文本；只有 #header 插槽时改用 aria-labelledby 关联 ---- */
 const ariaLabel = computed(() => props.label ?? props.header)
 const ariaLabelledby = computed(() =>
   !ariaLabel.value && slots.header ? headerId.value : undefined,
@@ -364,11 +155,11 @@ defineOptions({ name: 'FluereSlider' })
     :data-disabled="disabled ? '' : undefined"
     :data-pressed="pressed ? '' : undefined"
     :style="hostStyle"
-    @pointerdown.capture="onHostPointerDownCapture"
-    @pointerdown="onHostPointerDown"
-    @pointerup="onHostPointerUp"
-    @pointercancel="onHostPointerUp"
-    @keydown="onHostKeyDown"
+    @pointerdown.capture="onPointerDownCapture"
+    @pointerdown="onPointerDown"
+    @pointerup="onPointerUp"
+    @pointercancel="onPointerUp"
+    @keydown="onKeyDown"
     @focusin="onFocusIn"
     @focusout="onFocusOut"
   >
@@ -383,7 +174,7 @@ defineOptions({ name: 'FluereSlider' })
 
     <RekaSliderRoot
       class="fui-slider"
-      :model-value="controlledValue"
+      :model-value="rootValue"
       :default-value="rootDefaultValue"
       :min="min"
       :max="max"
@@ -397,7 +188,7 @@ defineOptions({ name: 'FluereSlider' })
     >
       <!-- 轨道外侧刻度（TopTickBar / BottomTickBar；纵向时对应 Left / Right） -->
       <span
-        v-if="showTopTicks"
+        v-if="tickBars.top"
         class="fui-slider__ticks fui-slider__ticks--top"
         aria-hidden="true"
       >
@@ -405,11 +196,11 @@ defineOptions({ name: 'FluereSlider' })
           v-for="(tick, index) in tickPercents"
           :key="`top-${index}`"
           class="fui-slider__tick"
-          :style="tickStyle(tick)"
+          :style="getTickStyle(tick)"
         />
       </span>
       <span
-        v-if="showBottomTicks"
+        v-if="tickBars.bottom"
         class="fui-slider__ticks fui-slider__ticks--bottom"
         aria-hidden="true"
       >
@@ -417,7 +208,7 @@ defineOptions({ name: 'FluereSlider' })
           v-for="(tick, index) in tickPercents"
           :key="`bottom-${index}`"
           class="fui-slider__tick"
-          :style="tickStyle(tick)"
+          :style="getTickStyle(tick)"
         />
       </span>
 
@@ -425,7 +216,7 @@ defineOptions({ name: 'FluereSlider' })
         <RekaSliderRange class="fui-slider__range" />
         <!-- 轨道内刻度（InlineTickBar）：压在数值填充之上、滑块之下 -->
         <span
-          v-if="showInlineTicks"
+          v-if="tickBars.inline"
           class="fui-slider__ticks fui-slider__ticks--inline"
           aria-hidden="true"
         >
@@ -433,7 +224,7 @@ defineOptions({ name: 'FluereSlider' })
             v-for="(tick, index) in tickPercents"
             :key="`inline-${index}`"
             class="fui-slider__tick"
-            :style="tickStyle(tick)"
+            :style="getTickStyle(tick)"
           />
         </span>
       </RekaSliderTrack>

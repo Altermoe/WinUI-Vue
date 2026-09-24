@@ -33,7 +33,7 @@ export type {
   FluereSliderOrientation,
   FluereSliderProps,
   FluereSliderTickPlacement,
-} from './src/slider/slider.vue'
+} from './src/slider/types'
 export type {
   FluereScrollViewProps,
   ScrollingAnchorRequestedEventArgs,
