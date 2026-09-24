@@ -15,9 +15,14 @@ import type { FluereComboboxItem, FluereComboboxSelectionChangedEventArgs } from
  *
  * jsdom 不解析 var() / light-dark()，拿不到可靠的计算样式，故样式层退一步断言
  * SFC 里的声明本身（与 radio.test.ts 同一套口径），守住 WinUI 还原规则。
+ *
+ * 组件有多个 <style> 块（scoped 的控件规则 + 非 scoped 的弹层 / @property 规则，
+ * 弹层必须全局——reka 把 class 与 Vue 作用域 id 拆到了两个元素上），全部收集。
  */
 const readStyleRules = (sfc: string): Map<string, string> => {
-  const styleBlock = /<style[^>]*>(?<css>[\s\S]*?)<\/style>/.exec(sfc)?.groups?.css ?? ''
+  const styleBlock = [...sfc.matchAll(/<style[^>]*>(?<css>[\s\S]*?)<\/style>/g)]
+    .map((block) => block.groups?.css ?? '')
+    .join('\n')
   const rules = new Map<string, string>()
   for (const block of styleBlock.replace(/\/\*[\s\S]*?\*\//g, '').split('}')) {
     const [selectorText, declarations] = block.split('{')
@@ -662,11 +667,18 @@ describe('FluereCombobox 样式契约（WinUI 资源键 → Fluent 令牌）', (
     expect(textRules).toContain('min-width: 0')
   })
 
-  it('DropDownGlyph：12×12、右内边距 14', () => {
+  it('DropDownGlyph：12×12、右内边距 14；按下轻微下沉而不是翻转', () => {
     const chevronRules = styleRules.get('.fui-combobox__chevron') ?? ''
     expect(chevronRules).toContain('inset-inline-end: 14px')
     expect(chevronRules).toContain('width: 12px')
     expect(chevronRules).toContain('height: 12px')
+    expect(
+      styleRules.get(
+        '.fui-combobox:not([data-disabled]) .fui-combobox__surface:active .fui-combobox__chevron',
+      ) ?? '',
+    ).toContain('translateY(1px)')
+    // 源码里不允许出现箭头翻转（WinUI 3 Gallery 按下只下沉）
+    expect(comboboxSfc).not.toContain('rotate(180deg)')
   })
 
   it('选中指示条：3×16 + 品牌色 + 仅 Focused 显示', () => {
@@ -691,6 +703,8 @@ describe('FluereCombobox 样式契约（WinUI 资源键 → Fluent 令牌）', (
     expect(itemRules).toContain('margin: 2px 5px')
     expect(itemRules).toContain('padding: 5px 11px 7px')
     expect(itemRules).toContain('border-radius: var(--borderRadiusMedium)')
+    // 项字号与控件一致（14px/Body1），不靠面板继承
+    expect(itemRules).toContain('font-size: var(--fontSizeBase300)')
     expect(styleRules.get('.fui-combobox__item[data-highlighted]') ?? '').toContain(
       'var(--colorSubtleBackgroundHover)',
     )
@@ -712,14 +726,50 @@ describe('FluereCombobox 样式契约（WinUI 资源键 → Fluent 令牌）', (
     ).toContain('scaleY(0.625)')
   })
 
-  it('浮层：圆角 8 + shadow16 + 最大高 504 + 不窄于控件', () => {
+  it('浮层：圆角 8 + shadow16 + 最大高 504 + 宽度对齐触发元素 + 从选中项 split 展开', () => {
     const popupRules = styleRules.get('.fui-combobox__popup') ?? ''
     expect(popupRules).toContain('border-radius: var(--borderRadiusXLarge)')
     expect(popupRules).toContain('box-shadow: var(--shadow16)')
+    expect(popupRules).toContain('background-color: var(--colorNeutralBackground1)')
     expect(popupRules).toContain('max-height: min(')
     expect(popupRules).toContain('var(--fui-combobox-max-height, 504px)')
-    expect(popupRules).toContain('min-width: var(--reka-combobox-trigger-width, 64px)')
+    // WinUI：Popup 宽 = ComboBox.ActuallyWidth——宽度与触发元素严格对齐（不是"不窄于"）
+    expect(popupRules).toContain('width: var(--reka-combobox-trigger-width, 64px)')
+    expect(popupRules).toContain('font-size: var(--fontSizeBase300)')
+    // Split 展开：pending/playing 先收拢成选中项处的缝，playing 播关键帧
+    expect(styleRules.get(".fui-combobox__popup[data-split='pending']") ?? '').toContain(
+      'clip-path: inset(var(--fui-combobox-split-top, 0px)',
+    )
+    expect(styleRules.get(".fui-combobox__popup[data-split='playing']") ?? '').toContain(
+      'animation: fui-combobox-split-open var(--durationGentle) var(--curveDecelerateMid) both',
+    )
+    expect(comboboxSfc).toContain('@keyframes fui-combobox-split-open')
     expect(styleRules.get('.fui-combobox__list') ?? '').toContain('padding-block: 4px')
+  })
+
+  it('弹层规则必须在非 scoped 块（reka 把 class 与作用域 id 拆到了两个元素上）', () => {
+    const globalBlock = [...comboboxSfc.matchAll(/<style[^>]*>(?<css>[\s\S]*?)<\/style>/g)]
+      .map((block) => block.groups?.css ?? '')
+      .find((css) => css.includes('.fui-combobox__popup'))
+    expect(globalBlock).toBeDefined()
+    expect(globalBlock).not.toContain('.fui-combobox__surface')
+  })
+
+  it('开面板：弹层带 data-split 时序状态（原点实测后起播展开动画）', async () => {
+    const wrapper = host({ defaultValue: 'b' })
+    pointerDown(surface(wrapper).element)
+    await settle()
+    const element = popup()
+    expect(element).not.toBeNull()
+    expect(element?.hasAttribute('data-split')).toBe(true)
+    // 组件的 afterOpen 里有两层 nextTick（本组件一层 + reka highlightSelected 一层），
+    // 轮询等它把 pending 推进到量完原点的 playing（jsdom 无动画，不会到 done）
+    for (let i = 0; i < 10 && element?.getAttribute('data-split') === 'pending'; i += 1) {
+      await nextTick()
+    }
+    expect(element?.getAttribute('data-split')).toBe('playing')
+    expect(element?.style.getPropertyValue('--fui-combobox-split-top')).not.toBe('')
+    wrapper.unmount()
   })
 
   it('禁用态：填充 / 前景 / 箭头全走禁用档', () => {

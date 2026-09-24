@@ -248,8 +248,8 @@ nav:
 > 与 WinUI 的差异（均为 Web 侧近似，逐条记录）：
 >
 > 1. **Acrylic 表面**：Fluent 令牌集中没有材质令牌，浮层用 `colorNeutralBackground1` + `shadow16` 近似（与 NumberBox 紧凑浮层一致），未复刻 `AcrylicInAppFillColorDefaultBrush` 的模糊配方。
-> 2. **浮层开启动画**：以 `clip-path` 从控件一侧展开近似 `SplitOpenThemeAnimation`（250ms / `0,0,0,1`）；**关闭动画省略**——reka 的 `Presence` 会立即卸载内容，以保住 `aria-hidden` 语义正确。
-> 3. **箭头动效**：WinUI 的 `AnimatedIcon`（AnimatedChevronDownSmall Lottie：按下 150ms 翻 180°、松开约 300ms 翻回）以 `rotate(180deg)` + 对应时长近似。
+> 2. **浮层开启动画**：以 `clip-path` 从**选中项中线向上下两侧展开**近似 `SplitOpenThemeAnimation`（无选中时贴触发控件一侧；250ms / `0,0,0,1`）——面板先收拢成一条缝、实测选中项位置写入 CSS 变量后再起播；**关闭动画省略**——reka 的 `Presence` 会立即卸载内容，以保住 `aria-hidden` 语义正确。
+> 3. **箭头按下态**：WinUI 3 Gallery 的箭头按下是**轻微下沉（不翻转）**，这里以 `translateY(1px)`（进 `durationFast` / 回 `durationNormal`）近似。
 > 4. **焦点矩形**：WinUI 用 `FocusStrokeColorOuter`（浅色 `#E4000000` / 深色白），令牌集中对应 `colorStrokeFocus2`；组件库其余控件目前用 `colorCompoundBrandStroke`，本组件按 WinUI 源取色。仅键盘 / 程序化聚焦显示焦点矩形与 3×16 品牌色指示条（对应 WinUI `Focused` 与 `PointerFocused` 的区分）。
 > 5. **`PageUp` / `PageDown`**：WinUI 在展开态按页移动高亮，这里只吃掉按键（阻止页面滚动），不移动高亮。
 > 6. **项 `value` 不能是空字符串**：reka 底座用它表示「清空选中」，故 `value: ''` 会被拒绝（WinUI 无此限制）；需要空串语义时用 `null` 或哨兵值。

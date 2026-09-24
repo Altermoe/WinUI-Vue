@@ -52,15 +52,17 @@ import type { ComboboxSelectionEvents } from './use-combobox-selection'
  * 与 WinUI 的四处 Web 侧近似（其余状态逐项对照资源键）：
  * 1. Acrylic 表面：Fluent 令牌集中没有材质令牌，浮层用 colorNeutralBackground1 +
  *    shadow16 近似（与 NumberBox 紧凑浮层保持一致）。
- * 2. 浮层开启动画：WinUI 用 SplitOpenThemeAnimation（从 ComboBox 一侧向另一侧展开）。
- *    Web 侧以 clip-path 同向展开近似，时长/缓动取 ControlNormalAnimationDuration(250ms)
- *    + ControlFastOutSlowInKeySpline(0,0,0,1) → durationGentle / curveDecelerateMid。
+ * 2. 浮层开启动画：WinUI 用 SplitOpenThemeAnimation（ClosedLength → OpenedLength
+ *    的纵向 split）。Web 侧以 clip-path 从选中项中线向上下两侧展开近似（无选中时
+ *    贴触发控件一侧）：面板先收拢成一条缝，展开后实测选中项位置写入 CSS 变量再起播；
+ *    时长/缓动取 ControlNormalAnimationDuration(250ms) + ControlFastOutSlowInKeySpline
+ *    (0,0,0,1) → durationGentle / curveDecelerateMid。
  *    关闭动画省略：reka 的 Presence 会立即卸载内容，保留 aria-hidden 语义正确。
  * 3. 焦点矩形：WinUI 用 FocusStrokeColorOuter（#E4000000 / 白）；令牌集中对应
  *    colorStrokeFocus2。（组件库其余控件目前用 colorCompoundBrandStroke，本组件按
  *    WinUI 源取色，见 README「还原基准」。）
- * 4. AnimatedChevronDownSmall 是 Lottie 翻转（0→150ms 进、166.7→466.7ms 回）；
- *    这里用 rotate(180deg) + durationFast 进 / durationSlow 回近似。
+ * 4. 箭头按下态：WinUI 3 Gallery 里箭头按下是轻微下沉（不是翻转）；这里用
+ *    translateY(1px) + durationFast 进 / durationNormal 回近似。
  *
  * 分层（本文件只做组合与呈现，逻辑按层外提、各自可单测）：
  * - 纯函数层：items（项身份 / 索引 / 选中文本）、keyboard（键位 → 动作）、
@@ -170,18 +172,83 @@ const bindComboboxRef = (instance: unknown): void => {
 const inputElement = computed(() => surfaceRef.value?.querySelector('input') ?? null)
 
 /* ------------------------------------------------------------------ */
+/* 弹出展开动画：实测选中项位置 → clip 原点（SplitOpenThemeAnimation）    */
+/* ------------------------------------------------------------------ */
+
+/**
+ * 弹层的 split 时序（写在弹层元素的 `data-split` 上，取值见样式块）：
+ * - `pending`：面板已挂载、原点还没量完 → 先收拢成一条缝并透明（错误原点不出帧）
+ * - `playing`：原点已写入 CSS 变量 → 播 `fui-combobox-split-open`
+ * - `done`：动画结束（或无需动画）→ 回落基础样式，clip 复位让阴影完整
+ *
+ * 初值 `done`：父级绕过 applyOpen 直接改 `open` 时面板直接可见（无动画但不出错）。
+ */
+const splitState = ref<'pending' | 'playing' | 'done'>('done')
+/** 选中项中线相对面板顶的偏移：起始缝的上 / 下两段 inset（和 = 面板高） */
+const splitTop = ref('0px')
+const splitBottom = ref('100%')
+
+/** 面板尺寸上限 + split 原点（reka 会把外部 style 合并到弹层内容元素上） */
+const popupStyle = computed(() => ({
+  '--fui-combobox-max-height': `${props.maxDropDownHeight}px`,
+  '--fui-combobox-split-top': splitTop.value,
+  '--fui-combobox-split-bottom': splitBottom.value,
+}))
+
+/** 项中线换算：项高 ÷ 中线除数；split 原点钳制到面板内的下界 */
+const ITEM_CENTER_DIVISOR = 2
+const SPLIT_CLAMP_MIN = 0
+
+/**
+ * 量展开原点：选中项（无选中退到高亮项，再退到贴触发侧的顶边）的水平中线。
+ * 上下两段 inset 之和恰为面板高 → 起始是一条零高度的缝，向两侧展开。
+ */
+const applySplitOrigin = (): void => {
+  const popupElement = listRef.value?.closest<HTMLElement>('.fui-combobox__popup')
+  const anchor =
+    popupElement?.querySelector<HTMLElement>('[data-state="checked"]') ??
+    popupElement?.querySelector<HTMLElement>('[data-highlighted]')
+  const popupRect = popupElement?.getBoundingClientRect()
+  const anchorRect = anchor?.getBoundingClientRect()
+  if (popupRect !== undefined && anchorRect !== undefined) {
+    const measured = anchorRect.top + anchorRect.height / ITEM_CENTER_DIVISOR - popupRect.top
+    const center = Math.min(Math.max(measured, SPLIT_CLAMP_MIN), popupRect.height)
+    splitTop.value = `${center}px`
+    splitBottom.value = `${popupRect.height - center}px`
+  } else {
+    splitTop.value = '0px'
+    splitBottom.value = '100%'
+  }
+  splitState.value = 'playing'
+}
+
+/** 分裂展开动画收尾：交还基础样式（clip 复位，box-shadow 不再被 clip 裁掉） */
+const onPopupAnimationEnd = (event: AnimationEvent): void => {
+  if (event.animationName === 'fui-combobox-split-open') {
+    splitState.value = 'done'
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* 展开 / 收起：自行控制 open 状态，并补上 reka 在 onOpenChange 里的动作    */
 /* ------------------------------------------------------------------ */
 
 /**
  * 展开后的收尾：把焦点收回控件、高亮选中项（reka 只在自身 onOpenChange 里做，
- * 本组件自行控制 open 状态，故显式调用其暴露的 highlightSelected）。
- * 落点同步由展开层在本回调完成后接续。
+ * 本组件自行控制 open 状态，故显式调用其暴露的 highlightSelected），
+ * 最后量出 split 展开原点。落点同步由展开层在本回调完成后接续。
  */
 const afterOpen = async (): Promise<void> => {
+  // 同步先收拢：本行先于渲染微任务执行，面板一挂载就是 pending（不会先闪全开）
+  splitState.value = 'pending'
   await nextTick()
   inputElement.value?.focus()
-  await comboboxRef.value?.highlightSelected?.()
+  try {
+    await comboboxRef.value?.highlightSelected?.()
+  } finally {
+    // 高亮会把选中项滚进可视区，原点必须在滚动落定后量
+    applySplitOrigin()
+  }
 }
 
 const popup = useComboboxPopup(
@@ -454,12 +521,14 @@ const ariaDescribedby = computed(() => (hasDescription.value ? descriptionId : u
         <ComboboxContent
           class="fui-combobox__popup"
           :data-editable="editable ? '' : undefined"
-          :style="{ '--fui-combobox-max-height': `${maxDropDownHeight}px` }"
+          :data-split="splitState"
+          :style="popupStyle"
           position="popper"
           side="bottom"
           align="start"
           :side-offset="0"
           @pointermove="onPopupPointerMove"
+          @animationend="onPopupAnimationEnd"
         >
           <div
             ref="listRef"
@@ -730,19 +799,13 @@ const ariaDescribedby = computed(() => (hasDescription.value ? descriptionId : u
   height: 12px;
   color: var(--fui-combobox-chevron);
   pointer-events: none; /* 非可编辑态整块控件都是开关 */
+  transition: transform var(--durationNormal) var(--curveDecelerateMid);
 }
 
-/* AnimatedChevronDownSmall：按下 150ms 翻 180°，松开 300ms 翻回（Lottie 标记近似） */
-.fui-combobox__chevron-icon {
-  transition: transform var(--durationSlow) var(--curveDecelerateMid);
-}
-
-.fui-combobox:not([data-disabled]) .fui-combobox__surface:active .fui-combobox__chevron-icon {
-  transform: rotate(180deg);
-  transition-duration: var(--durationFast);
-}
-
+/* 按下态：箭头轻微下沉（WinUI 3 Gallery 的箭头按下只下沉、不翻转） */
 .fui-combobox:not([data-disabled]) .fui-combobox__surface:active .fui-combobox__chevron {
+  transform: translateY(1px); /* 略微下沉 */
+  transition-duration: var(--durationFast);
   color: var(--colorNeutralForeground1); /* FocusedPressed 的 legacy 笔刷近似 */
 }
 
@@ -755,7 +818,9 @@ const ariaDescribedby = computed(() => (hasDescription.value ? descriptionId : u
   border-radius: var(--borderRadiusMedium); /* ComboBoxDropDownButtonBackgroundCornerRadius 4 */
   background-color: transparent;
   pointer-events: auto;
-  transition: background-color var(--durationFast) var(--curveEasyEase);
+  transition:
+    background-color var(--durationFast) var(--curveEasyEase),
+    transform var(--durationNormal) var(--curveDecelerateMid);
 }
 
 .fui-combobox[data-editable] .fui-combobox__surface:hover .fui-combobox__chevron {
@@ -791,56 +856,7 @@ const ariaDescribedby = computed(() => (hasDescription.value ? descriptionId : u
 }
 
 /* ---- PopupBorder：Acrylic 表面 + 1px SurfaceStrokeColorFlyout + 圆角 8 ---- */
-.fui-combobox__popup {
-  z-index: 1000; /* Teleport 到 body，需盖过页面内容 */
-  box-sizing: border-box;
-  min-width: var(--reka-combobox-trigger-width, 64px); /* 面板不窄于控件 */
-  max-width: var(--reka-combobox-content-available-width, 100vw); /* 不超出可视区 */
-  max-height: min(
-    var(--fui-combobox-max-height, 504px),
-    var(--reka-combobox-content-available-height, 504px)
-  );
-  overflow: hidden;
-  border: var(--strokeWidthThin) solid var(--colorNeutralStroke1);
-  border-radius: var(--borderRadiusXLarge); /* OverlayCornerRadius 8 */
-  background-color: var(--colorNeutralBackground1); /* Acrylic 表面近似（见文件头） */
-  box-shadow: var(--shadow16);
-  color: var(--colorNeutralForeground1); /* ComboBoxDropDownForeground */
-  font-family: var(--fontFamilyBase);
-  font-size: var(--fontSizeBase300);
-  line-height: var(--lineHeightBase300);
-  /* SplitOpenThemeAnimation 的近似：从控件一侧展开 */
-  animation: fui-combobox-split-open var(--durationGentle) var(--curveDecelerateMid);
-}
-
-.fui-combobox__popup[data-side='top'] {
-  --fui-combobox-split-origin: 100%;
-}
-
-/* 可编辑态开面板：相邻圆角切平（ComboBoxHelper.KeepInteriorCornersSquare） */
-.fui-combobox__popup[data-editable][data-side='bottom'] {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}
-
-.fui-combobox__popup[data-editable][data-side='top'] {
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
-
-@keyframes fui-combobox-split-open {
-  from {
-    clip-path: inset(
-      var(--fui-combobox-split-origin, 0%) 0 calc(100% - var(--fui-combobox-split-origin, 0%)) 0
-    );
-    opacity: 0;
-  }
-
-  to {
-    clip-path: inset(0 0 0 0);
-    opacity: 1;
-  }
-}
+/*    （面板规则整体挪到文件末尾的非 scoped <style> 块——原因见该块注释）      */
 
 /* ---- ItemsPresenter：上下留白 4（ComboBoxDropdownContentMargin 0,4） ---- */
 .fui-combobox__list {
@@ -875,6 +891,10 @@ const ariaDescribedby = computed(() => (hasDescription.value ? descriptionId : u
   border-radius: var(--borderRadiusMedium); /* ComboBoxItemCornerRadius 3 */
   background-color: var(--fui-combobox-item-background);
   color: var(--fui-combobox-item-foreground);
+  /* 项字号与控件一致（WinUI ControlContentThemeFontSize → 14；不靠面板继承，
+     面板规则是全局块，项规则是 scoped 块，各自独立成立 */
+  font-size: var(--fontSizeBase300);
+  line-height: var(--lineHeightBase300);
   cursor: default;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -957,15 +977,10 @@ const ariaDescribedby = computed(() => (hasDescription.value ? descriptionId : u
   color: var(--colorNeutralForeground3);
 }
 
-/* ---- 动效尊重系统减弱设置 ---- */
+/* ---- 动效尊重系统减弱设置（面板的 split 动画在全局块里同口径覆盖） ---- */
 @media (prefers-reduced-motion: reduce) {
-  .fui-combobox__popup {
-    animation: none;
-  }
-
   .fui-combobox__surface,
   .fui-combobox__chevron,
-  .fui-combobox__chevron-icon,
   .fui-combobox__item,
   .fui-combobox__item-pill {
     transition: none !important;
@@ -974,12 +989,88 @@ const ariaDescribedby = computed(() => (hasDescription.value ? descriptionId : u
 </style>
 
 <!-- ------------------------------------------------------------------ -->
-<!-- @property 注册：把可编辑态聚焦的底部高亮带注册为可插值的 <color>，        -->
-<!-- 它在 surface 的 transition 中才能真正逐帧过渡（未注册的自定义属性默认   -->
-<!-- 不被动画插值）。@property 是对属性名的全局注册，须放非 scoped 的独立   -->
-<!-- <style>，避免被 scoped 选择器重写。                                   -->
+<!-- 弹层（.fui-combobox__popup）：必须放在非 scoped 块里。                 -->
+<!-- reka 的 ComboboxContent 把 class 落在弹层内容元素、把 Vue 的作用域 id   -->
+<!-- 落在外层 Popper 包装上（inheritAttrs: false + 手动 v-bind），scoped    -->
+<!-- 选择器永远匹配不到内容元素——底色 / 阴影 / 宽度 / 字号 / 动画会整组失效。 -->
+<!-- 类名带 fui-combobox__ 前缀，全局作用域无碰撞风险。                      -->
+<!-- WinUI 对照：PopupBorder（圆角 8 + 1px SurfaceStrokeColorFlyout +      -->
+<!-- Acrylic 表面）+ SplitOpenThemeAnimation（从选中项纵向向两侧展开）。      -->
 <!-- ------------------------------------------------------------------ -->
 <style>
+/* ---- PopupBorder：宽度对齐触发元素 + 抬升描边 + 圆角 8 + Acrylic 近似 ---- */
+.fui-combobox__popup {
+  z-index: 1000; /* Teleport 到 body，需盖过页面内容 */
+  box-sizing: border-box;
+  /* WinUI：Popup 宽 = ComboBox.ActualWidth（面板与触发元素严格对齐） */
+  width: var(--reka-combobox-trigger-width, 64px);
+  max-width: var(--reka-combobox-content-available-width, 100vw); /* 不超出可视区 */
+  max-height: min(
+    var(--fui-combobox-max-height, 504px),
+    var(--reka-combobox-content-available-height, 504px)
+  );
+  overflow: hidden;
+  border: var(--strokeWidthThin) solid var(--colorNeutralStroke1);
+  border-radius: var(--borderRadiusXLarge); /* OverlayCornerRadius 8 */
+  background-color: var(--colorNeutralBackground1); /* Acrylic 表面近似（见文件头） */
+  box-shadow: var(--shadow16);
+  color: var(--colorNeutralForeground1); /* ComboBoxDropDownForeground */
+  font-family: var(--fontFamilyBase);
+  font-size: var(--fontSizeBase300);
+  line-height: var(--lineHeightBase300);
+}
+
+/* 挂载后 ~ 原点量完前：收拢成选中项处的一条缝并透明（CSS 变量原点见 script） */
+.fui-combobox__popup[data-split='pending'],
+.fui-combobox__popup[data-split='playing'] {
+  clip-path: inset(var(--fui-combobox-split-top, 0px) 0 var(--fui-combobox-split-bottom, 100%) 0);
+  opacity: 0;
+}
+
+/* SplitOpenThemeAnimation 的 Web 近似：从选中项中线向上下两侧展开
+   （fill both：起始帧贴 pending 收拢态、结束帧保持全开，animationend 后交还基础样式） */
+.fui-combobox__popup[data-split='playing'] {
+  animation: fui-combobox-split-open var(--durationGentle) var(--curveDecelerateMid) both;
+}
+
+@keyframes fui-combobox-split-open {
+  from {
+    clip-path: inset(var(--fui-combobox-split-top, 0px) 0 var(--fui-combobox-split-bottom, 100%) 0);
+    opacity: 0;
+  }
+
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+/* 可编辑态开面板：相邻圆角切平（ComboBoxHelper.KeepInteriorCornersSquare） */
+.fui-combobox__popup[data-editable][data-side='bottom'] {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.fui-combobox__popup[data-editable][data-side='top'] {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* 减弱动效：跳过 split 收拢与动画，面板直接可见（覆盖 pending / playing 态） */
+@media (prefers-reduced-motion: reduce) {
+  .fui-combobox__popup,
+  .fui-combobox__popup[data-split] {
+    animation: none !important;
+    clip-path: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* @property：把可编辑态聚焦的底部高亮带注册为可插值的 <color>，它在        */
+/* surface 的 transition 中才能逐帧过渡（未注册的自定义属性默认不被动画     */
+/* 插值）。@property 是全局注册，必须放在非 scoped 块里。                  */
+/* ------------------------------------------------------------------ */
 @property --fui-combobox-highlight {
   syntax: '<color>';
   inherits: false;
